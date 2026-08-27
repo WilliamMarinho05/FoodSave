@@ -5,8 +5,10 @@ export default function Index() {
     <View
       style={styles.container}
     >
-      <TextInput placeholder="Digite seu nome"/>
-      <Text>Hello World!</Text>
+      <Text>Usuario:</Text>
+      <TextInput style={styles.input} placeholder="Usuario"/>
+      <Text>Senha</Text>
+      <TextInput style={styles.input} placeholder="Senha" secureTextEntry/>
     </View>
   );
 }
@@ -16,5 +18,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    
   },
+  
+  input:{
+     width: 250,
+    height: 40,
+
+    borderWidth: 1,
+    borderColor: "#333",
+    borderRadius: 5,
+
+    paddingHorizontal: 10,
+  }
 });
