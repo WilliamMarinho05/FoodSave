@@ -31,6 +31,15 @@ export default function RootLayout() {
           headerBackTitle: "Voltar",
         }}
       />
+
+      <Stack.Screen
+        name="cadastro/index"
+        options={{
+          title: "Cadastro",
+          headerBackTitle: "Voltar",
+        }}
+      />
+
     </Stack>
   );
 }

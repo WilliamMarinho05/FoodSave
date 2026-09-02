@@ -44,7 +44,7 @@ export default function Index() {
             Ainda não tem uma conta?
           </Text>
 
-          <Pressable onPress={() => alert("Criar conta")}>
+          <Pressable onPress={() => router.push("/cadastro")}>
             <Text style={styles.linkCriarConta}>Criar conta</Text>
           </Pressable>
         </View>
