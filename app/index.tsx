@@ -1,16 +1,19 @@
-
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+
 export default function Index() {
+  const router = useRouter();
+
   return (
     <View
       style={styles.container}
     >
       <Image 
-      source={require("../assets/images/logo.jpeg")} 
-      style={styles.logo}
-      resizeMode="contain"
+        source={require("../assets/images/logo.jpeg")} 
+        style={styles.logo}
+        resizeMode="contain"
       />
+
       <View style={styles.campos}>
         <Text>Usuario:</Text>
         <TextInput style={styles.input} placeholder="Usuario"/>
@@ -20,7 +23,7 @@ export default function Index() {
         <Text>Senha:</Text>
         <TextInput style={styles.input} placeholder="Senha" secureTextEntry/>
 
-        <Pressable onPress={() => alert("Recuperar senha")}>
+        <Pressable>
           <Link style={styles.link} href="/esquec_senha">
             Esqueci minha senha
           </Link>
@@ -29,7 +32,10 @@ export default function Index() {
       </View>
 
       <View style={styles.campos}>
-        <Pressable style={styles.botao} onPress={() => {}}>
+        <Pressable 
+          style={styles.botao} 
+          onPress={() => router.push("/home")}
+        >
           <Text style={styles.textoBotao}>Entrar</Text>
         </Pressable>
 
@@ -53,7 +59,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    
   },
 
   campos: {
@@ -61,7 +66,7 @@ const styles = StyleSheet.create({
     marginBottom: "10%",
   },
   
-  input:{
+  input: {
     width: "100%",
     height: 40,
 
@@ -77,8 +82,6 @@ const styles = StyleSheet.create({
     height: 40,
     backgroundColor: "#4CAF50",
     borderRadius: 5,
-
-    
 
     justifyContent: "center",
     alignItems: "center",
@@ -116,12 +119,11 @@ const styles = StyleSheet.create({
     color: "#666",
     fontSize: 14,
   },
+
   logo: {
     width: 250,
     height: 250,
     alignSelf: "center",
     marginBottom: 20,
   }
-
-
 });
