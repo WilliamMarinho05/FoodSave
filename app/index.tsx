@@ -1,6 +1,6 @@
 
+import { Link } from "expo-router";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-
 export default function Index() {
   return (
     <View
@@ -21,7 +21,9 @@ export default function Index() {
         <TextInput style={styles.input} placeholder="Senha" secureTextEntry/>
 
         <Pressable onPress={() => alert("Recuperar senha")}>
-          <Text style={styles.link}>Esqueci minha senha</Text>
+          <Link style={styles.link} href="/esquec_senha">
+            Esqueci minha senha
+          </Link>
         </Pressable>
 
       </View>
