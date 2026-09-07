@@ -1,9 +1,10 @@
 import PainelValidade from "@/src/components/PainelValidade";
 import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import {useRouter} from "expo-router";
 
 export default function Home() {
-  // O estado fica na Home para que o botão consiga alterá-lo
+  const router = useRouter()
   const [painel, setPainel] = useState({
     noPrazo: 12,
     atencao: 3,
@@ -11,21 +12,31 @@ export default function Home() {
   });
 
   const handleCadastrarAlimento = () => {
-    // Incrementa +1 no card "NO PRAZO"
-    setPainel((prev) => ({
-      ...prev,
-      noPrazo: prev.noPrazo + 1,
-    }));
+    router.push("/cadastrar_alimento")
   };
 
   return (
     <View style={styles.container}>
       <PainelValidade painel={painel} />
 
-      <Pressable style={styles.botaoCadastrar} onPress={handleCadastrarAlimento}>
-        <Text style={styles.textoBotao}>+ Cadastrar novo alimento</Text>
-      </Pressable>
+      <Pressable
+        style={styles.cardCadastrar}
+        onPress={handleCadastrarAlimento}
+      >
+        <View style={styles.iconeContainer}>
+          <Text style={styles.icone}>+</Text>
+        </View>
 
+        <View style={styles.conteudoCard}>
+          <Text style={styles.tituloCard}>
+            Cadastrar novo alimento
+          </Text>
+
+          <Text style={styles.descricaoCard}>
+            Adicione um novo alimento à sua lista
+          </Text>
+        </View>
+      </Pressable>
     </View>
   );
 }
@@ -35,20 +46,59 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-start",
     alignItems: "center",
+    paddingTop: 20,
   },
 
-  botaoCadastrar: {
-    marginTop: 25,
-    backgroundColor: "#4CAF50",
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 10,
+  cardCadastrar: {
     width: "90%",
+    minHeight: 100,
+
+    marginTop: 25,
+    padding: 20,
+
+    borderWidth: 1,
+    borderColor: "#D5D5D5",
+    borderRadius: 12,
+
+    backgroundColor: "#FFFFFF",
+
+    flexDirection: "row",
     alignItems: "center",
   },
-  textoBotao: {
-    color: "#FFF",
-    fontSize: 16,
+
+  iconeContainer: {
+    width: 50,
+    height: 50,
+
+    borderRadius: 25,
+
+    backgroundColor: "#4CAF50",
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    marginRight: 15,
+  },
+
+  icone: {
+    color: "#FFFFFF",
+    fontSize: 30,
     fontWeight: "bold",
+  },
+
+  conteudoCard: {
+    flex: 1,
+  },
+
+  tituloCard: {
+    fontSize: 17,
+    fontWeight: "bold",
+    color: "#333333",
+  },
+
+  descricaoCard: {
+    marginTop: 5,
+    fontSize: 14,
+    color: "#777777",
   },
 });

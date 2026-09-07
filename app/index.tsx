@@ -93,11 +93,11 @@ const styles = StyleSheet.create({
 
   logo: {
     width: 200,
-    height: 300,
+  height: 180,
 
-    marginBottom: 30,
-    marginTop: 20,
-    backgroundColor: "#fff",
+  marginBottom: 20,
+  marginTop: 10,
+  backgroundColor: "#fff",
   },
 
   titulo: {
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
 
-    marginTop: 50,
+    marginTop: 20,
   },
 
   textoBotao: {
