@@ -2,16 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, } from "react-native";
-
-type Alimento = {
-  nome: string;
-  categoria: string;
-  quantidade: string;
-  unidade: string;
-  peso: string;
-  dataCompra: string;
-  validade: string;
-};
+import { Alimento } from "../../src/types/alimento";
 
 export default function CadastrarAlimento() {
   const router = useRouter();
