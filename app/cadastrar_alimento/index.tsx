@@ -17,6 +17,7 @@ export default function CadastrarAlimento() {
 
   const handleSalvar = () => {
   const novoAlimento: Alimento = {
+    id: Date.now().toString(),
     nome,
     categoria,
     quantidade,
@@ -25,9 +26,13 @@ export default function CadastrarAlimento() {
     dataCompra,
     validade,
   };
-  console.log("Alimento pronto para salvar:", novoAlimento);
-  // dps poe aqui pra salvar no banco de dados ou enviar para a API
-}
+  router.replace({
+    pathname: "/home",
+    params:{
+      novoAlimento: JSON.stringify(novoAlimento),
+    },
+  });
+};
 
   return (
     <ScrollView
@@ -152,7 +157,7 @@ export default function CadastrarAlimento() {
       </View>
 
       {/* BOTÃO SALVAR */}
-      <Pressable style={styles.botaoSalvar}>
+      <Pressable style={styles.botaoSalvar} onPress={handleSalvar}>
         <Text style={styles.textoBotaoSalvar}>Salvar Alimento</Text>
       </Pressable>
 

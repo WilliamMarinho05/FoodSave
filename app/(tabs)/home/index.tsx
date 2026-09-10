@@ -1,11 +1,12 @@
 import PainelValidade from "@/src/components/PainelValidade";
 import { Alimento } from "@/src/types/alimento";
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function Home() {
   const router = useRouter();
+  const params=useLocalSearchParams();
   
   const [painel, setPainel] = useState({
     noPrazo: 12,
@@ -36,6 +37,20 @@ export default function Home() {
     }
   ]);
 
+  useEffect(() => {
+    if(params.novoAlimento){
+      const novoAlimento: Alimento = JSON.parse(
+        params.novoAlimento as string
+      );
+      setAlimentos((alimentosAtuais) =>[
+        novoAlimento, ...alimentosAtuais,
+      ]);
+      setPainel((painelAtual) => ({
+        ...painelAtual,
+        noPrazo: painelAtual.noPrazo +1,
+      }));
+    }
+  }, [params.novoAlimento]);
   const handleCadastrarAlimento = () => {
     router.push("/cadastrar_alimento");
   };
@@ -96,7 +111,7 @@ export default function Home() {
       </Pressable>
 
       <View style={styles.listaContainer}>
-        <Text style={styles.tituloLista}>Meus Alimentos</Text>
+        <Text style={styles.tituloLista}>Adicionados Recentemente</Text>
         <FlatList
           data={alimentos}
           keyExtractor={(item) => item.id!}
