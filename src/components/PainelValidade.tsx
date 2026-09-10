@@ -34,7 +34,8 @@ export default function PainelValidade({ painel }: PainelProps) {
             <Text style={styles.cardHeader} numberOfLines={1} adjustsFontSizeToFit>
               ATENÇÃO
             </Text>
-            <Feather name="alert-triangle" size={12} color="#FF9800" />
+            {/* Ícone levemente menor para acompanhar a fonte */}
+            <Feather name="alert-triangle" size={10} color="#FF9800" />
           </View>
           <Text style={[styles.cardValue, { color: '#FF9800' }]}>
             {painel.atencao}
@@ -60,21 +61,21 @@ export default function PainelValidade({ painel }: PainelProps) {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    paddingTop: 30,
+    paddingTop: 10, 
     backgroundColor: 'transparent',
     width: '100%',
   },
   greeting: {
-    fontSize: 20,
+    fontSize: 16, 
     fontWeight: '500',
     color: '#666',
-    marginBottom: 4,
+    marginBottom: 2, 
   },
   title: {
-    fontSize: 28,
+    fontSize: 20, 
     fontWeight: '700',
     color: '#111',
-    marginBottom: 16,
+    marginBottom: 12, 
   },
   cardsRow: {
     flexDirection: 'row',
@@ -84,13 +85,13 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 12, 
     borderWidth: 1.5,
-    paddingVertical: 12,
+    paddingVertical: 10, // Reduzido de 12
     paddingHorizontal: 4,
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: 120,
+    minHeight: 90,
   },
   cardNoPrazo: {
     borderColor: '#D1F2D9',
@@ -109,20 +110,20 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   cardHeader: {
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: '700',
     color: '#555',
     textAlign: 'center',
   },
   cardValue: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '900',
-    marginVertical: 2,
+    marginVertical: 0, 
   },
   cardSubtitle: {
-    fontSize: 12,
+    fontSize: 10, 
     color: '#888',
     textAlign: 'center',
-    lineHeight: 12,
+    lineHeight: 11,
   },
 });

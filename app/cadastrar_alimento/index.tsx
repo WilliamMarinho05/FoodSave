@@ -1,7 +1,8 @@
-import React, { useState } from "react";
-import {Pressable,ScrollView,StyleSheet,Text,TextInput,View,} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, } from "react-native";
+import { Alimento } from "../../src/types/alimento";
 
 export default function CadastrarAlimento() {
   const router = useRouter();
@@ -13,6 +14,20 @@ export default function CadastrarAlimento() {
   const [peso, setPeso] = useState("");
   const [dataCompra, setDataCompra] = useState("");
   const [validade, setValidade] = useState("");
+
+  const handleSalvar = () => {
+  const novoAlimento: Alimento = {
+    nome,
+    categoria,
+    quantidade,
+    unidade,
+    peso,
+    dataCompra,
+    validade,
+  };
+  console.log("Alimento pronto para salvar:", novoAlimento);
+  // dps poe aqui pra salvar no banco de dados ou enviar para a API
+}
 
   return (
     <ScrollView
