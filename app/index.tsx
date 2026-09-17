@@ -1,19 +1,28 @@
 import { Link, useRouter } from "expo-router";
-import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 export default function Index() {
   const router = useRouter();
 
   return (
-    <View
-      style={styles.container}
-    >
+    <View style={styles.container}>
+
+      {/* CABEÇALHO */}
       <View style={styles.header}>
-        <Image 
-          source={require("../assets/images/logo.jpeg")} 
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../assets/images/logo.jpeg")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
 
         <Text style={styles.titulo}>Bem-vindo!</Text>
 
@@ -22,42 +31,60 @@ export default function Index() {
         </Text>
       </View>
 
-      <View style={styles.formulario}>
-        <View style={styles.campo}>
-          <Text style={styles.label}>Usuario:</Text>
+      {/* CARD DO FORMULÁRIO */}
+      <View style={styles.card}>
 
-          <TextInput style={styles.input} placeholder="Usuario"/>
+        <View style={styles.campo}>
+          <Text style={styles.label}>Usuário</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Digite seu usuário"
+            placeholderTextColor="#A0A0A0"
+            autoCapitalize="none"
+          />
         </View>
 
-        <View style={styles.campo}>
-          <Text style={styles.label}>Senha:</Text>
-          <TextInput style={styles.input} placeholder="Senha" secureTextEntry/>
+        <View style={styles.campoSenha}>
+          <Text style={styles.label}>Senha</Text>
 
-          <Pressable>
+          <TextInput
+            style={styles.input}
+            placeholder="Digite sua senha"
+            placeholderTextColor="#A0A0A0"
+            secureTextEntry
+          />
+
+          <View style={styles.esqueciSenhaContainer}>
             <Link style={styles.link} href="/esquec_senha">
               Esqueci minha senha
             </Link>
-          </Pressable>
-
+          </View>
         </View>
 
-        <Pressable 
-          style={styles.botao} 
+        <Pressable
+          style={({ pressed }) => [
+            styles.botao,
+            pressed && styles.botaoPressionado,
+          ]}
           onPress={() => router.push("/home")}
         >
           <Text style={styles.textoBotao}>Entrar</Text>
         </Pressable>
-    </View>
 
-    <View style={styles.rodape}>
-      <Text style={styles.textoRodape}>
-        Ainda não tem uma conta?
-      </Text>
+      </View>
 
-      <Pressable onPress={() => router.push("/cadastro")}>
-        <Text style={styles.linkCriarConta}>Criar conta</Text>
-      </Pressable>
+      {/* RODAPÉ */}
+      <View style={styles.rodape}>
+        <Text style={styles.textoRodape}>
+          Ainda não tem uma conta?
+        </Text>
 
+        <Pressable onPress={() => router.push("/cadastro")}>
+          <Text style={styles.linkCriarConta}>
+            Criar conta
+          </Text>
+        </Pressable>
       </View>
 
     </View>
@@ -65,166 +92,197 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
+
+  // TELA
   container: {
-    flexGrow: 1,
-
+    flex: 1,
     alignItems: "center",
-    
-
-    paddingHorizontal: 20,
-    paddingTop: 30,
-    paddingBottom: 30,
-
-    backgroundColor: "#fff",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    backgroundColor: "#F4F8F5",
   },
 
-  // -------------------------
   // CABEÇALHO
-  // -------------------------
-
   header: {
     width: "100%",
-    maxWidth: 450,
+    maxWidth: 420,
+    alignItems: "center",
+    marginBottom: 28,
+  },
 
+  logoContainer: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: "#FFFFFF",
+
+    justifyContent: "center",
     alignItems: "center",
 
-    marginBottom: 35,
+    marginBottom: 20,
+
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+
+    elevation: 4,
   },
 
   logo: {
-    width: 200,
-  height: 180,
-
-  marginBottom: 20,
-  marginTop: 10,
-  backgroundColor: "#fff",
+    width: 105,
+    height: 105,
+    borderRadius: 20,
   },
 
   titulo: {
-    fontSize: 26,
+    fontSize: 30,
     fontWeight: "700",
-
-    color: "#333",
-
-    marginBottom: 5,
+    color: "#1F2937",
+    marginBottom: 8,
+    letterSpacing: -0.5,
   },
 
   subtitulo: {
-    fontSize: 14,
-
-    color: "#777",
-
+    fontSize: 15,
+    color: "#7B8491",
     textAlign: "center",
   },
 
-  // -------------------------
-  // FORMULÁRIO
-  // -------------------------
-
-  formulario: {
+  // CARD
+  card: {
     width: "100%",
-    maxWidth: 450,
+    maxWidth: 420,
+
+    backgroundColor: "#FFFFFF",
+
+    borderRadius: 22,
+
+    paddingHorizontal: 22,
+    paddingVertical: 26,
+
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 15,
+
+    elevation: 5,
   },
 
+  // CAMPOS
   campo: {
     width: "100%",
-
     marginBottom: 20,
+  },
+
+  campoSenha: {
+    width: "100%",
+    marginBottom: 8,
   },
 
   label: {
     fontSize: 14,
     fontWeight: "600",
-
-    color: "#444",
-
-    marginBottom: 7,
+    color: "#374151",
+    marginBottom: 8,
   },
 
   input: {
     width: "100%",
-    height: 45,
+    height: 52,
 
     borderWidth: 1,
-    borderColor: "#D5D5D5",
-    borderRadius: 7,
+    borderColor: "#E2E8E4",
 
-    paddingHorizontal: 12,
+    borderRadius: 12,
 
-    fontSize: 14,
-    color: "#333",
+    paddingHorizontal: 16,
 
-    backgroundColor: "#FAFAFA",
+    fontSize: 15,
+    color: "#1F2937",
+
+    backgroundColor: "#F8FAF9",
+  },
+
+  // ESQUECI SENHA
+  esqueciSenhaContainer: {
+    alignItems: "flex-end",
+    marginTop: 10,
   },
 
   link: {
-    alignSelf: "flex-end",
-
-    color: "#0a52cd",
-
-    textDecorationLine: "underline",
-
-    fontSize: 14,
-
-    marginTop: 8,
+    color: "#388E3C",
+    fontSize: 13,
+    fontWeight: "600",
+    textDecorationLine: "none",
   },
 
-  // -------------------------
   // BOTÃO
-  // -------------------------
-
   botao: {
     width: "100%",
-    height: 45,
+    height: 54,
 
     backgroundColor: "#4CAF50",
 
-    borderRadius: 7,
+    borderRadius: 13,
 
     justifyContent: "center",
     alignItems: "center",
 
-    marginTop: 20,
+    marginTop: 22,
+
+    shadowColor: "#4CAF50",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+
+    elevation: 4,
+  },
+
+  botaoPressionado: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
   },
 
   textoBotao: {
-    color: "#fff",
-
-    fontSize: 15,
-    fontWeight: "600",
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 0.3,
   },
 
-  // -------------------------
   // RODAPÉ
-  // -------------------------
-
   rodape: {
     width: "100%",
-    maxWidth: 450,
+    maxWidth: 420,
 
     flexDirection: "row",
-
     justifyContent: "center",
     alignItems: "center",
 
     flexWrap: "wrap",
 
-    marginTop: 25,
+    marginTop: 26,
   },
 
   textoRodape: {
-    color: "#666",
-
+    color: "#7B8491",
     fontSize: 14,
-
     marginRight: 5,
   },
 
   linkCriarConta: {
-    color: "#4CAF50",
-
+    color: "#388E3C",
     fontSize: 14,
-
-    fontWeight: "600",
+    fontWeight: "700",
   },
 });
