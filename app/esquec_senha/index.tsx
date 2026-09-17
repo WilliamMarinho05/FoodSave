@@ -1,41 +1,6 @@
-import { supabase } from "@/src/services/supabase";
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { ActivityIndicator, Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function EsqueceuSenha() {
-    const router = useRouter();
-    const [email, setEmail] = useState("");
-    const [carregando, setCarregando] = useState(false);
-
-    const handleEnviarEmail = async () => {
-    if (!email.trim()) {
-        Alert.alert("Atenção", "Por favor, digite o seu e-mail cadastrado.");
-        return;
-    }
-
-    try {
-        setCarregando(true);
-
-        const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
-
-        if (error) {
-            throw error;
-        }
-
-        Alert.alert(
-            "E-mail enviado!", 
-            "Verifique sua caixa de entrada para redefinir sua senha.",
-            [{ text: "OK", onPress: () => router.back() }]
-        );
-
-    } catch (error: any) {
-        Alert.alert("Erro", error.message || "Não foi possível enviar o e-mail.");
-    } finally {
-        setCarregando(false);
-    }
-};
-
     return (
         <View style={styles.container}>
             <Image 
@@ -43,32 +8,19 @@ export default function EsqueceuSenha() {
                 style={styles.logo}
                 resizeMode="contain"
             />
+            <View style={styles.campos}>
+            <Text style={styles.campos}>Recuperar Senha</Text>
             
-            <View style={styles.camposContainer}>
-                <Text style={styles.tituloRecuperar}>Recuperar Senha</Text>
-                
-                <TextInput 
-                    style={styles.input} 
-                    placeholder="Digite seu e-mail" 
-                    placeholderTextColor="#888"
-                    keyboardType="email-address" 
-                    autoCapitalize="none"
-                    value={email}
-                    onChangeText={setEmail}
-                />
+            <TextInput 
+                style={styles.input} 
+                placeholder="Digite seu e-mail" 
+                keyboardType="email-address" 
+            />
             </View>
 
-            <View style={styles.camposContainer}>
-                <TouchableOpacity 
-                    style={[styles.botao, carregando && { opacity: 0.7 }]} 
-                    onPress={handleEnviarEmail}
-                    disabled={carregando}
-                >
-                    {carregando ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <Text style={styles.textoBotao}>Enviar E-mail</Text>
-                    )}
+            <View style={styles.campos}>
+                <TouchableOpacity style={styles.botao}>
+                    <Text style={styles.textoBotao}>Enviar E-mail</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -76,59 +28,79 @@ export default function EsqueceuSenha() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#F8F7F1", // Padronizado com o fundo do resto do app
-        paddingHorizontal: 20,
-    },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    
+  },
 
-    camposContainer: {
-        width: "100%",
-        maxWidth: 350,
-        marginBottom: 20,
-    },
-
-    tituloRecuperar: {
-        fontSize: 18,
-        fontWeight: "bold",
-        color: "#26332D",
-        marginBottom: 10,
-    },
+  campos: {
+    width: "80%",
+    marginBottom: "10%",
+  },
   
-    input: {
-        width: "100%",
-        height: 45,
-        backgroundColor: "#FFFFFF",
-        borderWidth: 1,
-        borderColor: "#D8D8D8",
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        fontSize: 14,
-        color: "#26332D",
-    },
+  input:{
+    width: "100%",
+    height: 40,
 
-    botao: {
-        width: "100%",
-        height: 45,
-        backgroundColor: "#43855F", // Ajustado para o tom de verde padrão do projeto
-        borderRadius: 8,
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: 5,
-    },
+    borderWidth: 1,
+    borderColor: "#333",
+    borderRadius: 5,
 
-    textoBotao: {
-        color: "#fff",
-        fontSize: 14,
-        fontWeight: "bold",
-    },
+    paddingHorizontal: 10,
+  },
 
-    logo: {
-        width: 180,
-        height: 180,
-        alignSelf: "center",
-        marginBottom: 30,
-    }
+  botao: {
+    width: "100%",
+    height: 40,
+    backgroundColor: "#4CAF50",
+    borderRadius: 5,
+
+    
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    marginTop: 10
+  },
+
+  textoBotao: {
+    color: "#fff",
+  },
+
+  link: {
+    color: "#0a52cd",
+    textDecorationLine: "underline",
+    fontSize: 14,
+    marginTop: 15,
+
+    alignSelf: "flex-end",
+  },
+
+  linkCriarConta: {
+    color: "#4CAF50",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  campoCriarConta: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    marginTop: 20,
+  },
+
+  textoCriarConta: {
+    color: "#666",
+    fontSize: 14,
+  },
+  logo: {
+    width: 250,
+    height: 250,
+    alignSelf: "center",
+    marginBottom: 20,
+  }
+
+
 });
