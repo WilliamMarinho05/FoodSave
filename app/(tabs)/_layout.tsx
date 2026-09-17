@@ -1,87 +1,58 @@
-import { Tabs , useRouter } from "expo-router";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import {Pressable, Text} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
 
 export default function TabsLayout() {
-    const router = useRouter();
   return (
     <Tabs
       screenOptions={{
+        tabBarActiveTintColor: "#2e7d32",
+        tabBarInactiveTintColor: "#757575",
         headerShown: true,
-        headerTitle: () => (
-            <Pressable onPress={() => router.push("/")}>
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: "bold",
-              }}
-            >
-              FoodSave
-            </Text>
-          </Pressable>
-        ),
-        tabBarActiveTintColor: "#65B32E",
-        tabBarInactiveTintColor: "#D5D5D5",
-        tabBarStyle: {
-          backgroundColor: "#FFFFFF",
-          height: 60,
-          borderTopWidth: 1,
-          borderTopColor: "#E5E5E5",
-        },
-        tabBarShowLabel: false,
       }}
     >
       <Tabs.Screen
-        name="home"
+        name="home/index"
         options={{
+          title: "FoodSave",
+          tabBarLabel: "Início",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name="home-outline"
-              size={size}
-              color={color}
-            />
+            <Ionicons name="home-outline" size={size} color={color} />
           ),
         }}
       />
 
       <Tabs.Screen
-        name="alimentos"
+        name="alimentos/index"
         options={{
+          title: "Meus Alimentos",
+          tabBarLabel: "Alimentos",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="fridge-outline"
-              size={size}
-              color={color}
-            />
+            <Ionicons name="nutrition-outline" size={size} color={color} />
           ),
         }}
       />
 
       <Tabs.Screen
-        name="alertas"
+        name="alertas/index"
         options={{
+          title: "Alertas",
+          tabBarLabel: "Alertas",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name="notifications-outline"
-              size={size}
-              color={color}
-            />
+            <Ionicons name="notifications-outline" size={size} color={color} />
           ),
         }}
       />
 
       <Tabs.Screen
-        name="perfil"
+        name="perfil/index"
         options={{
+          title: "Perfil",
+          tabBarLabel: "Perfil",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name="person-outline"
-              size={size}
-              color={color}
-            />
+            <Ionicons name="person-outline" size={size} color={color} />
           ),
         }}
       />
-      </Tabs>
+    </Tabs>
   );
 }

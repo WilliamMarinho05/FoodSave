@@ -1,9 +1,9 @@
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { Pressable, Text } from "react-native";
-import { useRouter } from "expo-router";
 
 export default function RootLayout() {
   const router = useRouter();
+
   return (
     <Stack>
       <Stack.Screen
@@ -14,18 +14,11 @@ export default function RootLayout() {
       />
 
       <Stack.Screen
-        name="home/index"
-        options={{
-          title: "FoodSave",
-        }}
-      />
-
-      <Stack.Screen
         name="(tabs)"
         options={{
-          headerShown: false
+          headerShown: false,
         }}
-        />
+      />
 
       <Stack.Screen
         name="esquec_senha/index"

@@ -1,26 +1,13 @@
 import PainelValidade from "@/src/components/PainelValidade";
+import { getResumoValidades } from "@/src/services/painelAlimentos";
 import { Alimento } from "@/src/types/alimento";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import {
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function Home() {
 
   const router = useRouter();
-
-  const params = useLocalSearchParams();
-
-  const [painel, setPainel] = useState({
-    noPrazo: 12,
-    atencao: 3,
-    vencidos: 2,
-  });
 
   const [alimentos, setAlimentos] = useState<Alimento[]>([
     {
@@ -44,29 +31,6 @@ export default function Home() {
       validade: "15/09/2026"
     }
   ]);
-
-  useEffect(() => {
-
-    if (params.novoAlimento) {
-
-      const novoAlimento: Alimento = JSON.parse(
-        params.novoAlimento as string
-      );
-
-      setAlimentos((alimentosAtuais) => [
-        novoAlimento,
-        ...alimentosAtuais,
-      ]);
-
-      setPainel((painelAtual) => ({
-        ...painelAtual,
-        noPrazo: painelAtual.noPrazo + 1,
-      }));
-
-    }
-
-  }, [params.novoAlimento]);
-
 
   const handleCadastrarAlimento = () => {
     router.push("/cadastrar_alimento");
@@ -132,7 +96,7 @@ export default function Home() {
 
 
   return (
-
+ main
     <View style={styles.container}>
 
       <PainelValidade painel={painel} />
@@ -304,8 +268,6 @@ const styles = StyleSheet.create({
     color: "#777777",
 
   },
-
-
   listaContainer: {
 
     width: "90%",
