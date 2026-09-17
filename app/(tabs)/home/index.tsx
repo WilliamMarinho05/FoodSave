@@ -1,18 +1,35 @@
 import PainelValidade from "@/src/components/PainelValidade";
+import { getResumoValidades } from "@/src/services/painelAlimentos";
 import { Alimento } from "@/src/types/alimento";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function Home() {
   const router = useRouter();
-  const params=useLocalSearchParams();
   
-  const [painel, setPainel] = useState({
-    noPrazo: 12,
-    atencao: 3,
-    vencidos: 2,
-  });
+  const [loading, setLoading] = useState(true);
+  const [painel, setPainel] = useState({ noPrazo: 0, atencao: 0, vencidos: 0 });
+
+
+  // Atualiza apenas os dados do painel de validade
+  const carregarDadosHome = useCallback(async () => {
+    setLoading(true);
+    try {
+      const resumo = await getResumoValidades();
+      setPainel(resumo);
+    } catch (error) {
+      console.error("Erro ao carregar Painel de Validades:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      carregarDadosHome();
+    }, [carregarDadosHome])
+  );
 
   const [alimentos, setAlimentos] = useState<Alimento[]>([
     {
@@ -37,20 +54,6 @@ export default function Home() {
     }
   ]);
 
-  useEffect(() => {
-    if(params.novoAlimento){
-      const novoAlimento: Alimento = JSON.parse(
-        params.novoAlimento as string
-      );
-      setAlimentos((alimentosAtuais) =>[
-        novoAlimento, ...alimentosAtuais,
-      ]);
-      setPainel((painelAtual) => ({
-        ...painelAtual,
-        noPrazo: painelAtual.noPrazo +1,
-      }));
-    }
-  }, [params.novoAlimento]);
   const handleCadastrarAlimento = () => {
     router.push("/cadastrar_alimento");
   };
@@ -88,7 +91,6 @@ export default function Home() {
   };
 
   return (
-    
     <View style={styles.container}>
       <PainelValidade painel={painel} />
 
@@ -169,8 +171,6 @@ const styles = StyleSheet.create({
     fontSize: 12, 
     color: "#777777",
   },
-  
-  
   listaContainer: {
     width: "90%",
     flex: 1,
