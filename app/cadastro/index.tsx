@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Link, useRouter } from "expo-router";
-
+import {supabase} from "../../src/lib/supabase";
 import { useState } from "react";
 import {
     Pressable,
@@ -50,19 +50,70 @@ export default function Cadastro() {
     setDataNascimento(data);
   };
 
-  const criarConta = () => {
-    if (!nome || !sobrenome || !dataNascimento || !email || !senha) {
-      alert("Preencha todos os campos.");
+  const criarConta = async () => {
+  if (
+    !nome ||
+    !sobrenome ||
+    !dataNascimento ||
+    !email ||
+    !senha ||
+    !confirmacaoSenha
+  ) {
+    alert("Preencha todos os campos.");
+    return;
+  }
+
+  if (senha !== confirmacaoSenha) {
+    alert("As senhas não coincidem.");
+    return;
+  }
+
+  // Converte a data de DD/MM/AAAA para AAAA-MM-DD
+  const partesData = dataNascimento.split("/");
+
+  if (partesData.length !== 3) {
+    alert("Digite uma data de nascimento válida.");
+    return;
+  }
+
+  const [dia, mes, ano] = partesData;
+
+  const dataNascimentoBanco = `${ano}-${mes}-${dia}`;
+
+  try {
+    // Cria o usuário no Supabase Authentication
+    // e envia os dados adicionais para o trigger
+    const { data: authData, error: authError } =
+      await supabase.auth.signUp({
+        email: email.trim(),
+        password: senha,
+        options: {
+          data: {
+            nome: nome.trim(),
+            sobrenome: sobrenome.trim(),
+            data_nascimento: dataNascimentoBanco,
+          },
+        },
+      });
+
+    if (authError) {
+      alert(`Erro ao criar conta: ${authError.message}`);
       return;
     }
 
-    if (senha !== confirmacaoSenha) {
-      alert("As senhas não coincidem.");
+    if (!authData.user) {
+      alert("Não foi possível criar o usuário.");
       return;
     }
 
-    alert("Conta criada com sucesso!");
-  };
+    alert("Conta criada com sucesso! Verifique seu e-mail para confirmar a conta antes de entrar.");
+
+    router.replace("/");
+  } catch (error) {
+    console.error("Erro inesperado:", error);
+    alert("Ocorreu um erro ao criar a conta.");
+  }
+};
 
   return (
     <ScrollView
