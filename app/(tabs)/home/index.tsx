@@ -54,6 +54,10 @@ export default function Home() {
     router.push("/cadastrar_alimento");
   };
 
+  const handleMissoes = () => {
+  router.push("/missoes");
+};
+
   const handleHistorico = () => {
     router.push("/historico");
   };
@@ -112,6 +116,24 @@ export default function Home() {
           </Text>
         </View>
       </Pressable>
+
+      <Pressable
+      style={styles.cardMissoes}
+  onPress={handleMissoes}
+>
+  <View style={styles.iconeMissoes}>
+    <Text style={styles.iconeMissao}>🎯</Text>
+  </View>
+
+  <View style={styles.conteudoCard}>
+    <Text style={styles.tituloCard}>Missões Diárias</Text>
+    <Text style={styles.descricaoCard}>
+      Complete suas missões e ganhe pontos
+    </Text>
+  </View>
+
+  <Text style={styles.setaMissao}>&gt;</Text>
+</Pressable>
 
       <View style={styles.listaContainer}>
         <Text style={styles.tituloLista}>Adicionados Recentemente</Text>
@@ -254,4 +276,35 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
   },
+  cardMissoes: {
+  width: "90%",
+  padding: 12,
+  marginTop: 10,
+  borderWidth: 1,
+  borderColor: "#D5D5D5",
+  borderRadius: 10,
+  backgroundColor: "#FFFFFF",
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+iconeMissoes: {
+  width: 36,
+  height: 36,
+  borderRadius: 18,
+  backgroundColor: "#EAF2EC",
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 12,
+},
+
+iconeMissao: {
+  fontSize: 18,
+},
+
+setaMissao: {
+  fontSize: 18,
+  color: "#43855F",
+  fontWeight: "bold",
+},
 });

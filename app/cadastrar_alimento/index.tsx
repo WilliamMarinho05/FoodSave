@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { atualizarProgressoMissao } from "../../src/services/missoes";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, } from "react-native";
@@ -15,7 +16,7 @@ export default function CadastrarAlimento() {
   const [dataCompra, setDataCompra] = useState("");
   const [validade, setValidade] = useState("");
 
-  const handleSalvar = () => {
+  const handleSalvar = async () => {
   const novoAlimento: Alimento = {
     id: Date.now().toString(),
     nome,
@@ -26,9 +27,13 @@ export default function CadastrarAlimento() {
     dataCompra,
     validade,
   };
+
+  // Atualiza o progresso da missão no Supabase
+  await atualizarProgressoMissao("cadastrar_alimentos");
+
   router.replace({
     pathname: "/home",
-    params:{
+    params: {
       novoAlimento: JSON.stringify(novoAlimento),
     },
   });
