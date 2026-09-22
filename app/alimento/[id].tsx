@@ -1,11 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
+import { atualizarProgressoMissao } from '../../src/services/missoes';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import React , { useEffect } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function DetalhesAlimento() {
   const router = useRouter();
-  const alimento = useLocalSearchParams(); 
+  const alimento = useLocalSearchParams();
+
+  useEffect(() => {
+  async function registrarVerificacao() {
+    await atualizarProgressoMissao("verificar_validade");
+  }
+
+  registrarVerificacao();
+}, []);
+
 
   return (
     
