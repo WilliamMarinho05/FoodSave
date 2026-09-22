@@ -1,15 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Link, useRouter } from "expo-router";
-import {supabase} from "../../src/lib/supabase";
 import { useState } from "react";
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
 } from "react-native";
+import { supabase } from "../../src/lib/supabase";
 
 export default function Cadastro() {
   const router = useRouter();
@@ -23,6 +25,7 @@ export default function Cadastro() {
 
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
+  const [loading, setLoading] = useState(false); // Adicionado controle de carregamento
 
   // Permite somente letras e espaços
   const handleNome = (texto: string, setter: (valor: string) => void) => {
@@ -39,10 +42,7 @@ export default function Cadastro() {
     }
 
     if (data.length >= 5) {
-      data = `${data.substring(0, 2)}/${data.substring(
-        2,
-        4
-      )}/${data.substring(4)}`;
+      data = `${data.substring(0, 2)}/${data.substring(2, 4)}/${data.substring(4)}`;
     } else if (data.length >= 3) {
       data = `${data.substring(0, 2)}/${data.substring(2)}`;
     }
@@ -51,40 +51,32 @@ export default function Cadastro() {
   };
 
   const criarConta = async () => {
-  if (
-    !nome ||
-    !sobrenome ||
-    !dataNascimento ||
-    !email ||
-    !senha ||
-    !confirmacaoSenha
-  ) {
-    alert("Preencha todos os campos.");
-    return;
-  }
+    if (!nome || !sobrenome || !dataNascimento || !email || !senha || !confirmacaoSenha) {
+      Alert.alert("Atenção", "Preencha todos os campos.");
+      return;
+    }
 
-  if (senha !== confirmacaoSenha) {
-    alert("As senhas não coincidem.");
-    return;
-  }
+    if (senha !== confirmacaoSenha) {
+      Alert.alert("Atenção", "As senhas não coincidem.");
+      return;
+    }
 
-  // Converte a data de DD/MM/AAAA para AAAA-MM-DD
-  const partesData = dataNascimento.split("/");
+    // Converte a data de DD/MM/AAAA para AAAA-MM-DD
+    const partesData = dataNascimento.split("/");
 
-  if (partesData.length !== 3) {
-    alert("Digite uma data de nascimento válida.");
-    return;
-  }
+    if (partesData.length !== 3) {
+      Alert.alert("Atenção", "Digite uma data de nascimento válida.");
+      return;
+    }
 
-  const [dia, mes, ano] = partesData;
+    const [dia, mes, ano] = partesData;
+    const dataNascimentoBanco = `${ano}-${mes}-${dia}`;
 
-  const dataNascimentoBanco = `${ano}-${mes}-${dia}`;
+    setLoading(true);
 
-  try {
-    // Cria o usuário no Supabase Authentication
-    // e envia os dados adicionais para o trigger
-    const { data: authData, error: authError } =
-      await supabase.auth.signUp({
+    try {
+      // Cria o usuário no Supabase Authentication
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: email.trim(),
         password: senha,
         options: {
@@ -96,24 +88,29 @@ export default function Cadastro() {
         },
       });
 
-    if (authError) {
-      alert(`Erro ao criar conta: ${authError.message}`);
-      return;
+      if (authError) {
+        Alert.alert("Erro ao criar conta", authError.message);
+        return;
+      }
+
+      if (!authData.user) {
+        Alert.alert("Erro", "Não foi possível criar o usuário.");
+        return;
+      }
+
+      Alert.alert(
+        "Sucesso!", 
+        "Conta criada com sucesso! Se você habilitou a confirmação por e-mail no Supabase, verifique sua caixa de entrada."
+      );
+
+      router.replace("/");
+    } catch (error) {
+      console.error("Erro inesperado:", error);
+      Alert.alert("Erro", "Ocorreu um erro ao criar a conta.");
+    } finally {
+      setLoading(false);
     }
-
-    if (!authData.user) {
-      alert("Não foi possível criar o usuário.");
-      return;
-    }
-
-    alert("Conta criada com sucesso! Verifique seu e-mail para confirmar a conta antes de entrar.");
-
-    router.replace("/");
-  } catch (error) {
-    console.error("Erro inesperado:", error);
-    alert("Ocorreu um erro ao criar a conta.");
-  }
-};
+  };
 
   return (
     <ScrollView
@@ -124,7 +121,6 @@ export default function Cadastro() {
       <View style={styles.card}>
         <View style={styles.header}>
           <Text style={styles.titulo}>Criar conta</Text>
-
           <Text style={styles.subtitulo}>
             Preencha seus dados para criar sua conta
           </Text>
@@ -133,7 +129,6 @@ export default function Cadastro() {
         {/* NOME */}
         <View style={styles.campos}>
           <Text style={styles.label}>Nome</Text>
-
           <TextInput
             style={styles.input}
             value={nome}
@@ -147,13 +142,10 @@ export default function Cadastro() {
         {/* SOBRENOME */}
         <View style={styles.campos}>
           <Text style={styles.label}>Sobrenome</Text>
-
           <TextInput
             style={styles.input}
             value={sobrenome}
-            onChangeText={(texto) =>
-              handleNome(texto, setSobrenome)
-            }
+            onChangeText={(texto) => handleNome(texto, setSobrenome)}
             placeholder="Digite seu sobrenome"
             placeholderTextColor="#999"
             autoCapitalize="words"
@@ -163,7 +155,6 @@ export default function Cadastro() {
         {/* DATA DE NASCIMENTO */}
         <View style={styles.campos}>
           <Text style={styles.label}>Data de nascimento</Text>
-
           <TextInput
             style={styles.input}
             value={dataNascimento}
@@ -178,7 +169,6 @@ export default function Cadastro() {
         {/* EMAIL */}
         <View style={styles.campos}>
           <Text style={styles.label}>E-mail</Text>
-
           <TextInput
             style={styles.input}
             value={email}
@@ -194,7 +184,6 @@ export default function Cadastro() {
         {/* SENHA */}
         <View style={styles.campos}>
           <Text style={styles.label}>Senha</Text>
-
           <View style={styles.inputSenhaContainer}>
             <TextInput
               style={styles.inputSenha}
@@ -205,7 +194,6 @@ export default function Cadastro() {
               secureTextEntry={!mostrarSenha}
               autoCapitalize="none"
             />
-
             <Pressable
               style={styles.botaoOlho}
               onPress={() => setMostrarSenha(!mostrarSenha)}
@@ -215,7 +203,6 @@ export default function Cadastro() {
                 size={20}
                 color="#777"
                />
-
             </Pressable>
           </View>
         </View>
@@ -223,7 +210,6 @@ export default function Cadastro() {
         {/* CONFIRMAÇÃO DA SENHA */}
         <View style={styles.campos}>
           <Text style={styles.label}>Confirmar senha</Text>
-
           <View style={styles.inputSenhaContainer}>
             <TextInput
               style={styles.inputSenha}
@@ -234,15 +220,13 @@ export default function Cadastro() {
               secureTextEntry={!mostrarConfirmacao}
               autoCapitalize="none"
             />
-
             <Pressable
               style={styles.botaoOlho}
-              onPress={() =>
-                setMostrarConfirmacao(!mostrarConfirmacao)
-              }
+              onPress={() => setMostrarConfirmacao(!mostrarConfirmacao)}
             >
+              {/* Ajustado: Agora lê o estado correto mostrarConfirmacao */}
               <Ionicons
-                name={mostrarSenha ? "eye" : "eye-off"}
+                name={mostrarConfirmacao ? "eye" : "eye-off"} 
                 size={20}
                 color="#777"
                />
@@ -252,12 +236,15 @@ export default function Cadastro() {
 
         {/* BOTÃO */}
         <Pressable
-          style={styles.botao}
+          style={[styles.botao, loading && styles.botaoDesabilitado]}
           onPress={criarConta}
+          disabled={loading}
         >
-          <Text style={styles.textoBotao}>
-            Criar conta
-          </Text>
+          {loading ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.textoBotao}>Criar conta</Text>
+          )}
         </Pressable>
 
         {/* RODAPÉ */}
@@ -265,7 +252,6 @@ export default function Cadastro() {
           <Text style={styles.textoRodape}>
             Já possui uma conta?
           </Text>
-
           <Link href="/" style={styles.link}>
             Entrar
           </Link>
@@ -279,139 +265,104 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     alignItems: "center",
-
     paddingHorizontal: 20,
     paddingTop: 30,
     paddingBottom: 30,
-
     backgroundColor: "#fff",
   },
-
   card: {
     width: "100%",
     maxWidth: 450,
   },
-
   header: {
     marginBottom: 50,
   },
-
   titulo: {
     fontSize: 28,
     fontWeight: "700",
     color: "#333",
     marginBottom: 8,
   },
-
   subtitulo: {
     fontSize: 14,
     color: "#777",
     lineHeight: 20,
   },
-
   campos: {
     width: "100%",
     marginBottom: 25,
   },
-
   label: {
     fontSize: 14,
     fontWeight: "600",
     color: "#444",
     marginBottom: 7,
   },
-
   input: {
     width: "100%",
     height: 45,
-
     borderWidth: 1,
     borderColor: "#D5D5D5",
     borderRadius: 7,
-
     paddingHorizontal: 12,
-
     fontSize: 14,
     color: "#333",
-
     backgroundColor: "#FAFAFA",
   },
-
   inputSenhaContainer: {
     width: "100%",
     height: 45,
-
     flexDirection: "row",
     alignItems: "center",
-
     borderWidth: 1,
     borderColor: "#D5D5D5",
     borderRadius: 7,
-
     backgroundColor: "#FAFAFA",
-    
   },
-
   inputSenha: {
     flex: 1,
     height: "100%",
-
     paddingHorizontal: 12,
-
     fontSize: 14,
     color: "#333",
   },
-
   botaoOlho: {
     width: 45,
     height: "100%",
-
     justifyContent: "center",
     alignItems: "center",
   },
-
-  iconeOlho: {
-    fontSize: 20,
-    color: "#777",
-  },
-
   botao: {
     width: "100%",
     height: 45,
-
     backgroundColor: "#4CAF50",
     borderRadius: 7,
-
     justifyContent: "center",
     alignItems: "center",
-
     marginTop: 40,
   },
-
+  botaoDesabilitado: {
+    backgroundColor: "#9E9E9E",
+  },
   textoBotao: {
     color: "#fff",
     fontSize: 15,
     fontWeight: "600",
   },
-
   rodape: {
     width: "100%",
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-
     flexWrap: "wrap",
-
     marginTop: 24,
     paddingHorizontal: 10,
   },
-
   textoRodape: {
     color: "#666",
     fontSize: 14,
     marginRight: 5,
   },
-
   link: {
     color: "#0a52cd",
     fontSize: 14,
