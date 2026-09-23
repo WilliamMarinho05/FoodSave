@@ -72,7 +72,7 @@ export default function Index() {
             placeholder="Digite seu e-mail"
             placeholderTextColor="#A0A0A0"
             autoCapitalize="none"
-            keyboardType="email-address" // Mostra teclado com '@'
+            keyboardType="email-address" 
             value={email}
             onChangeText={setEmail}
           />
