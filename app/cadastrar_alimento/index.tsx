@@ -1,9 +1,19 @@
 import { Ionicons } from "@expo/vector-icons";
-import { atualizarProgressoMissao } from "../../src/services/missoes";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, } from "react-native";
-import { Alimento } from "../../src/types/alimento";
+
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+
+import { cadastrarAlimento } from "../../src/services/alimentos";
+import { atualizarProgressoMissao } from "../../src/services/missoes";
 
 export default function CadastrarAlimento() {
   const router = useRouter();
@@ -16,34 +26,208 @@ export default function CadastrarAlimento() {
   const [dataCompra, setDataCompra] = useState("");
   const [validade, setValidade] = useState("");
 
-  const handleSalvar = async () => {
-  const novoAlimento: Alimento = {
-    id: Date.now().toString(),
-    nome,
-    categoria,
-    quantidade,
-    unidade,
-    peso,
-    dataCompra,
-    validade,
+  const [salvando, setSalvando] = useState(false);
+
+  // Converte DD/MM/AAAA para AAAA-MM-DD
+  const converterData = (data: string) => {
+    const partes = data.trim().split("/");
+
+    if (partes.length !== 3) {
+      throw new Error("Digite as datas no formato DD/MM/AAAA.");
+    }
+
+    const [dia, mes, ano] = partes;
+
+    if (
+      dia.length !== 2 ||
+      mes.length !== 2 ||
+      ano.length !== 4
+    ) {
+      throw new Error("Digite as datas no formato DD/MM/AAAA.");
+    }
+
+    const diaNumero = Number(dia);
+    const mesNumero = Number(mes);
+    const anoNumero = Number(ano);
+
+    if (
+      Number.isNaN(diaNumero) ||
+      Number.isNaN(mesNumero) ||
+      Number.isNaN(anoNumero) ||
+      diaNumero < 1 ||
+      diaNumero > 31 ||
+      mesNumero < 1 ||
+      mesNumero > 12
+    ) {
+      throw new Error("Informe uma data válida.");
+    }
+
+    return `${ano}-${mes}-${dia}`;
   };
 
-  // Atualiza o progresso da missão no Supabase
-  await atualizarProgressoMissao("cadastrar_alimentos");
+  // Limpa o formulário
+  const limparFormulario = () => {
+    setNome("");
+    setCategoria("");
+    setQuantidade("");
+    setUnidade("");
+    setPeso("");
+    setDataCompra("");
+    setValidade("");
+  };
 
-  router.replace({
-    pathname: "/home",
-    params: {
-      novoAlimento: JSON.stringify(novoAlimento),
-    },
-  });
-};
+  // Salva o alimento no Supabase
+  const salvarAlimentoNoBanco = async () => {
+    if (
+      !nome.trim() ||
+      !categoria.trim() ||
+      !quantidade.trim() ||
+      !unidade.trim() ||
+      !dataCompra.trim() ||
+      !validade.trim()
+    ) {
+      Alert.alert(
+        "Campos obrigatórios",
+        "Preencha todos os campos obrigatórios."
+      );
+
+      return null;
+    }
+
+    const quantidadeNumero = Number(
+      quantidade.replace(",", ".")
+    );
+
+    if (
+      Number.isNaN(quantidadeNumero) ||
+      quantidadeNumero <= 0
+    ) {
+      Alert.alert(
+        "Quantidade inválida",
+        "Informe uma quantidade maior que zero."
+      );
+
+      return null;
+    }
+
+    const dataCompraFormatada = converterData(dataCompra);
+    const validadeFormatada = converterData(validade);
+
+    const alimentoSalvo = await cadastrarAlimento({
+      nome: nome.trim(),
+      categoria: categoria.trim(),
+      quantidade: quantidadeNumero,
+      unidade: unidade.trim(),
+      dataCompra: dataCompraFormatada,
+      validade: validadeFormatada,
+    });
+
+    return alimentoSalvo;
+  };
+
+  // BOTÃO SALVAR ALIMENTO
+  const handleSalvar = async () => {
+    if (salvando) {
+      return;
+    }
+
+    try {
+      setSalvando(true);
+
+      const alimentoSalvo = await salvarAlimentoNoBanco();
+
+      if (!alimentoSalvo) {
+        return;
+      }
+
+      console.log(
+        "Alimento cadastrado com sucesso:",
+        alimentoSalvo
+      );
+
+      // Atualiza missão somente depois do cadastro
+      await atualizarProgressoMissao(
+        "cadastrar_alimentos"
+      );
+
+      Alert.alert(
+        "Sucesso",
+        "Alimento cadastrado com sucesso!",
+        [
+          {
+            text: "OK",
+            onPress: () => router.replace("/home"),
+          },
+        ]
+      );
+    } catch (erro: any) {
+      console.error(
+        "Erro ao cadastrar alimento:",
+        erro
+      );
+
+      Alert.alert(
+        "Erro",
+        erro?.message ||
+          "Não foi possível cadastrar o alimento."
+      );
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  // BOTÃO SALVAR E CADASTRAR OUTRO
+  const handleSalvarOutro = async () => {
+    if (salvando) {
+      return;
+    }
+
+    try {
+      setSalvando(true);
+
+      const alimentoSalvo = await salvarAlimentoNoBanco();
+
+      if (!alimentoSalvo) {
+        return;
+      }
+
+      console.log(
+        "Alimento cadastrado com sucesso:",
+        alimentoSalvo
+      );
+
+      await atualizarProgressoMissao(
+        "cadastrar_alimentos"
+      );
+
+      limparFormulario();
+
+      Alert.alert(
+        "Sucesso",
+        "Alimento salvo! Você pode cadastrar outro."
+      );
+    } catch (erro: any) {
+      console.error(
+        "Erro ao cadastrar alimento:",
+        erro
+      );
+
+      Alert.alert(
+        "Erro",
+        erro?.message ||
+          "Não foi possível cadastrar o alimento."
+      );
+    } finally {
+      setSalvando(false);
+    }
+  };
 
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.conteudo}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     >
       {/* CABEÇALHO */}
       <View style={styles.cabecalho}>
@@ -51,24 +235,38 @@ export default function CadastrarAlimento() {
           style={styles.botaoVoltar}
           onPress={() => router.back()}
         >
-          <Ionicons name="chevron-back" size={22} color="#43855F" />
+          <Ionicons
+            name="chevron-back"
+            size={22}
+            color="#43855F"
+          />
         </Pressable>
 
-        <Text style={styles.titulo}>Cadastrar Alimento</Text>
+        <Text style={styles.titulo}>
+          Cadastrar Alimento
+        </Text>
       </View>
 
       {/* FOTO */}
       <View style={styles.areaFoto}>
         <View style={styles.circuloCamera}>
-          <Ionicons name="camera-outline" size={28} color="#43855F" />
+          <Ionicons
+            name="camera-outline"
+            size={28}
+            color="#43855F"
+          />
         </View>
 
-        <Text style={styles.textoFoto}>Tirar Foto do Alimento</Text>
+        <Text style={styles.textoFoto}>
+          Tirar Foto do Alimento
+        </Text>
       </View>
 
       {/* NOME */}
       <View style={styles.campo}>
-        <Text style={styles.label}>Nome do Alimento</Text>
+        <Text style={styles.label}>
+          Nome do Alimento
+        </Text>
 
         <TextInput
           style={styles.input}
@@ -82,7 +280,9 @@ export default function CadastrarAlimento() {
       {/* CATEGORIA + QUANTIDADE */}
       <View style={styles.linha}>
         <View style={styles.campoMetade}>
-          <Text style={styles.label}>Categoria</Text>
+          <Text style={styles.label}>
+            Categoria
+          </Text>
 
           <TextInput
             style={styles.input}
@@ -94,13 +294,15 @@ export default function CadastrarAlimento() {
         </View>
 
         <View style={styles.campoMetade}>
-          <Text style={styles.label}>Quantidade</Text>
+          <Text style={styles.label}>
+            Quantidade
+          </Text>
 
           <TextInput
             style={styles.input}
             placeholder="Ex: 2"
             placeholderTextColor="#8C9AA0"
-            keyboardType="numeric"
+            keyboardType="decimal-pad"
             value={quantidade}
             onChangeText={setQuantidade}
           />
@@ -110,7 +312,9 @@ export default function CadastrarAlimento() {
       {/* UNIDADE + PESO */}
       <View style={styles.linha}>
         <View style={styles.campoMetade}>
-          <Text style={styles.label}>Unidade</Text>
+          <Text style={styles.label}>
+            Unidade
+          </Text>
 
           <TextInput
             style={styles.input}
@@ -122,7 +326,9 @@ export default function CadastrarAlimento() {
         </View>
 
         <View style={styles.campoMetade}>
-          <Text style={styles.label}>Peso</Text>
+          <Text style={styles.label}>
+            Peso
+          </Text>
 
           <TextInput
             style={styles.input}
@@ -137,37 +343,63 @@ export default function CadastrarAlimento() {
       {/* DATA DE COMPRA + VALIDADE */}
       <View style={styles.linha}>
         <View style={styles.campoMetade}>
-          <Text style={styles.label}>Data de Compra</Text>
+          <Text style={styles.label}>
+            Data de Compra
+          </Text>
 
           <TextInput
             style={styles.input}
-            placeholder="15/10/2024"
+            placeholder="23/09/2026"
             placeholderTextColor="#8C9AA0"
+            keyboardType="numeric"
             value={dataCompra}
             onChangeText={setDataCompra}
+            maxLength={10}
           />
         </View>
 
         <View style={styles.campoMetade}>
-          <Text style={styles.label}>Validade</Text>
+          <Text style={styles.label}>
+            Validade
+          </Text>
 
           <TextInput
             style={styles.input}
-            placeholder="28/10/2024"
+            placeholder="28/10/2026"
             placeholderTextColor="#8C9AA0"
+            keyboardType="numeric"
             value={validade}
             onChangeText={setValidade}
+            maxLength={10}
           />
         </View>
       </View>
 
       {/* BOTÃO SALVAR */}
-      <Pressable style={styles.botaoSalvar} onPress={handleSalvar}>
-        <Text style={styles.textoBotaoSalvar}>Salvar Alimento</Text>
+      <Pressable
+        style={[
+          styles.botaoSalvar,
+          salvando && styles.botaoDesabilitado,
+        ]}
+        onPress={handleSalvar}
+        disabled={salvando}
+      >
+        <Text style={styles.textoBotaoSalvar}>
+          {salvando
+            ? "Salvando..."
+            : "Salvar Alimento"}
+        </Text>
       </Pressable>
 
       {/* BOTÃO SALVAR E CADASTRAR OUTRO */}
-      <Pressable style={styles.botaoOutro}>
+      <Pressable
+        style={[
+          styles.botaoOutro,
+          salvando && styles.botaoDesabilitado,
+        ]}
+        onPress={handleSalvarOutro}
+        disabled={salvando}
+      >
         <Text style={styles.textoBotaoOutro}>
           Salvar e Cadastrar Outro
         </Text>
@@ -294,5 +526,9 @@ const styles = StyleSheet.create({
     color: "#43855F",
     fontSize: 12,
     fontWeight: "bold",
+  },
+
+  botaoDesabilitado: {
+    opacity: 0.6,
   },
 });
