@@ -15,12 +15,10 @@ import { supabase } from "../src/lib/supabase";
 export default function Index() {
   const router = useRouter();
   
-  // Estados para controlar os campos e o carregamento
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Função que realiza o login no Supabase
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Atenção", "Por favor, preencha o e-mail e a senha.");
@@ -38,8 +36,6 @@ export default function Index() {
       Alert.alert("Erro no Login", error.message);
       setLoading(false);
     } else {
-      // Usamos replace em vez de push para que o usuário não consiga 
-      // voltar para a tela de login usando o botão "Voltar" do celular
       router.replace("/home"); 
     }
   };
@@ -72,7 +68,7 @@ export default function Index() {
             placeholder="Digite seu e-mail"
             placeholderTextColor="#A0A0A0"
             autoCapitalize="none"
-            keyboardType="email-address" // Mostra teclado com '@'
+            keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
           />
