@@ -1,3 +1,4 @@
+import BarraExp from "@/src/components/BarraExp";
 import PainelValidade from "@/src/components/PainelValidade";
 import { getResumoValidades } from "@/src/services/painelAlimentos";
 import { Alimento } from "@/src/types/alimento";
@@ -100,7 +101,9 @@ export default function Home() {
   return (
     <View style={styles.container}>
       <PainelValidade painel={painel} />
-
+      <View style={styles.containerBarraExp}>
+        <BarraExp />
+      </View>
       <Pressable
         style={styles.cardCadastrar}
         onPress={handleCadastrarAlimento}
@@ -161,6 +164,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 10,
     backgroundColor: "#F8F7F1",
+  },
+  containerBarraExp: {
+    width: "90%",
+    marginTop: 15,
   },
   cardCadastrar: {
     width: "90%",
