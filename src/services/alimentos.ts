@@ -157,3 +157,71 @@ export async function buscarAlimentosEmEstoque(): Promise<AlimentoBanco[]> {
     status: item.status,
   }));
 }
+export async function consumirAlimento(alimentoId: string) {
+  const {
+    data: { user },
+    error: erroUsuario,
+  } = await supabase.auth.getUser();
+
+  if (erroUsuario) {
+    throw new Error("Erro ao identificar usuário.");
+  }
+
+  if (!user) {
+    throw new Error("Usuário não está logado.");
+  }
+
+  // Busca o alimento do usuário
+  const { data: alimento, error: erroBusca } = await supabase
+    .from("alimentos")
+    .select("id, quantidade_atual, status")
+    .eq("id", alimentoId)
+    .eq("usuario_id", user.id)
+    .single();
+
+  if (erroBusca || !alimento) {
+    throw new Error("Alimento não encontrado.");
+  }
+
+  const quantidadeAtual = Number(alimento.quantidade_atual ?? 0);
+
+  if (quantidadeAtual <= 0) {
+    throw new Error("Este alimento não possui quantidade disponível.");
+  }
+
+  const novaQuantidade = Math.max(
+    quantidadeAtual - 1,
+    0
+  );
+
+  const alimentoConsumido = novaQuantidade === 0;
+
+  const { error: erroAtualizacao } = await supabase
+    .from("alimentos")
+    .update({
+      quantidade_atual: novaQuantidade,
+      status: alimentoConsumido
+        ? "CONSUMIDO"
+        : "EM_ESTOQUE",
+      data_encerramento: alimentoConsumido
+        ? new Date().toISOString()
+        : null,
+      atualizado_em: new Date().toISOString(),
+    })
+    .eq("id", alimentoId)
+    .eq("usuario_id", user.id);
+
+  if (erroAtualizacao) {
+    console.error(
+      "Erro ao consumir alimento:",
+      erroAtualizacao.message
+    );
+
+    throw erroAtualizacao;
+  }
+
+  return {
+    quantidadeAtual: novaQuantidade,
+    consumido: alimentoConsumido,
+  };
+}
