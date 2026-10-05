@@ -1,12 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
 import { atualizarProgressoMissao } from '../../src/services/missoes';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React , { useEffect } from 'react';
+import React , { useEffect,useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { consumirAlimento } from '../../src/services/alimentos';
 
 export default function DetalhesAlimento() {
   const router = useRouter();
   const alimento = useLocalSearchParams();
+  const [quantidadeAtual, setQuantidadeAtual] = useState(
+  Number(alimento.quantidade ?? 0)
+);
 
   useEffect(() => {
   async function registrarVerificacao() {
@@ -15,6 +19,29 @@ export default function DetalhesAlimento() {
 
   registrarVerificacao();
 }, []);
+
+  const handleConsumir = async () => {
+  try {
+    const resultado = await consumirAlimento(
+      String(alimento.id)
+    );
+
+    setQuantidadeAtual(resultado.quantidadeAtual);
+
+    if (resultado.consumido) {
+      alert("Alimento consumido completamente!");
+      router.back();
+      return;
+    }
+
+    alert(
+      `Alimento consumido! Restam ${resultado.quantidadeAtual}.`
+    );
+  } catch (erro) {
+    console.error("Erro ao consumir alimento:", erro);
+    alert("Não foi possível consumir o alimento.");
+  }
+};
 
 
   return (
@@ -38,7 +65,7 @@ export default function DetalhesAlimento() {
 
         <View style={styles.linhaDetalhe}>
           <Text style={styles.label}>Quantidade:</Text>
-          <Text style={styles.valor}>{alimento.quantidade} {alimento.unidade}</Text>
+          <Text style={styles.valor}> {quantidadeAtual} {alimento.unidade}</Text>
         </View>
 
         <View style={styles.linhaDetalhe}>
@@ -56,6 +83,20 @@ export default function DetalhesAlimento() {
           <Text style={styles.valor}>{alimento.validade}</Text>
         </View>
       </View>
+      <Pressable
+      style={styles.botaoConsumir}
+      onPress={handleConsumir}
+    >
+      <Ionicons
+        name="restaurant-outline"
+        size={20}
+        color="#FFFFFF"
+      />
+
+      <Text style={styles.textoBotaoConsumir}>
+        Consumir alimento
+      </Text>
+    </Pressable>
     </ScrollView>
   );
 }
@@ -117,4 +158,20 @@ const styles = StyleSheet.create({
     color: '#26332D',
     fontWeight: 'bold',
   },
+  botaoConsumir: {
+  height: 45,
+  backgroundColor: "#43855F",
+  borderRadius: 22,
+  justifyContent: "center",
+  alignItems: "center",
+  flexDirection: "row",
+  marginTop: 15,
+},
+
+textoBotaoConsumir: {
+  color: "#FFFFFF",
+  fontSize: 13,
+  fontWeight: "bold",
+  marginLeft: 8,
+},
 });
