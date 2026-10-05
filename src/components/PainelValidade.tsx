@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 interface PainelProps {
+  nomeUsuario?: string;
   painel: {
     noPrazo: number;
     atencao: number;
@@ -10,10 +11,10 @@ interface PainelProps {
   };
 }
 
-export default function PainelValidade({ painel }: PainelProps) {
+export default function PainelValidade({ painel, nomeUsuario }: PainelProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.greeting}>Olá, User!</Text>
+      <Text style={styles.greeting}>Olá, {nomeUsuario || 'User'}!</Text>
       <Text style={styles.title}>Seu painel de validades</Text>
 
       <View style={styles.cardsRow}>

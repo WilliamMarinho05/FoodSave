@@ -1,4 +1,6 @@
+import BarraExp from "@/src/components/BarraExp";
 import PainelValidade from "@/src/components/PainelValidade";
+import { supabase } from "@/src/lib/supabase";
 
 import {
   AlimentoBanco,
@@ -22,6 +24,7 @@ import {
 export default function Home() {
   const router = useRouter();
 
+  const [nomeUsuario, setNomeUsuario] = useState<string>("");
   const [painel, setPainel] = useState({
     noPrazo: 0,
     atencao: 0,
@@ -47,12 +50,26 @@ export default function Home() {
           }
 
           // Busca alimentos reais do Supabase
-          const alimentosBanco =
-            await buscarAlimentosEmEstoque();
+          const alimentosBanco = await buscarAlimentosEmEstoque();
 
           if (ativo) {
             setAlimentos(alimentosBanco);
           }
+
+          // Busca o nome do usuário logado
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user && ativo) {
+            const { data: perfil } = await supabase
+              .from("perfis")
+              .select("nome")
+              .eq("id", user.id)
+              .single();
+              
+            if (perfil?.nome) {
+              setNomeUsuario(perfil.nome);
+            }
+          }
+
         } catch (erro) {
           console.error(
             "Erro ao carregar Home:",
@@ -135,7 +152,12 @@ export default function Home() {
   return (
     <View style={styles.container}>
       {/* PAINEL */}
-      <PainelValidade painel={painel} />
+      <PainelValidade painel={painel} nomeUsuario={nomeUsuario} />
+
+      {/* BARRA DE EXPERIÊNCIA */}
+      <View style={styles.containerBarraExp}>
+        <BarraExp />
+      </View>
 
       {/* CADASTRAR ALIMENTO */}
       <Pressable
@@ -234,6 +256,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 10,
     backgroundColor: "#F8F7F1",
+  },
+  
+  containerBarraExp: {
+    width: "90%",
+    marginTop: 15,
   },
 
   cardCadastrar: {
