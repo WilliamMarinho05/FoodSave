@@ -1,3 +1,4 @@
+
 import { supabase } from "../lib/supabase";
 
 function getDataHoje() {
@@ -10,196 +11,181 @@ function getDataHoje() {
   return `${ano}-${mes}-${dia}`;
 }
 
-// Atualiza o progresso de uma missão
+function getInicioSemana() {
+  const hoje = new Date();
+  const diaSemana = hoje.getDay();
+  const diasDesdeSegunda = diaSemana === 0 ? 6 : diaSemana - 1;
+
+  hoje.setDate(hoje.getDate() - diasDesdeSegunda);
+
+  const ano = hoje.getFullYear();
+  const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+  const dia = String(hoje.getDate()).padStart(2, "0");
+
+  return `${ano}-${mes}-${dia}`;
+}
+
+// Atualiza o progresso de uma missão específica.
+async function incrementarMissao(codigoMissao: string) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return;
+
+  const { data: missao, error: erroMissao } = await supabase
+    .from("missoes")
+    .select("id, meta, periodicidade")
+    .eq("codigo", codigoMissao)
+    .eq("ativa", true)
+    .single();
+
+  if (erroMissao || !missao) {
+    console.warn("Missão não encontrada:", erroMissao?.message);
+    return;
+  }
+
+  const dataReferencia =
+    missao.periodicidade === "semanal"
+      ? getInicioSemana()
+      : getDataHoje();
+
+  const { data: atual, error: erroBusca } = await supabase
+    .from("progresso_missoes")
+    .select("id, progresso, concluida, concluida_em")
+    .eq("usuario_id", user.id)
+    .eq("missao_id", missao.id)
+    .eq("data_missao", dataReferencia)
+    .maybeSingle();
+
+  if (erroBusca) {
+    console.warn("Erro ao buscar progresso:", erroBusca.message);
+    return;
+  }
+
+  const novoProgresso = Math.min(
+    (atual?.progresso ?? 0) + 1,
+    missao.meta
+  );
+
+  const concluida = novoProgresso >= missao.meta;
+
+  if (!atual) {
+    const { error } = await supabase
+      .from("progresso_missoes")
+      .insert({
+        usuario_id: user.id,
+        missao_id: missao.id,
+        data_missao: dataReferencia,
+        progresso: novoProgresso,
+        concluida,
+        concluida_em: concluida ? new Date().toISOString() : null,
+      });
+
+    if (error) {
+      console.warn("Erro ao criar progresso:", error.message);
+    }
+
+    return;
+  }
+
+  const { error } = await supabase
+    .from("progresso_missoes")
+    .update({
+      progresso: novoProgresso,
+      concluida,
+      concluida_em: concluida
+        ? atual.concluida_em ?? new Date().toISOString()
+        : null,
+      atualizado_em: new Date().toISOString(),
+    })
+    .eq("id", atual.id);
+
+  if (error) {
+    console.warn("Erro ao atualizar progresso:", error.message);
+  }
+}
+
+// Mantém a função usada pelas telas existentes.
+// Cadastrar alimento também avança a missão semanal.
 export async function atualizarProgressoMissao(
   codigoMissao: string
 ) {
   try {
-    // Descobre qual usuário está logado
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    await incrementarMissao(codigoMissao);
 
-    if (!user) {
-      console.warn("Usuário não está logado.");
-      return;
-    }
-
-    // Busca a missão
-    const { data: missao, error: erroMissao } = await supabase
-      .from("missoes")
-      .select("id, meta")
-      .eq("codigo", codigoMissao)
-      .eq("ativa", true)
-      .single();
-
-    if (erroMissao || !missao) {
-      console.warn(
-        "Missão não encontrada:",
-        erroMissao?.message
-      );
-      return;
-    }
-
-    const dataHoje = getDataHoje();
-
-    // Busca o progresso de hoje
-    const {
-      data: progressoAtual,
-      error: erroProgresso,
-    } = await supabase
-      .from("progresso_missoes")
-      .select("id, progresso, concluida")
-      .eq("usuario_id", user.id)
-      .eq("missao_id", missao.id)
-      .eq("data_missao", dataHoje)
-      .maybeSingle();
-
-    if (erroProgresso) {
-      console.warn(
-        "Erro ao buscar progresso:",
-        erroProgresso.message
-      );
-      return;
-    }
-
-    const progressoAnterior =
-      progressoAtual?.progresso ?? 0;
-
-    const novoProgresso = Math.min(
-      progressoAnterior + 1,
-      missao.meta
-    );
-
-    const concluida = novoProgresso >= missao.meta;
-
-    // Se ainda não existe progresso hoje, cria
-    if (!progressoAtual) {
-      const { error } = await supabase
-        .from("progresso_missoes")
-        .insert({
-          usuario_id: user.id,
-          missao_id: missao.id,
-          data_missao: dataHoje,
-          progresso: novoProgresso,
-          concluida,
-          concluida_em: concluida
-            ? new Date().toISOString()
-            : null,
-        });
-
-      if (error) {
-        console.warn(
-          "Erro ao criar progresso:",
-          error.message
-        );
-      }
-
-      return;
-    }
-
-    // Se já existe, atualiza
-    const { error } = await supabase
-      .from("progresso_missoes")
-      .update({
-        progresso: novoProgresso,
-        concluida,
-        concluida_em: concluida
-          ? progressoAtual.concluida
-            ? undefined
-            : new Date().toISOString()
-          : null,
-        atualizado_em: new Date().toISOString(),
-      })
-      .eq("id", progressoAtual.id);
-
-    if (error) {
-      console.warn(
-        "Erro ao atualizar progresso:",
-        error.message
-      );
+    if (codigoMissao === "cadastrar_alimentos") {
+      await incrementarMissao("cadastrar_alimentos_semanal");
     }
   } catch (erro) {
-    console.error(
-      "Erro inesperado ao atualizar missão:",
-      erro
-    );
+    console.error("Erro ao atualizar missão:", erro);
   }
 }
 
-// Busca o progresso das missões de hoje
 export async function buscarProgressoMissoes() {
+  const resultadoInicial = {
+    cadastrarAlimentos: 0,
+    verificarValidade: 0,
+    cadastrarAlimentosSemanal: 0,
+  };
+
   try {
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) {
-      console.warn("Usuário não está logado.");
+    if (!user) return resultadoInicial;
 
-      return {
-        cadastrarAlimentos: 0,
-        verificarValidade: 0,
-      };
+    const { data: missoes, error: erroMissoes } = await supabase
+      .from("missoes")
+      .select("id, codigo, periodicidade")
+      .in("codigo", [
+        "cadastrar_alimentos",
+        "verificar_validade",
+        "cadastrar_alimentos_semanal",
+      ]);
+
+    if (erroMissoes || !missoes) {
+      console.warn("Erro ao buscar missões:", erroMissoes?.message);
+      return resultadoInicial;
+    }
+
+    const { data: progressos, error: erroProgressos } = await supabase
+      .from("progresso_missoes")
+      .select("missao_id, progresso, data_missao")
+      .eq("usuario_id", user.id);
+
+    if (erroProgressos || !progressos) {
+      console.warn("Erro ao buscar progressos:", erroProgressos?.message);
+      return resultadoInicial;
     }
 
     const hoje = getDataHoje();
+    const inicioSemana = getInicioSemana();
+    const resultado = { ...resultadoInicial };
 
-    const { data, error } = await supabase
-      .from("progresso_missoes")
-      .select(`
-        progresso,
-        missoes (
-          codigo
-        )
-      `)
-      .eq("usuario_id", user.id)
-      .eq("data_missao", hoje);
+    for (const missao of missoes) {
+      const referencia =
+        missao.periodicidade === "semanal" ? inicioSemana : hoje;
 
-    if (error) {
-      console.warn(
-        "Erro ao buscar progresso das missões:",
-        error.message
+      const progresso = progressos.find(
+        (item) =>
+          item.missao_id === missao.id &&
+          item.data_missao === referencia
       );
 
-      return {
-        cadastrarAlimentos: 0,
-        verificarValidade: 0,
-      };
+      if (missao.codigo === "cadastrar_alimentos") {
+        resultado.cadastrarAlimentos = progresso?.progresso ?? 0;
+      } else if (missao.codigo === "verificar_validade") {
+        resultado.verificarValidade = progresso?.progresso ?? 0;
+      } else if (missao.codigo === "cadastrar_alimentos_semanal") {
+        resultado.cadastrarAlimentosSemanal = progresso?.progresso ?? 0;
+      }
     }
 
-    let cadastrarAlimentos = 0;
-    let verificarValidade = 0;
-
-    data?.forEach((item: any) => {
-      if (
-        item.missoes?.codigo ===
-        "cadastrar_alimentos"
-      ) {
-        cadastrarAlimentos = item.progresso;
-      }
-
-      if (
-        item.missoes?.codigo ===
-        "verificar_validade"
-      ) {
-        verificarValidade = item.progresso;
-      }
-    });
-
-    return {
-      cadastrarAlimentos,
-      verificarValidade,
-    };
+    return resultado;
   } catch (erro) {
-    console.error(
-      "Erro inesperado ao buscar progresso:",
-      erro
-    );
-
-    return {
-      cadastrarAlimentos: 0,
-      verificarValidade: 0,
-    };
+    console.error("Erro ao buscar progresso das missões:", erro);
+    return resultadoInicial;
   }
 }

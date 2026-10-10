@@ -1,29 +1,22 @@
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { buscarProgressoMissoes } from "../../src/services/missoes";
 
 export default function Missoes() {
-  const [progressoCadastro, setProgressoCadastro] =
-    useState(0);
-
-  const [progressoValidade, setProgressoValidade] =
-    useState(0);
+  const [progressoCadastro, setProgressoCadastro] = useState(0);
+  const [progressoValidade, setProgressoValidade] = useState(0);
+  const [progressoCadastroSemanal, setProgressoCadastroSemanal] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
       async function carregarProgresso() {
-        const progresso =
-          await buscarProgressoMissoes();
+        const progresso = await buscarProgressoMissoes();
 
-        setProgressoCadastro(
-          progresso.cadastrarAlimentos
-        );
-
-        setProgressoValidade(
-          progresso.verificarValidade
-        );
+        setProgressoCadastro(progresso.cadastrarAlimentos);
+        setProgressoValidade(progresso.verificarValidade);
+        setProgressoCadastroSemanal(progresso.cadastrarAlimentosSemanal);
       }
 
       carregarProgresso();
@@ -31,16 +24,17 @@ export default function Missoes() {
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.titulo}>
-        🎯 Missões Diárias
-      </Text>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.conteudo}
+    >
+      <Text style={styles.titulo}>🎯 Missões Diárias</Text>
 
       <Text style={styles.subtitulo}>
         Complete suas missões de hoje!
       </Text>
 
-      {/* Missão 1 */}
+      {/* Missão diária 1 */}
       <View style={styles.card}>
         <Text style={styles.missaoTitulo}>
           🥕 Cadastrar alimentos
@@ -59,10 +53,7 @@ export default function Missoes() {
             style={[
               styles.barraProgresso,
               {
-                width: `${Math.min(
-                  (progressoCadastro / 2) * 100,
-                  100
-                )}%`,
+                width: `${Math.min((progressoCadastro / 2) * 100, 100)}%`,
               },
             ]}
           />
@@ -74,20 +65,17 @@ export default function Missoes() {
           </Text>
         )}
 
-        <Text style={styles.recompensa}>
-          ⭐ +20 pontos
-        </Text>
+        <Text style={styles.recompensa}>⭐ +20 pontos</Text>
       </View>
 
-      {/* Missão 2 */}
+      {/* Missão diária 2 */}
       <View style={styles.card}>
         <Text style={styles.missaoTitulo}>
           ⚠️ Verificar validade
         </Text>
 
         <Text style={styles.descricao}>
-          Confira seus alimentos próximos do
-          vencimento.
+          Confira seus alimentos próximos do vencimento.
         </Text>
 
         <Text style={styles.progresso}>
@@ -99,10 +87,7 @@ export default function Missoes() {
             style={[
               styles.barraProgresso,
               {
-                width: `${Math.min(
-                  progressoValidade * 100,
-                  100
-                )}%`,
+                width: `${Math.min(progressoValidade * 100, 100)}%`,
               },
             ]}
           />
@@ -114,24 +99,74 @@ export default function Missoes() {
           </Text>
         )}
 
-        <Text style={styles.recompensa}>
-          ⭐ +30 pontos
-        </Text>
+        <Text style={styles.recompensa}>⭐ +30 pontos</Text>
       </View>
-    </View>
+
+      {/* Seção de missões semanais */}
+      <Text style={styles.tituloSecao}>📅 Missões Semanais</Text>
+
+      <Text style={styles.subtitulo}>
+        Complete objetivos ao longo da semana!
+      </Text>
+
+      {/* Missão semanal 1 */}
+      <View style={styles.card}>
+        <Text style={styles.missaoTitulo}>
+          🏆 Organizador semanal
+        </Text>
+
+        <Text style={styles.descricao}>
+          Cadastre 5 alimentos durante a semana.
+        </Text>
+
+        <Text style={styles.progresso}>
+          {progressoCadastroSemanal}/5
+        </Text>
+
+        <View style={styles.barraFundo}>
+          <View
+            style={[
+              styles.barraProgresso,
+              {
+                width: `${Math.min((progressoCadastroSemanal / 5) * 100, 100)}%`,
+              },
+            ]}
+          />
+        </View>
+
+        {progressoCadastroSemanal >= 5 && (
+          <Text style={styles.concluida}>
+            ✓ Missão semanal concluída!
+          </Text>
+        )}
+
+        <Text style={styles.recompensa}>⭐ +50 pontos</Text>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: "#fff",
+  },
+
+  conteudo: {
+    padding: 20,
+    paddingBottom: 35,
   },
 
   titulo: {
     fontSize: 24,
     fontWeight: "bold",
+    marginBottom: 10,
+  },
+
+  tituloSecao: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginTop: 10,
     marginBottom: 10,
   },
 
