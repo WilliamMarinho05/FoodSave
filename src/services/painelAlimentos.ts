@@ -55,3 +55,39 @@ export async function getResumoValidades(): Promise<ResumoValidades> {
     return resumoPadrao;
   }
 }
+export async function getEstatisticasPerfil() {
+  const estatisticasPadrao = { cadastrados: 0, salvos: 0, descartados: 0 };
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return estatisticasPadrao;
+
+    const { data, error } = await supabase
+      .from('alimentos')
+      .select('status')
+      .eq('usuario_id', user.id);
+
+    if (error || !data) {
+      console.warn('Erro ao buscar estatísticas:', error?.message);
+      return estatisticasPadrao;
+    }
+
+    let salvos = 0;
+    let descartados = 0;
+
+    data.forEach((item) => {
+      if (item.status === 'CONSUMIDO') salvos++;
+      // Caso futuramente adicione um botão de descartar alimento estragado:
+      if (item.status === 'DESCARTADO') descartados++; 
+    });
+
+    return {
+      cadastrados: data.length,
+      salvos,
+      descartados,
+    };
+  } catch (err) {
+    console.error('Falha inesperada ao processar estatísticas:', err);
+    return estatisticasPadrao;
+  }
+}
