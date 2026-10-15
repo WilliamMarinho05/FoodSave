@@ -87,7 +87,7 @@ export default function Missoes() {
             style={[
               styles.barraProgresso,
               {
-                width: `${Math.min(progressoValidade * 100, 100)}%`,
+                width: `${Math.min((progressoValidade / 1) * 100, 100)}%`,
               },
             ]}
           />
@@ -147,84 +147,17 @@ export default function Missoes() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-
-  conteudo: {
-    padding: 20,
-    paddingBottom: 35,
-  },
-
-  titulo: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-
-  tituloSecao: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginTop: 10,
-    marginBottom: 10,
-  },
-
-  subtitulo: {
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 25,
-  },
-
-  card: {
-    backgroundColor: "#f8f8f8",
-    borderRadius: 12,
-    padding: 18,
-    marginBottom: 18,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-  },
-
-  missaoTitulo: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-
-  descricao: {
-    fontSize: 15,
-    color: "#555",
-    marginBottom: 15,
-  },
-
-  progresso: {
-    fontSize: 14,
-    fontWeight: "bold",
-    marginBottom: 6,
-  },
-
-  barraFundo: {
-    height: 10,
-    backgroundColor: "#ddd",
-    borderRadius: 5,
-    overflow: "hidden",
-    marginBottom: 12,
-  },
-
-  barraProgresso: {
-    height: "100%",
-    backgroundColor: "#65B32E",
-  },
-
-  recompensa: {
-    fontSize: 14,
-    fontWeight: "bold",
-  },
-
-  concluida: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#43855F",
-    marginBottom: 8,
-  },
+  container: { flex: 1, backgroundColor: "#fff" },
+  conteudo: { padding: 20, paddingBottom: 35 },
+  titulo: { fontSize: 24, fontWeight: "bold", marginBottom: 10 },
+  tituloSecao: { fontSize: 22, fontWeight: "bold", marginTop: 10, marginBottom: 10 },
+  subtitulo: { fontSize: 16, color: "#666", marginBottom: 25 },
+  card: { backgroundColor: "#f8f8f8", borderRadius: 12, padding: 18, marginBottom: 18, borderWidth: 1, borderColor: "#e0e0e0" },
+  missaoTitulo: { fontSize: 18, fontWeight: "bold", marginBottom: 8 },
+  descricao: { fontSize: 15, color: "#555", marginBottom: 15 },
+  progresso: { fontSize: 14, fontWeight: "bold", marginBottom: 6 },
+  barraFundo: { height: 10, backgroundColor: "#ddd", borderRadius: 5, overflow: "hidden", marginBottom: 12 },
+  barraProgresso: { height: "100%", backgroundColor: "#65B32E" },
+  recompensa: { fontSize: 14, fontWeight: "bold" },
+  concluida: { fontSize: 14, fontWeight: "bold", color: "#43855F", marginBottom: 8 },
 });

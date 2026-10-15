@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { atualizarProgressoMissao } from '../../src/services/missoes';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React , { useEffect,useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { consumirAlimento } from '../../src/services/alimentos';
+import { atualizarProgressoMissao } from '../../src/services/missoes';
 
 export default function DetalhesAlimento() {
   const router = useRouter();
@@ -21,27 +21,36 @@ export default function DetalhesAlimento() {
 }, []);
 
   const handleConsumir = async () => {
-  try {
-    const resultado = await consumirAlimento(
-      String(alimento.id)
-    );
+    try {
+      const resultado = await consumirAlimento(
+        String(alimento.id)
+      );
 
-    setQuantidadeAtual(resultado.quantidadeAtual);
+      setQuantidadeAtual(resultado.quantidadeAtual);
 
-    if (resultado.consumido) {
-      alert("Alimento consumido completamente!");
-      router.back();
-      return;
+      let mensagem = resultado.consumido 
+        ? "Alimento consumido completamente!" 
+        : `Alimento consumido! Restam ${resultado.quantidadeAtual}.`;
+
+      if (resultado.xpGanhado) {
+        mensagem += `\n+${resultado.xpGanhado} XP 🌟`;
+      }
+
+      if (resultado.resultadoExp?.upouDeNivel) {
+        mensagem += `\n\n🎉 PARABÉNS! Você alcançou o Nível ${resultado.resultadoExp.nivel}!`;
+      }
+
+      alert(mensagem);
+
+      if (resultado.consumido) {
+        router.back();
+      }
+      
+    } catch (erro) {
+      console.error("Erro ao consumir alimento:", erro);
+      alert("Não foi possível consumir o alimento.");
     }
-
-    alert(
-      `Alimento consumido! Restam ${resultado.quantidadeAtual}.`
-    );
-  } catch (erro) {
-    console.error("Erro ao consumir alimento:", erro);
-    alert("Não foi possível consumir o alimento.");
-  }
-};
+  };
 
 
   return (
