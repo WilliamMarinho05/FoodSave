@@ -87,10 +87,10 @@ export default function Perfil() {
       {/* Menu de Opções */}
       <View style={styles.menuContainer}>
         <OpcaoMenu icone="person-outline" texto="Dados Pessoais" />
-        <OpcaoMenu icone="notifications-outline" texto="Notificações" />
-        <OpcaoMenu icone="list-outline" texto="Categorias de Alimentos" />
-        <OpcaoMenu icone="information-circle-outline" texto="Sobre o App" />
-        <OpcaoMenu icone="help-circle-outline" texto="Ajuda e Suporte" />
+        <OpcaoMenu icone="notifications-outline" texto="Notificações"/>
+        <OpcaoMenu icone="list-outline"texto="Categorias de Alimentos"onPress={() => router.push("/categoria")}/> 
+        <OpcaoMenu icone="information-circle-outline"texto="Sobre o App" />
+        <OpcaoMenu icone="help-circle-outline"texto="Ajuda e Suporte"onPress={() => router.push("/ajuda")}/>
       </View>
 
       {/* Botão Sair */}
@@ -102,9 +102,9 @@ export default function Perfil() {
 }
 
 // Componente para renderizar cada linha do menu dinamicamente
-function OpcaoMenu({ icone, texto }: { icone: any, texto: string }) {
+function OpcaoMenu({ icone, texto ,onPress }: { icone: any, texto: string ;onPress?: ()=>void; }) {
   return (
-    <Pressable style={styles.menuItem}>
+    <Pressable style={styles.menuItem}onPress={onPress}>
       <View style={styles.menuItemLeft}>
         <View style={styles.menuIconContainer}>
           <Ionicons name={icone} size={20} color="#43855F" />
