@@ -86,10 +86,10 @@ export default function Perfil() {
 
       {/* Menu de Opções */}
       <View style={styles.menuContainer}>
-        <OpcaoMenu icone="person-outline" texto="Dados Pessoais" />
+        <OpcaoMenu icone="person-outline" texto="Dados Pessoais" onPress={() => router.push("../dados_pessoais")}/>
         <OpcaoMenu icone="notifications-outline" texto="Notificações"/>
         <OpcaoMenu icone="list-outline"texto="Categorias de Alimentos"onPress={() => router.push("/categoria")}/> 
-        <OpcaoMenu icone="information-circle-outline"texto="Sobre o App" />
+        <OpcaoMenu icone="information-circle-outline"texto="Sobre o App" onPress={() => router.push("../sobre") } />
         <OpcaoMenu icone="help-circle-outline"texto="Ajuda e Suporte"onPress={() => router.push("/ajuda")}/>
       </View>
 
