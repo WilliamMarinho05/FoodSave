@@ -56,6 +56,21 @@ export default function RootLayout() {
             ),
           }}
         />
+
+        <Stack.Screen
+        name="sobre/index"
+        options={{
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="dados_pessoais/index"
+        options={{
+          headerShown: false,
+        }}
+      />
+
       </Stack>
 
       <ConquistaWatcher />
