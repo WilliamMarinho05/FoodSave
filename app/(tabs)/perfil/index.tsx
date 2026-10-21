@@ -88,7 +88,7 @@ export default function Perfil() {
       <View style={styles.menuContainer}>
         <OpcaoMenu icone="person-outline" texto="Dados Pessoais" onPress={() => router.push("../dados_pessoais")}/>
         <OpcaoMenu icone="notifications-outline" texto="Notificações"/>
-        <OpcaoMenu icone="list-outline"texto="Categorias de Alimentos"onPress={() => router.push("/categoria")}/> 
+        <OpcaoMenu icone="list-outline"texto="Categorias de Alimentos"onPress={() => router.push("/categorias")}/> 
         <OpcaoMenu icone="information-circle-outline"texto="Sobre o App" onPress={() => router.push("../sobre") } />
         <OpcaoMenu icone="help-circle-outline"texto="Ajuda e Suporte"onPress={() => router.push("/ajuda")}/>
       </View>
@@ -104,18 +104,32 @@ export default function Perfil() {
 // Componente para renderizar cada linha do menu dinamicamente
 function OpcaoMenu({ icone, texto ,onPress }: { icone: any, texto: string ;onPress?: ()=>void; }) {
   return (
-    <Pressable style={styles.menuItem}onPress={onPress}>
+    <Pressable
+      style={styles.menuItem}
+      onPress={onPress}
+    >
       <View style={styles.menuItemLeft}>
         <View style={styles.menuIconContainer}>
-          <Ionicons name={icone} size={20} color="#43855F" />
+          <Ionicons
+            name={icone}
+            size={20}
+            color="#43855F"
+          />
         </View>
-        <Text style={styles.menuItemText}>{texto}</Text>
+
+        <Text style={styles.menuItemText}>
+          {texto}
+        </Text>
       </View>
-      <Ionicons name="chevron-forward" size={20} color="#888" />
+
+      <Ionicons
+        name="chevron-forward"
+        size={20}
+        color="#888"
+      />
     </Pressable>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -2,11 +2,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
 const categorias = [
@@ -71,8 +71,26 @@ export default function Categorias() {
       <View style={styles.lista}>
         {categorias.map((categoria) => (
           <Pressable
-            key={categoria.nome}
+           key={categoria.nome}
             style={styles.card}
+            onPress={() => {
+            const rotas: Record<string, string> = {
+            Frutas: "frutas",
+            "Verduras e Legumes": "verduras",
+            Carnes: "carnes",
+            Laticínios: "laticinios",
+            "Grãos e Cereais": "graos",
+            Bebidas: "bebidas",
+            Outros: "outros",
+          };
+
+            router.push({
+              pathname: "/categorias/detalhes",
+              params: {
+                categoria: rotas[categoria.nome],
+              },
+            });
+          }}
           >
             <View style={styles.iconeContainer}>
               <Ionicons
