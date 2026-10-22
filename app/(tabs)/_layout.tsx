@@ -44,6 +44,17 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
+        name="assistente/index"
+        options={{
+          title: "Assistente",
+          tabBarLabel: "Assistente",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="chatbubbles-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
         name="perfil/index"
         options={{
           title: "Perfil",
