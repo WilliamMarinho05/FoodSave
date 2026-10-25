@@ -1,5 +1,6 @@
 import BarraExp from "@/src/components/BarraExp";
 import PainelValidade from "@/src/components/PainelValidade";
+import { useTheme } from "@/src/context/ThemeContext";
 import { supabase } from "@/src/lib/supabase";
 
 import {
@@ -21,8 +22,20 @@ import {
   View,
 } from "react-native";
 
+
 export default function Home() {
   const router = useRouter();
+  const { modoEscuro } = useTheme();
+
+  const cores = {
+  fundo: modoEscuro ? "#121212" : "#F8F7F1",
+  card: modoEscuro ? "#1E1E1E" : "#FFFFFF",
+  texto: modoEscuro ? "#FFFFFF" : "#333333",
+  textoSecundario: modoEscuro ? "#AAAAAA" : "#777777",
+  borda: modoEscuro ? "#2A2A2A" : "#D5D5D5",
+  verde: "#43855F",
+  iconeFundo: modoEscuro ? "#263B30" : "#EAF2EC",
+};
 
   const [nomeUsuario, setNomeUsuario] = useState<string>("");
   const [painel, setPainel] = useState({
@@ -109,7 +122,7 @@ export default function Home() {
   }) => {
     return (
       <Pressable
-        style={styles.cardAlimento}
+  style={[styles.cardAlimento,{backgroundColor: cores.card,borderColor: cores.borda,},]}
         onPress={() => {
           router.push({
             pathname: "../../alimento/[id]",
@@ -150,7 +163,7 @@ export default function Home() {
   };
 
   return (
-    <View style={styles.container}>
+  <View style={[styles.container,{ backgroundColor: cores.fundo },]}>
       {/* PAINEL */}
       <PainelValidade painel={painel} nomeUsuario={nomeUsuario} />
 
@@ -161,7 +174,7 @@ export default function Home() {
 
       {/* CADASTRAR ALIMENTO */}
       <Pressable
-        style={styles.cardCadastrar}
+        style={[styles.cardCadastrar,{backgroundColor: cores.card,borderColor: cores.borda,},]}
         onPress={handleCadastrarAlimento}
       >
         <View style={styles.iconeContainer}>
@@ -169,7 +182,7 @@ export default function Home() {
         </View>
 
         <View style={styles.conteudoCard}>
-          <Text style={styles.tituloCard}>
+          <Text style={[styles.tituloCard,{ color: cores.texto },]}>
             Cadastrar novo alimento
           </Text>
 
@@ -181,7 +194,7 @@ export default function Home() {
 
       {/* MISSÕES */}
       <Pressable
-        style={styles.cardMissoes}
+        style={[styles.cardMissoes,{backgroundColor: cores.card,borderColor: cores.borda,},]}
         onPress={handleMissoes}
       >
         <View style={styles.iconeMissoes}>
@@ -191,11 +204,11 @@ export default function Home() {
         </View>
 
         <View style={styles.conteudoCard}>
-          <Text style={styles.tituloCard}>
+          <Text style={[styles.tituloCard,{ color: cores.texto },]}>
             Missões Diárias
           </Text>
 
-          <Text style={styles.descricaoCard}>
+          <Text style={[styles.descricaoCard,{ color: cores.textoSecundario },]}>
             Complete suas missões e ganhe pontos
           </Text>
         </View>
@@ -207,7 +220,7 @@ export default function Home() {
 
       {/* ALIMENTOS */}
       <View style={styles.listaContainer}>
-        <Text style={styles.tituloLista}>
+        <Text style={[styles.tituloLista,{ color: cores.texto },]}>
           Adicionados Recentemente
         </Text>
 
@@ -252,11 +265,10 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: "center",
-    paddingTop: 10,
-    backgroundColor: "#F8F7F1",
-  },
+  flex: 1,
+  alignItems: "center",
+  paddingTop: 10,
+},
   
   containerBarraExp: {
     width: "90%",
@@ -264,16 +276,14 @@ const styles = StyleSheet.create({
   },
 
   cardCadastrar: {
-    width: "90%",
-    padding: 12,
-    marginTop: 15,
-    borderWidth: 1,
-    borderColor: "#D5D5D5",
-    borderRadius: 10,
-    backgroundColor: "#FFFFFF",
-    flexDirection: "row",
-    alignItems: "center",
-  },
+  width: "90%",
+  padding: 12,
+  marginTop: 15,
+  borderWidth: 1,
+  borderRadius: 10,
+  flexDirection: "row",
+  alignItems: "center",
+},
 
   iconeContainer: {
     width: 36,
@@ -328,16 +338,14 @@ const styles = StyleSheet.create({
   },
 
   cardAlimento: {
-    backgroundColor: "#FFFFFF",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 8,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#EAF2EC",
-  },
+  padding: 12,
+  borderRadius: 10,
+  marginBottom: 8,
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  borderWidth: 1,
+},
 
   conteudoCardAlimento: {
     flex: 1,
@@ -402,16 +410,14 @@ const styles = StyleSheet.create({
   },
 
   cardMissoes: {
-    width: "90%",
-    padding: 12,
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: "#D5D5D5",
-    borderRadius: 10,
-    backgroundColor: "#FFFFFF",
-    flexDirection: "row",
-    alignItems: "center",
-  },
+  width: "90%",
+  padding: 12,
+  marginTop: 10,
+  borderWidth: 1,
+  borderRadius: 10,
+  flexDirection: "row",
+  alignItems: "center",
+},
 
   iconeMissoes: {
     width: 36,

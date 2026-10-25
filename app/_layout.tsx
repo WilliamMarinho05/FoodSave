@@ -1,4 +1,5 @@
 import { ConquistaWatcher } from "@/src/components/ConquistaDesbloqueada";
+import { ThemeProvider } from "@/src/context/ThemeContext";
 import { Stack, useRouter } from "expo-router";
 import { Pressable, Text } from "react-native";
 
@@ -6,6 +7,7 @@ export default function RootLayout() {
   const router = useRouter();
 
   return (
+     <ThemeProvider>
     <>
       <Stack>
         <Stack.Screen
@@ -70,10 +72,17 @@ export default function RootLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="configuracoes/index"
+        options={{
+          headerShown: false,
+        }}
+      />
 
       </Stack>
 
       <ConquistaWatcher />
     </>
+    </ThemeProvider>
   );
 }
