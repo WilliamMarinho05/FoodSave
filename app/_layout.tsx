@@ -41,7 +41,7 @@ export default function RootLayout() {
         <Stack.Screen
           name="cadastrar_alimento/index"
           options={{
-            headerShown: true,
+            headerShown: false,
             headerTitle: () => (
               <Pressable onPress={() => router.push("/")}>
                 <Text
