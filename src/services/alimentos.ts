@@ -18,7 +18,7 @@ type NovoAlimento = {
   categoria: string;
   quantidade: number;
   unidade: string;
-  peso?: string;
+  peso?: number | null;
   dataCompra: string;
   validade: string;
 };
@@ -94,6 +94,9 @@ export async function cadastrarAlimento(alimento: NovoAlimento) {
       data_compra: dataCompra,
       data_validade: validade,
 
+      // Só envia o peso quando informado (coluna "peso" na tabela alimentos)
+      ...(alimento.peso != null ? { peso: alimento.peso } : {}),
+
       status: "EM_ESTOQUE",
     })
     .select()
@@ -105,6 +108,62 @@ export async function cadastrarAlimento(alimento: NovoAlimento) {
   }
 
   return data;
+}
+
+// Nomes, categorias e unidades que o usuário já cadastrou (mais recentes primeiro),
+// usados para sugerir opções no formulário de cadastro
+export async function buscarOpcoesCadastro() {
+  const vazio = {
+    nomes: [] as string[],
+    categorias: [] as string[],
+    unidades: [] as string[],
+  };
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return vazio;
+
+  const { data, error } = await supabase
+    .from("alimentos")
+    .select("nome, categoria, unidade_medida")
+    .eq("usuario_id", user.id)
+    .order("criado_em", { ascending: false })
+    .limit(500);
+
+  if (error) {
+    console.error("Erro ao buscar opções de cadastro:", error.message);
+    return vazio;
+  }
+
+  const unicos = (valores: (string | null)[]) => {
+    const vistos = new Set<string>();
+    const lista: string[] = [];
+
+    for (const valor of valores) {
+      const texto = (valor ?? "").trim();
+      const chave = texto
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
+      if (!texto || vistos.has(chave)) continue;
+
+      vistos.add(chave);
+      lista.push(texto);
+    }
+
+    return lista;
+  };
+
+  const linhas = data ?? [];
+
+  return {
+    nomes: unicos(linhas.map((l) => l.nome)),
+    categorias: unicos(linhas.map((l) => l.categoria)),
+    unidades: unicos(linhas.map((l) => l.unidade_medida)),
+  };
 }
 
 // Busca somente os alimentos que ainda estão em estoque
