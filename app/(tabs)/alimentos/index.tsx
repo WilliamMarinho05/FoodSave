@@ -13,10 +13,8 @@ import {
 
 import CardAlimento from "@/src/components/CardAlimento";
 import FiltrosAlimentos from "@/src/components/FiltrosAlimentos";
-import {
-  AlimentoComStatus,
-  useListaAlimentos,
-} from "@/src/hooks/UseListaAlimentos";
+import { useTheme } from "@/src/context/ThemeContext";
+import { AlimentoComStatus, useListaAlimentos, } from "@/src/hooks/UseListaAlimentos";
 
 const ROTULO_SITUACAO = {
   todos: "Todos",
@@ -27,6 +25,16 @@ const ROTULO_SITUACAO = {
 } as const;
 
 export default function Alimentos() {
+  const { modoEscuro } = useTheme();
+
+  const cores = {
+  fundo: modoEscuro ? "#121212" : "#F8F7F1",
+  card: modoEscuro ? "#1E1E1E" : "#FFFFFF",
+  texto: modoEscuro ? "#FFFFFF" : "#26332D",
+  textoSecundario: modoEscuro ? "#C4C4C4" : "#8C9AA0",
+  borda: modoEscuro ? "#2A2A2A" : "#D8D8D8",
+  chip: modoEscuro ? "#263B30" : "#EAF2EC",
+};
   const router = useRouter();
   const [filtrosAbertos, setFiltrosAbertos] = useState(false);
 
@@ -71,7 +79,7 @@ export default function Alimentos() {
 
   if (carregando) {
     return (
-      <View style={styles.centralizado}>
+      <View style={[styles.centralizado,{ backgroundColor: cores.fundo },]}>
         <ActivityIndicator size="large" color="#43855F" />
         <Text style={styles.mensagem}>Carregando alimentos...</Text>
       </View>
@@ -79,13 +87,13 @@ export default function Alimentos() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container,{ backgroundColor: cores.fundo },]}>
       {/* BUSCA + BOTÃO DE FILTROS */}
       <View style={styles.linhaBusca}>
-        <View style={styles.campoBusca}>
+        <View style={[styles.campoBusca,{backgroundColor: cores.card,borderColor: cores.borda,},]}>
           <Ionicons name="search-outline" size={18} color="#8C9AA0" />
           <TextInput
-            style={styles.input}
+            style={[styles.input,{ color: cores.texto },]}
             placeholder="Buscar alimento"
             placeholderTextColor="#8C9AA0"
             value={busca}
@@ -101,7 +109,7 @@ export default function Alimentos() {
         </View>
 
         <Pressable
-          style={[styles.botaoFiltro, filtrosAtivos > 0 && styles.botaoFiltroAtivo]}
+          style={[styles.botaoFiltro,{backgroundColor:filtrosAtivos > 0 ? "#43855F" : cores.card,borderColor: "#43855F",},]}
           onPress={() => setFiltrosAbertos(true)}
         >
           <Ionicons
@@ -132,7 +140,7 @@ export default function Alimentos() {
         </View>
       )}
 
-      <Text style={styles.contador}>
+      <Text style={[styles.contador,{ color: cores.textoSecundario },]}>
         {filtrados.length} de {total}{" "}
         {total === 1 ? "alimento" : "alimentos"}
       </Text>
@@ -151,14 +159,15 @@ export default function Alimentos() {
         contentContainerStyle={styles.lista}
         ListEmptyComponent={
           <View style={styles.vazio}>
-            <Text style={styles.vazioTitulo}>
+            <Text style={[styles.vazioTitulo,{ color: cores.texto },]}>
               {erro
                 ? "Não foi possível carregar"
                 : temFiltroOuBusca
                 ? "Nenhum resultado"
                 : "Nenhum alimento cadastrado"}
             </Text>
-            <Text style={styles.mensagem}>
+            <Text
+        style={[styles.mensagem,{ color: cores.textoSecundario },]}>
               {erro
                 ? "Puxe a lista para baixo para tentar novamente."
                 : temFiltroOuBusca

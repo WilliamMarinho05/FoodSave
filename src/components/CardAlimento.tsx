@@ -1,7 +1,7 @@
+import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-
 import { AlimentoComStatus } from "../hooks/useListaAlimentos";
 import { CORES_STATUS, textoPrazo } from "../utils/validade";
 
@@ -12,18 +12,18 @@ interface Props {
 
 export default function CardAlimento({ alimento, onPress }: Props) {
   const cor = CORES_STATUS[alimento.status];
-
+  const { modoEscuro } = useTheme();
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [
         styles.card,
-        { borderColor: cor.borda, backgroundColor: cor.fundo },
+        { borderColor: cor.borda, backgroundColor: modoEscuro ? "#1E1E1E" : cor.fundo, },
         pressed && styles.pressionado,
       ]}
     >
       <View style={styles.conteudo}>
-        <Text style={styles.nome} numberOfLines={1}>
+        <Text style={[styles.nome,{ color: modoEscuro ? "#FFFFFF" : "#43855F" },]}numberOfLines={1}>
           {alimento.nome}
         </Text>
 
@@ -33,11 +33,11 @@ export default function CardAlimento({ alimento, onPress }: Props) {
           </Text>
         )}
 
-        <Text style={styles.info}>
+        <Text style={[styles.info,{ color: modoEscuro ? "#C4C4C4" : "#8C9AA0" },]}>
           Validade: {alimento.validade || "Não informada"}
         </Text>
 
-        <Text style={styles.info}>
+        <Text style={[styles.info,{ color: modoEscuro ? "#C4C4C4" : "#8C9AA0" },]}numberOfLines={1}>
           Qtd: {alimento.quantidade} {alimento.unidade}
         </Text>
       </View>
