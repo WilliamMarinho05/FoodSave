@@ -1,30 +1,82 @@
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { supabase } from "@/src/lib/supabase";
+import { useState } from "react";
+import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View, } from "react-native";
 
 export default function EsqueceuSenha() {
-    return (
-        <View style={styles.container}>
-            <Image 
-                source={require("../../assets/images/logo.jpeg")} 
-                style={styles.logo}
-                resizeMode="contain"
-            />
-            <View style={styles.campos}>
-            <Text style={styles.campos}>Recuperar Senha</Text>
-            
-            <TextInput 
-                style={styles.input} 
-                placeholder="Digite seu e-mail" 
-                keyboardType="email-address" 
-            />
-            </View>
+  const [email, setEmail] = useState("");
+  const [carregando, setCarregando] = useState(false);
 
-            <View style={styles.campos}>
-                <TouchableOpacity style={styles.botao}>
-                    <Text style={styles.textoBotao}>Enviar E-mail</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
-    );
+  async function enviarEmail() {
+    if (!email.trim()) {
+      Alert.alert("Atenção", "Digite seu e-mail.");
+      return;
+    }
+
+    try {
+      setCarregando(true);
+
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        email.trim(),
+        {
+        redirectTo: "http://localhost:8081/redefinir_senha",
+        }
+        );
+
+      if (error) {
+        Alert.alert("Erro", error.message);
+        return;
+      }
+
+      Alert.alert(
+        "E-mail enviado",
+        "Se esse e-mail estiver cadastrado, você receberá um link para recuperar sua senha."
+      );
+    } catch (erro) {
+      console.error("Erro ao recuperar senha:", erro);
+
+      Alert.alert(
+        "Erro",
+        "Não foi possível enviar o e-mail de recuperação."
+      );
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  return (
+    <View style={styles.container}>
+      <Image
+        source={require("../../assets/images/logo.jpeg")}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+
+      <View style={styles.campos}>
+        <Text style={styles.titulo}>Recuperar Senha</Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Digite seu e-mail"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
+        />
+      </View>
+
+      <View style={styles.campos}>
+        <TouchableOpacity
+          style={styles.botao}
+          onPress={enviarEmail}
+          disabled={carregando}
+        >
+          <Text style={styles.textoBotao}>
+            {carregando ? "Enviando..." : "Enviar E-mail"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -32,22 +84,25 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    
   },
 
   campos: {
     width: "80%",
     marginBottom: "10%",
   },
-  
-  input:{
+
+  titulo: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+
+  input: {
     width: "100%",
     height: 40,
-
     borderWidth: 1,
     borderColor: "#333",
     borderRadius: 5,
-
     paddingHorizontal: 10,
   },
 
@@ -56,51 +111,19 @@ const styles = StyleSheet.create({
     height: 40,
     backgroundColor: "#4CAF50",
     borderRadius: 5,
-
-    
-
     justifyContent: "center",
     alignItems: "center",
-
-    marginTop: 10
+    marginTop: 10,
   },
 
   textoBotao: {
     color: "#fff",
   },
 
-  link: {
-    color: "#0a52cd",
-    textDecorationLine: "underline",
-    fontSize: 14,
-    marginTop: 15,
-
-    alignSelf: "flex-end",
-  },
-
-  linkCriarConta: {
-    color: "#4CAF50",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-
-  campoCriarConta: {
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    alignItems: "center",
-    marginTop: 20,
-  },
-
-  textoCriarConta: {
-    color: "#666",
-    fontSize: 14,
-  },
   logo: {
     width: 250,
     height: 250,
     alignSelf: "center",
     marginBottom: 20,
-  }
-
-
+  },
 });
