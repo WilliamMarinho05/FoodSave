@@ -23,6 +23,12 @@ Você é o assistente de receitas do app FoodSave. Regras obrigatórias:
 7. Responda sempre em português do Brasil.
 `;
 
+// Modelo disponível no plano gratuito da Groq (confirmado pela lista de
+// modelos da conta). Se um dia sair do ar, gere a lista de modelos
+// disponíveis com: GET https://api.groq.com/openai/v1/models
+// Alternativa mais leve: "openai/gpt-oss-20b"
+const MODELO = "openai/gpt-oss-120b";
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -55,30 +61,41 @@ Deno.serve(async (req) => {
     // 2. Monta a mensagem com o contexto do estoque
     const mensagem = `Meu estoque atual:\n${estoque}\n\nMinha pergunta: ${pergunta}`;
 
-    // 3. Chama o Gemini
-    const respostaIA = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": Deno.env.get("GEMINI_API_KEY")!,
-        },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: PROMPT_SISTEMA }] },
-          contents: [{ role: "user", parts: [{ text: mensagem }] }],
-          generationConfig: { temperature: 0.7 },
-        }),
-      }
-    );
+    // 3. Chama o Groq (API no formato da OpenAI, tier gratuito, sem cartão)
+    const respostaIA = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${Deno.env.get("GROQ_API_KEY")!}`,
+      },
+      body: JSON.stringify({
+        model: MODELO,
+        messages: [
+          { role: "system", content: PROMPT_SISTEMA },
+          { role: "user", content: mensagem },
+        ],
+        temperature: 0.7,
+      }),
+    });
 
     const dados = await respostaIA.json();
-    const texto = (dados.candidates?.[0]?.content?.parts ?? [])
-      .map((p: { text?: string }) => p.text ?? "")
-      .join("")
-      .trim();
+
+    if (!respostaIA.ok) {
+      const detalhe = dados?.error?.message ?? respostaIA.statusText;
+      console.error("Groq rejeitou a chamada:", respostaIA.status, detalhe);
+      return new Response(
+        JSON.stringify({ erro: `Groq não respondeu: ${detalhe}` }),
+        {
+          status: 502,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const texto: string = dados.choices?.[0]?.message?.content?.trim() ?? "";
 
     if (!texto) {
+      console.error("Groq respondeu vazio:", JSON.stringify(dados));
       return new Response(
         JSON.stringify({ erro: "A IA não devolveu resposta." }),
         {
