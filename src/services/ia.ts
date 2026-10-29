@@ -1,7 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Mensagem } from "@/src/types/conversa";
+import { supabase } from "@/src/lib/supabase";
+import { buscarAlimentosEmEstoque } from "@/src/services/alimentos";
 
 const CHAVE_CONVERSA = "foodsave:conversa-assistente";
+
+// Nome da Edge Function do Supabase que conversa com o Gemini.
+// Código dela: supabase/functions/ia-receitas/
+const NOME_FUNCAO_IA = "ia-receitas";
 
 export async function carregarConversa(): Promise<Mensagem[]> {
   try {
@@ -40,18 +46,54 @@ export async function limparConversa(): Promise<void> {
   }
 }
 
-// ---------------------------------------------------------------------
-// TODO (IA real): substituir o corpo desta função pela chamada à IA
-// (por exemplo: Supabase Edge Function, OpenAI, Gemini...).
-// Ela recebe o texto do usuário e deve devolver o texto da resposta.
-// Quando a IA real entrar, use `carregarConversa()` para enviar o
-// histórico completo junto com a nova mensagem.
-// ---------------------------------------------------------------------
-export async function enviarMensagemParaIA(texto: string): Promise<string> {
-  // Atraso apenas para simular o tempo de resposta de uma IA.
-  await new Promise((resolve) => setTimeout(resolve, 1200));
+// Monta, a partir do estoque do usuário, o texto que dá contexto à IA
+// (ex.: "- Ovos: 12 unidade (vence 30/10/2026)").
+async function montarEstoque(): Promise<string> {
+  try {
+    const alimentos = await buscarAlimentosEmEstoque();
 
-  return gerarRespostaSimulada(texto);
+    if (alimentos.length === 0) {
+      return "(nenhum alimento cadastrado)";
+    }
+
+    return alimentos
+      .map(
+        (alimento) =>
+          `- ${alimento.nome}: ${alimento.quantidade} ${alimento.unidade} (vence ${alimento.validade})`
+      )
+      .join("\n");
+  } catch (error) {
+    console.error("Erro ao montar estoque para a IA:", error);
+    return "(não foi possível ler o estoque)";
+  }
+}
+
+// Agora a função de verdade: chama a Edge Function `ia-receitas` do Supabase,
+// que valida o login, monta o prompt de receitas e conversa com o Gemini.
+// Enquanto a função/secret não estiverem no ar, cai no modo demonstração.
+export async function enviarMensagemParaIA(texto: string): Promise<string> {
+  const estoque = await montarEstoque();
+
+  try {
+    const { data, error } = await supabase.functions.invoke(NOME_FUNCAO_IA, {
+      body: { pergunta: texto, estoque },
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    const resposta = (data as { resposta?: string } | null)?.resposta;
+
+    if (typeof resposta !== "string" || !resposta.trim()) {
+      throw new Error("A IA não devolveu resposta.");
+    }
+
+    return resposta;
+  } catch (error) {
+    console.warn("IA ainda não conectada, respondendo em modo demonstração:", error);
+    return gerarRespostaSimulada(texto);
+  }
 }
 
 function gerarRespostaSimulada(texto: string): string {
@@ -87,7 +129,8 @@ function gerarRespostaSimulada(texto: string): string {
   }
 
   return (
-    "Boa pergunta! Por enquanto sou só um preview do assistente — " +
-    "quando a IA for conectada, vou responder de verdade com dicas da sua despensa 💚"
+    "Por enquanto estou em modo demonstração — a IA real ainda não está conectada. " +
+    "Assim que o cadastro da chave for concluído, vou responder de verdade com " +
+    "receitas feitas com o que você tem na despensa 💚"
   );
 }
