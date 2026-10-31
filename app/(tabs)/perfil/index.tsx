@@ -170,7 +170,6 @@ export default function Perfil() {
       <View style={styles.menuContainer}>
         <OpcaoMenu icone="person-outline" texto="Dados Pessoais" onPress={() => router.push("../dados_pessoais")}cores={cores}/>
         <OpcaoMenu icone="settings"texto="Configurações"onPress={() => router.push("/configuracoes")}cores={cores}/>
-        <OpcaoMenu icone="notifications-outline" texto="Notificações"cores={cores}/>
         <OpcaoMenu icone="list-outline"texto="Categorias de Alimentos"onPress={() => router.push("/categorias")}cores={cores}/> 
         <OpcaoMenu icone="information-circle-outline"texto="Sobre o App" onPress={() => router.push("../sobre") }cores={cores} />
         <OpcaoMenu icone="help-circle-outline"texto="Ajuda e Suporte"onPress={() => router.push("/ajuda")}cores={cores}/>
