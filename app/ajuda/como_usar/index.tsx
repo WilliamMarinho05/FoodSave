@@ -1,3 +1,4 @@
+import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -44,47 +45,54 @@ const etapas = [
 
 export default function ComoUsar() {
   const router = useRouter();
+  const { cores } = useTheme();
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: cores.fundo }]}
       contentContainerStyle={styles.content}
     >
       <Pressable
         style={styles.voltar}
         onPress={() => router.back()}
       >
-        <Ionicons name="arrow-back" size={24} color="#43855F" />
-        <Text style={styles.voltarTexto}>Voltar</Text>
+        <Ionicons name="arrow-back" size={24} color={cores.primariaTexto} />
+        <Text style={[styles.voltarTexto, { color: cores.primariaTexto }]}>
+          Voltar
+        </Text>
       </Pressable>
 
-      <Text style={styles.titulo}>Como usar o FoodSave</Text>
+      <Text style={[styles.titulo, { color: cores.primariaTexto }]}>
+        Como usar o FoodSave
+      </Text>
 
-      <Text style={styles.subtitulo}>
+      <Text style={[styles.subtitulo, { color: cores.textoSecundario }]}>
         Confira algumas das principais funcionalidades do aplicativo.
       </Text>
 
       <View style={styles.lista}>
         {etapas.map((etapa, index) => (
-          <View key={etapa.titulo} style={styles.card}>
-            <View style={styles.numero}>
+          <View key={etapa.titulo} style={[styles.card, { backgroundColor: cores.card }]}>
+            <View style={[styles.numero, { backgroundColor: cores.primaria }]}>
               <Text style={styles.numeroTexto}>{index + 1}</Text>
             </View>
 
-            <View style={styles.iconeContainer}>
+            <View
+              style={[styles.iconeContainer, { backgroundColor: cores.primariaSuave }]}
+            >
               <Ionicons
                 name={etapa.icone}
                 size={24}
-                color="#43855F"
+                color={cores.primariaTexto}
               />
             </View>
 
             <View style={styles.textos}>
-              <Text style={styles.cardTitulo}>
+              <Text style={[styles.cardTitulo, { color: cores.texto }]}>
                 {etapa.titulo}
               </Text>
 
-              <Text style={styles.cardDescricao}>
+              <Text style={[styles.cardDescricao, { color: cores.textoSecundario }]}>
                 {etapa.descricao}
               </Text>
             </View>

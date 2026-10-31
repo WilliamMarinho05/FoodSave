@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 
+import { useTheme } from "../context/ThemeContext";
 import { normalizar } from "../utils/formulario";
 
 type Props = {
@@ -36,6 +37,7 @@ export default function CampoSugestoes({
   permitirNova = false,
   rotuloNova = "opção",
 }: Props) {
+  const { cores } = useTheme();
   const inputRef = useRef<TextInput>(null);
   const [focado, setFocado] = useState(false);
 
@@ -71,22 +73,25 @@ export default function CampoSugestoes({
 
   return (
     <View style={styles.campo}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, { color: cores.textoSecundario }]}>{label}</Text>
 
       <View
         style={[
           styles.inputBox,
-          focado && styles.inputFocado,
-          !!erro && styles.inputErro,
+          {
+            backgroundColor: cores.input,
+            borderColor: erro ? cores.perigo : cores.borda,
+          },
+          focado && { borderColor: cores.primaria },
         ]}
       >
-        <Ionicons name={icone} size={18} color="#43855F" />
+        <Ionicons name={icone} size={18} color={cores.primariaTexto} />
 
         <TextInput
           ref={inputRef}
-          style={styles.input}
+          style={[styles.input, { color: cores.texto }]}
           placeholder={placeholder}
-          placeholderTextColor="#8C9AA0"
+          placeholderTextColor={cores.textoFraco}
           value={valor}
           onChangeText={aoMudar}
           onFocus={() => setFocado(true)}
@@ -99,24 +104,33 @@ export default function CampoSugestoes({
 
         {!!valor && (
           <Pressable onPress={() => aoMudar("")} hitSlop={10}>
-            <Ionicons name="close-circle" size={18} color="#B5BDB8" />
+            <Ionicons name="close-circle" size={18} color={cores.textoFraco} />
           </Pressable>
         )}
       </View>
 
       {aberto && (
-        <View style={styles.lista}>
+        <View
+          style={[
+            styles.lista,
+            { backgroundColor: cores.card, borderColor: cores.borda },
+          ]}
+        >
           {sugestoes.map((item) => (
             <Pressable
               key={item}
               style={({ pressed }) => [
                 styles.linhaSugestao,
+                { borderTopColor: cores.bordaSuave },
                 pressed && styles.linhaPressionada,
               ]}
               onPress={() => escolher(item)}
             >
-              <Ionicons name="time-outline" size={16} color="#8C9AA0" />
-              <Text style={styles.textoSugestao} numberOfLines={1}>
+              <Ionicons name="time-outline" size={16} color={cores.textoFraco} />
+              <Text
+                style={[styles.textoSugestao, { color: cores.texto }]}
+                numberOfLines={1}
+              >
                 {item}
               </Text>
             </Pressable>
@@ -127,6 +141,7 @@ export default function CampoSugestoes({
               style={({ pressed }) => [
                 styles.linhaSugestao,
                 styles.linhaNova,
+                { borderTopColor: cores.bordaSuave, backgroundColor: cores.primariaSuave },
                 sugestoes.length === 0 && styles.semBordaTopo,
                 pressed && styles.linhaPressionada,
               ]}
@@ -134,8 +149,11 @@ export default function CampoSugestoes({
                 valor.trim() ? escolher(valor.trim()) : inputRef.current?.focus()
               }
             >
-              <Ionicons name="add-circle" size={18} color="#43855F" />
-              <Text style={styles.textoNova} numberOfLines={2}>
+              <Ionicons name="add-circle" size={18} color={cores.primariaTexto} />
+              <Text
+                style={[styles.textoNova, { color: cores.primariaTexto }]}
+                numberOfLines={2}
+              >
                 {textoNova}
               </Text>
             </Pressable>
@@ -143,14 +161,16 @@ export default function CampoSugestoes({
         </View>
       )}
 
-      {!!erro && <Text style={styles.erro}>{erro}</Text>}
+      {!!erro && <Text style={[styles.erro, { color: cores.perigo }]}>{erro}</Text>}
 
       {!erro &&
         !aberto &&
         permitirNova &&
         !!valor.trim() &&
         !existeIgual && (
-          <Text style={styles.dicaNova}>Nova {rotuloNova} será criada.</Text>
+          <Text style={[styles.dicaNova, { color: cores.primariaTexto }]}>
+            Nova {rotuloNova} será criada.
+          </Text>
         )}
     </View>
   );

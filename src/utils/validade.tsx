@@ -5,11 +5,15 @@ export type StatusValidade = "vencido" | "atencao" | "noPrazo" | "semData";
 
 export const DIAS_ATENCAO = 3;
 
+export type CoresStatus = {
+  borda: string;
+  fundo: string;
+  pill: string;
+  texto: string;
+};
+
 // Cores no mesmo padrão do PainelValidade (bordas leves) + tons de texto do Alertas
-export const CORES_STATUS: Record<
-  StatusValidade,
-  { borda: string; fundo: string; pill: string; texto: string }
-> = {
+export const CORES_STATUS: Record<StatusValidade, CoresStatus> = {
   vencido: {
     borda: "#FFD6D6",
     fundo: "#FFFBFB",
@@ -35,6 +39,39 @@ export const CORES_STATUS: Record<
     texto: "#8C9AA0",
   },
 };
+
+// Variação para o tema escuro (bordas e fundos mais discretos)
+export const CORES_STATUS_ESCURO: Record<StatusValidade, CoresStatus> = {
+  vencido: {
+    borda: "#5A3030",
+    fundo: "#2A1A1A",
+    pill: "#3A2323",
+    texto: "#FF6B6B",
+  },
+  atencao: {
+    borda: "#5A452D",
+    fundo: "#2A241A",
+    pill: "#3A2E1E",
+    texto: "#FFB74D",
+  },
+  noPrazo: {
+    borda: "#31583C",
+    fundo: "#1B241E",
+    pill: "#1F3327",
+    texto: "#7FD69F",
+  },
+  semData: {
+    borda: "#2A2A2A",
+    fundo: "#1E1E1E",
+    pill: "#262626",
+    texto: "#9A9A9A",
+  },
+};
+
+/** Devolve o conjunto de cores de status de acordo com o tema atual. */
+export function obterCoresStatus(modoEscuro: boolean): Record<StatusValidade, CoresStatus> {
+  return modoEscuro ? CORES_STATUS_ESCURO : CORES_STATUS;
+}
 
 // Recebe DD/MM/AAAA (formato que o service já entrega) e devolve
 // quantos dias faltam (negativo = já venceu). Retorna null se inválida.

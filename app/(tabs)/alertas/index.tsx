@@ -2,6 +2,7 @@
 import { useCallback, useState } from "react";
 import {ActivityIndicator,FlatList,StyleSheet,Text,View,} from "react-native";
 import { useFocusEffect } from "expo-router";
+import { useTheme } from "@/src/context/ThemeContext";
 import {AlimentoBanco,buscarAlimentosEmEstoque,} from "../../../src/services/alimentos";
 
 type Alerta = {
@@ -51,6 +52,7 @@ function calcularDiasAteValidade(validade: string) {
 }
 
 export default function Alertas() {
+  const { cores } = useTheme();
   const [alimentos, setAlimentos] = useState<AlimentoBanco[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(false);
@@ -91,24 +93,26 @@ export default function Alertas() {
   });
 
   const alertas: Alerta[] = [
-    { titulo: "Vencidos", alimentos: vencidos, cor: "#C62828" },
-    { titulo: "Vencem hoje", alimentos: vencemHoje, cor: "#E67E22" },
-    { titulo: "Vencem em até 3 dias", alimentos: vencemEmBreve, cor: "#B8860B" },
+    { titulo: "Vencidos", alimentos: vencidos, cor: cores.perigo },
+    { titulo: "Vencem hoje", alimentos: vencemHoje, cor: cores.atencao },
+    { titulo: "Vencem em até 3 dias", alimentos: vencemEmBreve, cor: cores.atencao },
   ];
 
   if (carregando) {
     return (
-      <View style={styles.centralizado}>
-        <ActivityIndicator size="large" color="#43855F" />
-        <Text style={styles.mensagem}>Carregando alertas...</Text>
+      <View style={[styles.centralizado, { backgroundColor: cores.fundo }]}>
+        <ActivityIndicator size="large" color={cores.primariaTexto} />
+        <Text style={[styles.mensagem, { color: cores.textoSecundario }]}>
+          Carregando alertas...
+        </Text>
       </View>
     );
   }
 
   if (erro) {
     return (
-      <View style={styles.centralizado}>
-        <Text style={styles.mensagem}>
+      <View style={[styles.centralizado, { backgroundColor: cores.fundo }]}>
+        <Text style={[styles.mensagem, { color: cores.textoSecundario }]}>
           Não foi possível carregar os alertas.
         </Text>
       </View>
@@ -120,20 +124,25 @@ export default function Alertas() {
 
   return (
     <FlatList
-      style={styles.container}
+      style={[styles.container, { backgroundColor: cores.fundo }]}
       contentContainerStyle={styles.conteudo}
       data={alertas}
       keyExtractor={(item) => item.titulo}
       ListHeaderComponent={
         <View>
-          <Text style={styles.titulo}>Alertas</Text>
-          <Text style={styles.subtitulo}>
+          <Text style={[styles.titulo, { color: cores.texto }]}>Alertas</Text>
+          <Text style={[styles.subtitulo, { color: cores.textoSecundario }]}>
             Acompanhe os alimentos que precisam da sua atenção.
           </Text>
 
-          <View style={styles.resumo}>
-            <Text style={styles.numero}>{totalAlertas}</Text>
-            <Text style={styles.resumoTexto}>
+          <View
+            style={[
+              styles.resumo,
+              { backgroundColor: cores.card, borderColor: cores.borda },
+            ]}
+          >
+            <Text style={[styles.numero, { color: cores.primariaTexto }]}>{totalAlertas}</Text>
+            <Text style={[styles.resumoTexto, { color: cores.textoSecundario }]}>
               {totalAlertas === 1
                 ? "alimento precisa de atenção"
                 : "alimentos precisam de atenção"}
@@ -141,9 +150,11 @@ export default function Alertas() {
           </View>
 
           {totalAlertas === 0 && (
-            <View style={styles.vazio}>
-              <Text style={styles.vazioTitulo}>Tudo em dia!</Text>
-              <Text style={styles.mensagem}>
+            <View style={[styles.vazio, { backgroundColor: cores.sucessoSuave }]}>
+              <Text style={[styles.vazioTitulo, { color: cores.sucesso }]}>
+                Tudo em dia!
+              </Text>
+              <Text style={[styles.mensagem, { color: cores.textoSecundario }]}>
                 Não há alimentos vencidos ou próximos do vencimento.
               </Text>
             </View>
@@ -157,17 +168,30 @@ export default function Alertas() {
           </Text>
 
           {item.alimentos.length === 0 ? (
-            <Text style={styles.semItens}>
+            <Text
+              style={[
+                styles.semItens,
+                { backgroundColor: cores.card, color: cores.textoSecundario },
+              ]}
+            >
               Nenhum alimento nesta categoria.
             </Text>
           ) : (
             item.alimentos.map((alimento) => (
-              <View key={alimento.id} style={styles.card}>
-                <Text style={styles.nome}>{alimento.nome}</Text>
-                <Text style={styles.detalhe}>
+              <View
+                key={alimento.id}
+                style={[
+                  styles.card,
+                  { backgroundColor: cores.card, borderColor: cores.borda },
+                ]}
+              >
+                <Text style={[styles.nome, { color: cores.texto }]}>
+                  {alimento.nome}
+                </Text>
+                <Text style={[styles.detalhe, { color: cores.textoSecundario }]}>
                   Validade: {alimento.validade || "Não informada"}
                 </Text>
-                <Text style={styles.detalhe}>
+                <Text style={[styles.detalhe, { color: cores.textoSecundario }]}>
                   Quantidade: {alimento.quantidade} {alimento.unidade}
                 </Text>
               </View>

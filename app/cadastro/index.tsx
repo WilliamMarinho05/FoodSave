@@ -11,10 +11,12 @@ import {
   TextInput,
   View
 } from "react-native";
+import { useTheme } from "@/src/context/ThemeContext";
 import { supabase } from "../../src/lib/supabase";
 
 export default function Cadastro() {
   const router = useRouter();
+  const { cores } = useTheme();
 
   const [nome, setNome] = useState("");
   const [sobrenome, setSobrenome] = useState("");
@@ -114,53 +116,76 @@ export default function Cadastro() {
 
   return (
     <ScrollView
-      contentContainerStyle={styles.container}
+      contentContainerStyle={[styles.container, { backgroundColor: cores.fundo }]}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.card}>
         <View style={styles.header}>
-          <Text style={styles.titulo}>Criar conta</Text>
-          <Text style={styles.subtitulo}>
+          <Text style={[styles.titulo, { color: cores.texto }]}>Criar conta</Text>
+          <Text style={[styles.subtitulo, { color: cores.textoSecundario }]}>
             Preencha seus dados para criar sua conta
           </Text>
         </View>
 
         {/* NOME */}
         <View style={styles.campos}>
-          <Text style={styles.label}>Nome</Text>
+          <Text style={[styles.label, { color: cores.textoSecundario }]}>Nome</Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                color: cores.texto,
+                backgroundColor: cores.input,
+                borderColor: cores.borda,
+              },
+            ]}
             value={nome}
             onChangeText={(texto) => handleNome(texto, setNome)}
             placeholder="Digite seu nome"
-            placeholderTextColor="#999"
+            placeholderTextColor={cores.textoFraco}
             autoCapitalize="words"
           />
         </View>
 
         {/* SOBRENOME */}
         <View style={styles.campos}>
-          <Text style={styles.label}>Sobrenome</Text>
+          <Text style={[styles.label, { color: cores.textoSecundario }]}>Sobrenome</Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                color: cores.texto,
+                backgroundColor: cores.input,
+                borderColor: cores.borda,
+              },
+            ]}
             value={sobrenome}
             onChangeText={(texto) => handleNome(texto, setSobrenome)}
             placeholder="Digite seu sobrenome"
-            placeholderTextColor="#999"
+            placeholderTextColor={cores.textoFraco}
             autoCapitalize="words"
           />
         </View>
 
         {/* DATA DE NASCIMENTO */}
         <View style={styles.campos}>
-          <Text style={styles.label}>Data de nascimento</Text>
+          <Text style={[styles.label, { color: cores.textoSecundario }]}>
+            Data de nascimento
+          </Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                color: cores.texto,
+                backgroundColor: cores.input,
+                borderColor: cores.borda,
+              },
+            ]}
             value={dataNascimento}
             onChangeText={handleDataNascimento}
             placeholder="DD/MM/AAAA"
-            placeholderTextColor="#999"
+            placeholderTextColor={cores.textoFraco}
             keyboardType="numeric"
             maxLength={10}
           />
@@ -168,13 +193,20 @@ export default function Cadastro() {
 
         {/* EMAIL */}
         <View style={styles.campos}>
-          <Text style={styles.label}>E-mail</Text>
+          <Text style={[styles.label, { color: cores.textoSecundario }]}>E-mail</Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                color: cores.texto,
+                backgroundColor: cores.input,
+                borderColor: cores.borda,
+              },
+            ]}
             value={email}
             onChangeText={setEmail}
             placeholder="Digite seu e-mail"
-            placeholderTextColor="#999"
+            placeholderTextColor={cores.textoFraco}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
@@ -183,14 +215,19 @@ export default function Cadastro() {
 
         {/* SENHA */}
         <View style={styles.campos}>
-          <Text style={styles.label}>Senha</Text>
-          <View style={styles.inputSenhaContainer}>
+          <Text style={[styles.label, { color: cores.textoSecundario }]}>Senha</Text>
+          <View
+            style={[
+              styles.inputSenhaContainer,
+              { backgroundColor: cores.input, borderColor: cores.borda },
+            ]}
+          >
             <TextInput
-              style={styles.inputSenha}
+              style={[styles.inputSenha, { color: cores.texto }]}
               value={senha}
               onChangeText={setSenha}
               placeholder="Digite sua senha"
-              placeholderTextColor="#999"
+              placeholderTextColor={cores.textoFraco}
               secureTextEntry={!mostrarSenha}
               autoCapitalize="none"
             />
@@ -201,7 +238,7 @@ export default function Cadastro() {
               <Ionicons
                 name={mostrarSenha ? "eye" : "eye-off"}
                 size={20}
-                color="#777"
+                color={cores.textoFraco}
                />
             </Pressable>
           </View>
@@ -209,14 +246,21 @@ export default function Cadastro() {
 
         {/* CONFIRMAÇÃO DA SENHA */}
         <View style={styles.campos}>
-          <Text style={styles.label}>Confirmar senha</Text>
-          <View style={styles.inputSenhaContainer}>
+          <Text style={[styles.label, { color: cores.textoSecundario }]}>
+            Confirmar senha
+          </Text>
+          <View
+            style={[
+              styles.inputSenhaContainer,
+              { backgroundColor: cores.input, borderColor: cores.borda },
+            ]}
+          >
             <TextInput
-              style={styles.inputSenha}
+              style={[styles.inputSenha, { color: cores.texto }]}
               value={confirmacaoSenha}
               onChangeText={setConfirmacaoSenha}
               placeholder="Digite a senha novamente"
-              placeholderTextColor="#999"
+              placeholderTextColor={cores.textoFraco}
               secureTextEntry={!mostrarConfirmacao}
               autoCapitalize="none"
             />
@@ -228,7 +272,7 @@ export default function Cadastro() {
               <Ionicons
                 name={mostrarConfirmacao ? "eye" : "eye-off"} 
                 size={20}
-                color="#777"
+                color={cores.textoFraco}
                />
             </Pressable>
           </View>
@@ -236,7 +280,11 @@ export default function Cadastro() {
 
         {/* BOTÃO */}
         <Pressable
-          style={[styles.botao, loading && styles.botaoDesabilitado]}
+          style={[
+            styles.botao,
+            { backgroundColor: cores.primaria },
+            loading && styles.botaoDesabilitado,
+          ]}
           onPress={criarConta}
           disabled={loading}
         >
@@ -249,10 +297,10 @@ export default function Cadastro() {
 
         {/* RODAPÉ */}
         <View style={styles.rodape}>
-          <Text style={styles.textoRodape}>
+          <Text style={[styles.textoRodape, { color: cores.textoSecundario }]}>
             Já possui uma conta?
           </Text>
-          <Link href="/" style={styles.link}>
+          <Link href="/" style={[styles.link, { color: cores.primariaTexto }]}>
             Entrar
           </Link>
         </View>

@@ -1,5 +1,5 @@
 import BarraExp from '@/src/components/BarraExp';
-import { useTheme } from "@/src/context/ThemeContext";
+import { CoresTema, useTheme } from "@/src/context/ThemeContext";
 import { supabase } from '@/src/lib/supabase';
 import { getEstatisticasPerfil } from '@/src/services/painelAlimentos';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,17 +9,8 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 
 export default function Perfil() {
   const router = useRouter();
-  const { modoEscuro } = useTheme();
+  const { cores } = useTheme();
 
-  const cores = {
-  fundo: modoEscuro ? "#121212" : "#FAF9F6",
-  card: modoEscuro ? "#1E1E1E" : "#FFFFFF",
-  texto: modoEscuro ? "#FFFFFF" : "#222222",
-  textoSecundario: modoEscuro ? "#AAAAAA" : "#666666",
-  iconeFundo: modoEscuro ? "#263B30" : "#EAF2EC",
-  borda: modoEscuro ? "#2A2A2A" : "#EEEEEE",
-  verde: "#43855F",
-};
   const [email, setEmail] = useState<string | null>('Carregando...');
   const [nome, setNome] = useState<string | null>('Usuário');
   const [estatisticas, setEstatisticas] = useState({ cadastrados: 0, salvos: 0, descartados: 0 });
@@ -84,7 +75,7 @@ export default function Perfil() {
   <View
     style={[
       styles.statCard,
-      { backgroundColor: cores.card },
+      { backgroundColor: cores.card, shadowColor: cores.sombra },
     ]}
   >
     <Text
@@ -98,7 +89,7 @@ export default function Perfil() {
       CADASTRADOS
     </Text>
 
-    <Text style={[styles.statValue, { color: "#43855F" }]}>
+    <Text style={[styles.statValue, { color: cores.primariaTexto }]}>
       {estatisticas.cadastrados}
     </Text>
 
@@ -115,7 +106,7 @@ export default function Perfil() {
   <View
     style={[
       styles.statCard,
-      { backgroundColor: cores.card },
+      { backgroundColor: cores.card, shadowColor: cores.sombra },
     ]}
   >
     <Text
@@ -129,7 +120,7 @@ export default function Perfil() {
       SALVOS
     </Text>
 
-    <Text style={[styles.statValue, { color: "#2ECC71" }]}>
+    <Text style={[styles.statValue, { color: cores.sucesso }]}>
       {estatisticas.salvos}
     </Text>
 
@@ -146,7 +137,7 @@ export default function Perfil() {
   <View
     style={[
       styles.statCard,
-      { backgroundColor: cores.card },
+      { backgroundColor: cores.card, shadowColor: cores.sombra },
     ]}
   >
     <Text
@@ -160,7 +151,7 @@ export default function Perfil() {
       DESCARTADOS
     </Text>
 
-    <Text style={[styles.statValue, { color: "#FF4D4D" }]}>
+    <Text style={[styles.statValue, { color: cores.perigo }]}>
       {estatisticas.descartados}
     </Text>
 
@@ -186,8 +177,13 @@ export default function Perfil() {
       </View>
 
       {/* Botão Sair */}
-      <Pressable style={styles.logoutButton} onPress={handleSair}>
-        <Text style={styles.logoutText}>Sair da Conta</Text>
+      <Pressable
+        style={[styles.logoutButton, { borderColor: cores.perigo }]}
+        onPress={handleSair}
+      >
+        <Text style={[styles.logoutText, { color: cores.perigo }]}>
+          Sair da Conta
+        </Text>
       </Pressable>
     </ScrollView>
   );
@@ -195,13 +191,7 @@ export default function Perfil() {
 
 // Componente para renderizar cada linha do menu dinamicamente
 function OpcaoMenu({icone,texto,onPress,cores,}: {icone: any;texto: string;onPress?: () => void;
-  cores: {
-    card: string;
-    texto: string;
-    iconeFundo: string;
-    textoSecundario: string;
-    borda: string;
-  };
+  cores: CoresTema;
 }) {
   return (
     <Pressable
@@ -210,6 +200,7 @@ function OpcaoMenu({icone,texto,onPress,cores,}: {icone: any;texto: string;onPre
         {
           backgroundColor: cores.card,
           borderColor: cores.borda,
+          shadowColor: cores.sombra,
         },
       ]}
       onPress={onPress}
@@ -219,14 +210,14 @@ function OpcaoMenu({icone,texto,onPress,cores,}: {icone: any;texto: string;onPre
           style={[
             styles.menuIconContainer,
             {
-              backgroundColor: cores.iconeFundo,
+              backgroundColor: cores.primariaSuave,
             },
           ]}
         >
           <Ionicons
             name={icone}
             size={20}
-            color="#43855F"
+            color={cores.primariaTexto}
           />
         </View>
 

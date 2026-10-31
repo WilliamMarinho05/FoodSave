@@ -1,3 +1,4 @@
+import { useTheme } from '@/src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -7,6 +8,7 @@ import { atualizarProgressoMissao } from '../../src/services/missoes';
 
 export default function DetalhesAlimento() {
   const router = useRouter();
+  const { cores } = useTheme();
   const alimento = useLocalSearchParams();
   const [quantidadeAtual, setQuantidadeAtual] = useState(
   Number(alimento.quantidade ?? 0)
@@ -54,46 +56,58 @@ export default function DetalhesAlimento() {
 
 
   return (
-    
-    <ScrollView style={styles.container}>
+     
+    <ScrollView style={[styles.container, { backgroundColor: cores.fundo }]}>
     <Stack.Screen options={{ title: String(alimento.nome || "Detalhes") }} />
       <View style={styles.cabecalho}>
-        <Pressable style={styles.botaoVoltar} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={22} color="#43855F" />
+        <Pressable
+          style={[styles.botaoVoltar, { backgroundColor: cores.card }]}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="chevron-back" size={22} color={cores.primariaTexto} />
         </Pressable>
-        <Text style={styles.titulo}>Detalhes do Alimento</Text>
+        <Text style={[styles.titulo, { color: cores.texto }]}>
+          Detalhes do Alimento
+        </Text>
       </View>
 
-      <View style={styles.cardInfo}>
-        <Text style={styles.nomeAlimento}>{alimento.nome}</Text>
+      <View
+        style={[
+          styles.cardInfo,
+          { backgroundColor: cores.card, borderColor: cores.borda },
+        ]}
+      >
+        <Text style={[styles.nomeAlimento, { color: cores.primariaTexto }]}>
+          {alimento.nome}
+        </Text>
         
-        <View style={styles.linhaDetalhe}>
-          <Text style={styles.label}>Categoria:</Text>
-          <Text style={styles.valor}>{alimento.categoria}</Text>
+        <View style={[styles.linhaDetalhe, { borderBottomColor: cores.bordaSuave }]}>
+          <Text style={[styles.label, { color: cores.textoSecundario }]}>Categoria:</Text>
+          <Text style={[styles.valor, { color: cores.texto }]}>{alimento.categoria}</Text>
         </View>
 
-        <View style={styles.linhaDetalhe}>
-          <Text style={styles.label}>Quantidade:</Text>
-          <Text style={styles.valor}> {quantidadeAtual} {alimento.unidade}</Text>
+        <View style={[styles.linhaDetalhe, { borderBottomColor: cores.bordaSuave }]}>
+          <Text style={[styles.label, { color: cores.textoSecundario }]}>Quantidade:</Text>
+          <Text style={[styles.valor, { color: cores.texto }]}> {quantidadeAtual} {alimento.unidade}</Text>
         </View>
 
-        <View style={styles.linhaDetalhe}>
-          <Text style={styles.label}>Peso:</Text>
-          <Text style={styles.valor}>{alimento.peso}</Text>
+        <View style={[styles.linhaDetalhe, { borderBottomColor: cores.bordaSuave }]}>
+          <Text style={[styles.label, { color: cores.textoSecundario }]}>Peso:</Text>
+          <Text style={[styles.valor, { color: cores.texto }]}>{alimento.peso}</Text>
         </View>
 
-        <View style={styles.linhaDetalhe}>
-          <Text style={styles.label}>Data de Compra:</Text>
-          <Text style={styles.valor}>{alimento.dataCompra}</Text>
+        <View style={[styles.linhaDetalhe, { borderBottomColor: cores.bordaSuave }]}>
+          <Text style={[styles.label, { color: cores.textoSecundario }]}>Data de Compra:</Text>
+          <Text style={[styles.valor, { color: cores.texto }]}>{alimento.dataCompra}</Text>
         </View>
 
-        <View style={styles.linhaDetalhe}>
-          <Text style={styles.label}>Validade:</Text>
-          <Text style={styles.valor}>{alimento.validade}</Text>
+        <View style={[styles.linhaDetalhe, { borderBottomColor: cores.bordaSuave }]}>
+          <Text style={[styles.label, { color: cores.textoSecundario }]}>Validade:</Text>
+          <Text style={[styles.valor, { color: cores.texto }]}>{alimento.validade}</Text>
         </View>
       </View>
       <Pressable
-      style={styles.botaoConsumir}
+      style={[styles.botaoConsumir, { backgroundColor: cores.primaria }]}
       onPress={handleConsumir}
     >
       <Ionicons

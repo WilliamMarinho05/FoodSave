@@ -3,30 +3,34 @@ import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 
 export default function TabsLayout() {
-  const { modoEscuro } = useTheme();
+  const { cores } = useTheme();
 
    return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#2e7d32",
-        tabBarInactiveTintColor: modoEscuro ? "#AAAAAA" : "#757575",
+        tabBarActiveTintColor: cores.primariaTexto,
+        tabBarInactiveTintColor: cores.textoSecundario,
 
         headerShown: true,
 
-        headerStyle: {
-          backgroundColor: modoEscuro ? "#1E1E1E" : "#FFFFFF",
+        sceneStyle: {
+          backgroundColor: cores.fundo,
         },
 
-        headerTintColor: modoEscuro ? "#FFFFFF" : "#333333",
+        headerStyle: {
+          backgroundColor: cores.card,
+        },
+
+        headerTintColor: cores.texto,
 
         headerTitleStyle: {
-          color: modoEscuro ? "#FFFFFF" : "#333333",
+          color: cores.texto,
           fontWeight: "500",
         },
 
         tabBarStyle: {
-          backgroundColor: modoEscuro ? "#1E1E1E" : "#FFFFFF",
-          borderTopColor: modoEscuro ? "#2A2A2A" : "#E5E5E5",
+          backgroundColor: cores.card,
+          borderTopColor: cores.borda,
           borderTopWidth: 1,
         },
       }}

@@ -38,7 +38,11 @@ export function useListaAlimentos() {
   const [ordem, setOrdem] = useState<Ordem>("vencimento_asc");
 
   const carregar = useCallback(async (pullToRefresh = false) => {
-    pullToRefresh ? setAtualizando(true) : setCarregando(true);
+    if (pullToRefresh) {
+      setAtualizando(true);
+    } else {
+      setCarregando(true);
+    }
     setErro(false);
 
     try {

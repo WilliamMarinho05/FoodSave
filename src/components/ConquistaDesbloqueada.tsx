@@ -22,6 +22,7 @@ import Animated, {
     withSequence,
     withTiming,
 } from 'react-native-reanimated';
+import { useTheme } from '../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useConquistasPendentes } from '../hooks/useTrofeus';
 
@@ -81,6 +82,8 @@ function Conteudo({
   restantes: number;
   onContinuar: () => void;
 }) {
+  const { cores } = useTheme();
+
   useEffect(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
   }, []);
@@ -88,9 +91,9 @@ function Conteudo({
   return (
     <View style={styles.conteudo}>
       <Animated.View entering={FadeInDown.delay(150).duration(600)} style={styles.topo}>
-        <Text style={styles.eyebrow}>CONQUISTA DESBLOQUEADA</Text>
+        <Text style={[styles.eyebrow, { color: cores.primariaTexto }]}>CONQUISTA DESBLOQUEADA</Text>
         {restantes > 0 && (
-          <Text style={styles.contador}>
+          <Text style={[styles.contador, { color: cores.textoFraco }]}>
             + {restantes} {restantes === 1 ? 'conquista' : 'conquistas'} para ver
           </Text>
         )}
@@ -106,25 +109,44 @@ function Conteudo({
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(600).duration(600)} style={styles.textos}>
-          <Text style={styles.nome}>{trofeu.nome}</Text>
-          <View style={styles.chip}>
-            <Text style={styles.chipTexto}>Hábito · {ROTULO_HABITO[trofeu.habito]}</Text>
+          <Text style={[styles.nome, { color: cores.texto }]}>{trofeu.nome}</Text>
+          <View style={[styles.chip, { backgroundColor: cores.primariaSuave }]}>
+            <Text style={[styles.chipTexto, { color: cores.primariaTexto }]}>
+              Hábito · {ROTULO_HABITO[trofeu.habito]}
+            </Text>
           </View>
-          <Text style={styles.descricao}>{trofeu.descricao}</Text>
+          <Text style={[styles.descricao, { color: cores.textoSecundario }]}>
+            {trofeu.descricao}
+          </Text>
         </Animated.View>
       </View>
 
       <Animated.View entering={FadeInUp.delay(900).duration(600)} style={styles.base}>
-        <View style={styles.cartaoMensagem}>
-          <Ionicons name="leaf" size={18} color="#43855F" />
-          <Text style={styles.mensagem}>{trofeu.mensagem_motivacional}</Text>
+        <View
+          style={[
+            styles.cartaoMensagem,
+            {
+              backgroundColor: cores.card,
+              borderColor: cores.borda,
+              shadowColor: cores.sombra,
+            },
+          ]}
+        >
+          <Ionicons name="leaf" size={18} color={cores.primariaTexto} />
+          <Text style={[styles.mensagem, { color: cores.textoSecundario }]}>
+            {trofeu.mensagem_motivacional}
+          </Text>
         </View>
 
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={restantes > 0 ? 'Ver próxima conquista' : 'Continuar'}
           onPress={onContinuar}
-          style={({ pressed }) => [styles.botao, pressed && styles.botaoPressionado]}
+          style={({ pressed }) => [
+            styles.botao,
+            { backgroundColor: cores.primaria, shadowColor: cores.primaria },
+            pressed && styles.botaoPressionado,
+          ]}
         >
           <Text style={styles.botaoTexto}>{restantes > 0 ? 'Próxima conquista' : 'Continuar'}</Text>
         </Pressable>
@@ -138,6 +160,7 @@ export default function ConquistaDesbloqueada({
   restantes = 0,
   onContinuar,
 }: ConquistaDesbloqueadaProps) {
+  const { cores } = useTheme();
   const insets = useSafeAreaInsets();
   // Mantém o último troféu durante a animação de fechamento do Modal
   const ultimo = useRef<TrofeuUsuario | null>(null);
@@ -154,11 +177,19 @@ export default function ConquistaDesbloqueada({
       <View
         style={[
           styles.tela,
-          { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 },
+          {
+            backgroundColor: cores.fundoAlternativo,
+            paddingTop: insets.top + 24,
+            paddingBottom: insets.bottom + 24,
+          },
         ]}
       >
-        <View style={styles.decoracaoTopo} />
-        <View style={styles.decoracaoBase} />
+        <View
+          style={[styles.decoracaoTopo, { backgroundColor: cores.primariaSuave }]}
+        />
+        <View
+          style={[styles.decoracaoBase, { backgroundColor: cores.sucessoSuave }]}
+        />
 
         {exibido && (
           <Conteudo

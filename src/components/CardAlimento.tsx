@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { AlimentoComStatus } from "../hooks/useListaAlimentos";
-import { CORES_STATUS, textoPrazo } from "../utils/validade";
+import { obterCoresStatus, textoPrazo } from "../utils/validade";
 
 interface Props {
   alimento: AlimentoComStatus;
@@ -11,33 +11,34 @@ interface Props {
 }
 
 export default function CardAlimento({ alimento, onPress }: Props) {
-  const cor = CORES_STATUS[alimento.status];
-  const { modoEscuro } = useTheme();
+  const { modoEscuro, cores } = useTheme();
+  const cor = obterCoresStatus(modoEscuro)[alimento.status];
+
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [
         styles.card,
-        { borderColor: cor.borda, backgroundColor: modoEscuro ? "#1E1E1E" : cor.fundo, },
+        { borderColor: cor.borda, backgroundColor: modoEscuro ? cores.card : cor.fundo },
         pressed && styles.pressionado,
       ]}
     >
       <View style={styles.conteudo}>
-        <Text style={[styles.nome,{ color: modoEscuro ? "#FFFFFF" : "#43855F" },]}numberOfLines={1}>
+        <Text style={[styles.nome, { color: cores.primariaTexto }]} numberOfLines={1}>
           {alimento.nome}
         </Text>
 
         {!!alimento.categoria && (
-          <Text style={styles.info} numberOfLines={1}>
+          <Text style={[styles.info, { color: cores.textoSecundario }]} numberOfLines={1}>
             {alimento.categoria}
           </Text>
         )}
 
-        <Text style={[styles.info,{ color: modoEscuro ? "#C4C4C4" : "#8C9AA0" },]}>
+        <Text style={[styles.info, { color: cores.textoSecundario }]}>
           Validade: {alimento.validade || "Não informada"}
         </Text>
 
-        <Text style={[styles.info,{ color: modoEscuro ? "#C4C4C4" : "#8C9AA0" },]}numberOfLines={1}>
+        <Text style={[styles.info, { color: cores.textoSecundario }]} numberOfLines={1}>
           Qtd: {alimento.quantidade} {alimento.unidade}
         </Text>
       </View>
@@ -49,7 +50,7 @@ export default function CardAlimento({ alimento, onPress }: Props) {
           </Text>
         </View>
 
-        <Ionicons name="chevron-forward" size={18} color="#43855F" />
+        <Ionicons name="chevron-forward" size={18} color={cores.primariaTexto} />
       </View>
     </Pressable>
   );
