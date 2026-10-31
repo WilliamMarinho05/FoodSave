@@ -25,17 +25,7 @@ import {
 
 export default function Home() {
   const router = useRouter();
-  const { modoEscuro } = useTheme();
-
-  const cores = {
-  fundo: modoEscuro ? "#121212" : "#F8F7F1",
-  card: modoEscuro ? "#1E1E1E" : "#FFFFFF",
-  texto: modoEscuro ? "#FFFFFF" : "#333333",
-  textoSecundario: modoEscuro ? "#AAAAAA" : "#777777",
-  borda: modoEscuro ? "#2A2A2A" : "#D5D5D5",
-  verde: "#43855F",
-  iconeFundo: modoEscuro ? "#263B30" : "#EAF2EC",
-};
+  const { cores } = useTheme();
 
   const [nomeUsuario, setNomeUsuario] = useState<string>("");
   const [painel, setPainel] = useState({
@@ -140,21 +130,21 @@ export default function Home() {
         }}
       >
         <View style={styles.conteudoCardAlimento}>
-          <Text style={styles.nomeAlimento}>
+          <Text style={[styles.nomeAlimento, { color: cores.primariaTexto }]}>
             {item.nome}
           </Text>
 
-          <Text style={styles.infoAlimento}>
+          <Text style={[styles.infoAlimento, { color: cores.textoSecundario }]}>
             Validade: {item.validade}
           </Text>
 
-          <Text style={styles.infoAlimento}>
+          <Text style={[styles.infoAlimento, { color: cores.textoSecundario }]}>
             Qtd: {item.quantidade} {item.unidade}
           </Text>
         </View>
 
         <View style={styles.setaContainer}>
-          <Text style={styles.seta}>
+          <Text style={[styles.seta, { color: cores.primariaTexto }]}>
             &gt;
           </Text>
         </View>
@@ -177,7 +167,7 @@ export default function Home() {
         style={[styles.cardCadastrar,{backgroundColor: cores.card,borderColor: cores.borda,},]}
         onPress={handleCadastrarAlimento}
       >
-        <View style={styles.iconeContainer}>
+        <View style={[styles.iconeContainer, { backgroundColor: cores.primaria }]}>
           <Text style={styles.icone}>+</Text>
         </View>
 
@@ -186,7 +176,7 @@ export default function Home() {
             Cadastrar novo alimento
           </Text>
 
-          <Text style={styles.descricaoCard}>
+          <Text style={[styles.descricaoCard, { color: cores.textoSecundario }]}>
             Adicione um novo alimento à sua lista
           </Text>
         </View>
@@ -197,7 +187,7 @@ export default function Home() {
         style={[styles.cardMissoes,{backgroundColor: cores.card,borderColor: cores.borda,},]}
         onPress={handleMissoes}
       >
-        <View style={styles.iconeMissoes}>
+        <View style={[styles.iconeMissoes, { backgroundColor: cores.primariaSuave }]}>
           <Text style={styles.iconeMissao}>
             🎯
           </Text>
@@ -213,7 +203,7 @@ export default function Home() {
           </Text>
         </View>
 
-        <Text style={styles.setaMissao}>
+        <Text style={[styles.setaMissao, { color: cores.primariaTexto }]}>
           &gt;
         </Text>
       </Pressable>
@@ -225,7 +215,7 @@ export default function Home() {
         </Text>
 
         {carregando ? (
-          <Text style={styles.mensagem}>
+          <Text style={[styles.mensagem, { color: cores.textoSecundario }]}>
             Carregando alimentos...
           </Text>
         ) : (
@@ -238,7 +228,7 @@ export default function Home() {
               paddingBottom: 100,
             }}
             ListEmptyComponent={
-              <Text style={styles.mensagem}>
+              <Text style={[styles.mensagem, { color: cores.textoSecundario }]}>
                 Nenhum alimento cadastrado.
               </Text>
             }
@@ -248,7 +238,7 @@ export default function Home() {
 
       {/* HISTÓRICO */}
       <Pressable
-        style={styles.botaoHistorico}
+        style={[styles.botaoHistorico, { backgroundColor: cores.primaria, shadowColor: cores.sombra }]}
         onPress={handleHistorico}
       >
         <Text style={styles.iconeHistorico}>

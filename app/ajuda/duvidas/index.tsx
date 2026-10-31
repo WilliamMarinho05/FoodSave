@@ -1,3 +1,4 @@
+import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -34,24 +35,29 @@ const duvidas = [
 
 export default function Duvidas() {
   const router = useRouter();
+  const { cores } = useTheme();
   const [aberta, setAberta] = useState<number | null>(null);
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: cores.fundo }]}
       contentContainerStyle={styles.content}
     >
       <Pressable
         style={styles.voltar}
         onPress={() => router.back()}
       >
-        <Ionicons name="arrow-back" size={24} color="#43855F" />
-        <Text style={styles.voltarTexto}>Voltar</Text>
+        <Ionicons name="arrow-back" size={24} color={cores.primariaTexto} />
+        <Text style={[styles.voltarTexto, { color: cores.primariaTexto }]}>
+          Voltar
+        </Text>
       </Pressable>
 
-      <Text style={styles.titulo}>Dúvidas Frequentes</Text>
+      <Text style={[styles.titulo, { color: cores.primariaTexto }]}>
+        Dúvidas Frequentes
+      </Text>
 
-      <Text style={styles.subtitulo}>
+      <Text style={[styles.subtitulo, { color: cores.textoSecundario }]}>
         Confira as respostas para algumas das dúvidas mais comuns sobre o
         FoodSave.
       </Text>
@@ -61,14 +67,17 @@ export default function Duvidas() {
           const estaAberta = aberta === index;
 
           return (
-            <View key={duvida.pergunta} style={styles.card}>
+            <View
+              key={duvida.pergunta}
+              style={[styles.card, { backgroundColor: cores.card }]}
+            >
               <Pressable
                 style={styles.pergunta}
                 onPress={() =>
                   setAberta(estaAberta ? null : index)
                 }
               >
-                <Text style={styles.perguntaTexto}>
+                <Text style={[styles.perguntaTexto, { color: cores.texto }]}>
                   {duvida.pergunta}
                 </Text>
 
@@ -79,12 +88,12 @@ export default function Duvidas() {
                       : "chevron-down"
                   }
                   size={20}
-                  color="#43855F"
+                  color={cores.primariaTexto}
                 />
               </Pressable>
 
               {estaAberta && (
-                <Text style={styles.resposta}>
+                <Text style={[styles.resposta, { color: cores.textoSecundario }]}>
                   {duvida.resposta}
                 </Text>
               )}

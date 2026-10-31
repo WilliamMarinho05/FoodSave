@@ -1,7 +1,8 @@
 import BarraExp from "@/src/components/BarraExp";
+import { useTheme } from "@/src/context/ThemeContext";
 import { supabase } from "@/src/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
-import { Stack, useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -60,6 +61,7 @@ function iniciais(nome: string, sobrenome: string) {
 
 export default function DadosPessoais() {
   const router = useRouter();
+  const { cores } = useTheme();
 
   const [dados, setDados] = useState<DadosUsuario | null>(null);
   const [carregando, setCarregando] = useState(true);
@@ -127,35 +129,45 @@ export default function DadosPessoais() {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: cores.fundo }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
 
       <Pressable style={styles.voltar} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={24} color="#43855F" />
-        <Text style={styles.voltarTexto}>Voltar</Text>
+        <Ionicons name="arrow-back" size={24} color={cores.primariaTexto} />
+        <Text style={[styles.voltarTexto, { color: cores.primariaTexto }]}>
+          Voltar
+        </Text>
       </Pressable>
 
-      <Text style={styles.titulo}>Dados Pessoais</Text>
-      <Text style={styles.subtitulo}>
+      <Text style={[styles.titulo, { color: cores.primariaTexto }]}>
+        Dados Pessoais
+      </Text>
+      <Text style={[styles.subtitulo, { color: cores.textoSecundario }]}>
         Confira as informações da conta conectada no momento.
       </Text>
 
       {carregando ? (
         <View style={styles.centralizado}>
-          <ActivityIndicator size="large" color="#43855F" />
-          <Text style={styles.mensagem}>Carregando seus dados...</Text>
+          <ActivityIndicator size="large" color={cores.primariaTexto} />
+          <Text style={[styles.mensagem, { color: cores.textoSecundario }]}>
+            Carregando seus dados...
+          </Text>
         </View>
       ) : erro || !dados ? (
         <View style={styles.centralizado}>
-          <Ionicons name="alert-circle-outline" size={40} color="#B5BFC3" />
-          <Text style={styles.mensagemTitulo}>
+          <Ionicons
+            name="alert-circle-outline"
+            size={40}
+            color={cores.textoFraco}
+          />
+          <Text style={[styles.mensagemTitulo, { color: cores.texto }]}>
             {erro
               ? "Não foi possível carregar seus dados"
               : "Nenhum usuário conectado"}
           </Text>
-          <Text style={styles.mensagem}>
+          <Text style={[styles.mensagem, { color: cores.textoSecundario }]}>
             {erro
               ? "Verifique sua conexão e tente novamente."
               : "Faça login para visualizar seus dados."}
@@ -165,26 +177,30 @@ export default function DadosPessoais() {
         <>
           {/* AVATAR + NOME */}
           <View style={styles.resumo}>
-            <View style={styles.avatarBorda}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarTexto}>
+            <View style={[styles.avatarBorda, { borderColor: cores.primaria }]}>
+              <View style={[styles.avatar, { backgroundColor: cores.primariaSuave }]}>
+                <Text style={[styles.avatarTexto, { color: cores.primariaTexto }]}>
                   {iniciais(dados.nome, dados.sobrenome)}
                 </Text>
               </View>
             </View>
 
-            <Text style={styles.nomeCompleto}>
+            <Text style={[styles.nomeCompleto, { color: cores.texto }]}>
               {`${dados.nome} ${dados.sobrenome}`.trim() || NAO_INFORMADO}
             </Text>
-            <Text style={styles.emailResumo}>{dados.email}</Text>
+            <Text style={[styles.emailResumo, { color: cores.textoSecundario }]}>
+              {dados.email}
+            </Text>
           </View>
 
           {/* NÍVEL / XP (reaproveita o componente existente) */}
           <BarraExp />
 
           {/* INFORMAÇÕES PESSOAIS */}
-          <Text style={styles.secao}>Informações pessoais</Text>
-          <View style={styles.cardLista}>
+          <Text style={[styles.secao, { color: cores.texto }]}>
+            Informações pessoais
+          </Text>
+          <View style={[styles.cardLista, { backgroundColor: cores.card }]}>
             <LinhaInfo
               icone="person-outline"
               rotulo="Nome"
@@ -209,13 +225,15 @@ export default function DadosPessoais() {
           </View>
 
           {/* CONTA */}
-          <Text style={styles.secao}>Conta</Text>
-          <View style={styles.cardLista}>
+          <Text style={[styles.secao, { color: cores.texto }]}>Conta</Text>
+          <View style={[styles.cardLista, { backgroundColor: cores.card }]}>
             <LinhaInfo
               icone="shield-checkmark-outline"
               rotulo="E-mail verificado"
               valor={dados.emailConfirmado ? "Sim" : "Não"}
-              corValor={dados.emailConfirmado ? "#287A43" : "#B8700B"}
+              corValor={
+                dados.emailConfirmado ? cores.sucesso : cores.atencao
+              }
             />
             <LinhaInfo
               icone="calendar-outline"
@@ -248,16 +266,25 @@ function LinhaInfo({
   ultimo?: boolean;
   corValor?: string;
 }) {
+  const { cores } = useTheme();
+
   return (
-    <View style={[styles.linha, !ultimo && styles.linhaDivisor]}>
-      <View style={styles.iconeContainer}>
-        <Ionicons name={icone} size={18} color="#43855F" />
+    <View
+      style={[
+        styles.linha,
+        !ultimo && [styles.linhaDivisor, { borderBottomColor: cores.bordaSuave }],
+      ]}
+    >
+      <View style={[styles.iconeContainer, { backgroundColor: cores.primariaSuave }]}>
+        <Ionicons name={icone} size={18} color={cores.primariaTexto} />
       </View>
 
       <View style={styles.linhaTextos}>
-        <Text style={styles.rotulo}>{rotulo}</Text>
+        <Text style={[styles.rotulo, { color: cores.textoSecundario }]}>
+          {rotulo}
+        </Text>
         <Text
-          style={[styles.valor, corValor ? { color: corValor } : null]}
+          style={[styles.valor, { color: cores.texto }, corValor ? { color: corValor } : null]}
           selectable
         >
           {valor}

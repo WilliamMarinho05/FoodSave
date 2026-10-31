@@ -1,4 +1,4 @@
-import { useTheme } from "@/src/context/ThemeContext";
+import { CoresTema, useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -13,22 +13,12 @@ import {
 
 export default function Configuracoes() {
   const router = useRouter();
-  const { modoEscuro, alternarTema } = useTheme();
+  const { modoEscuro, alternarTema, cores } = useTheme();
 
   const [notificacoes, setNotificacoes] = useState(true);
   const [vencimento, setVencimento] = useState(true);
   const [vencidos, setVencidos] = useState(true);
   const [conquistas, setConquistas] = useState(true);
-
-  const cores = {
-    fundo: modoEscuro ? "#121212" : "#FAF9F6",
-    card: modoEscuro ? "#1E1E1E" : "#FFFFFF",
-    texto: modoEscuro ? "#FFFFFF" : "#333333",
-    textoSecundario: modoEscuro ? "#AAAAAA" : "#888888",
-    verde: "#43855F",
-    iconeFundo: modoEscuro ? "#263B30" : "#EAF2EC",
-    borda: modoEscuro ? "#2A2A2A" : "#EEEEEE",
-  };
 
   return (
     <ScrollView
@@ -47,14 +37,14 @@ export default function Configuracoes() {
           <Ionicons
             name="arrow-back"
             size={24}
-            color={cores.verde}
+            color={cores.primariaTexto}
           />
         </Pressable>
 
         <Text
           style={[
             styles.title,
-            { color: cores.verde },
+            { color: cores.primariaTexto },
           ]}
         >
           CONFIGURAÇÕES
@@ -86,13 +76,13 @@ export default function Configuracoes() {
           <View
             style={[
               styles.menuIconContainer,
-              { backgroundColor: cores.iconeFundo },
+              { backgroundColor: cores.primariaSuave },
             ]}
           >
             <Ionicons
               name="lock-closed-outline"
               size={20}
-              color={cores.verde}
+              color={cores.primariaTexto}
             />
           </View>
 
@@ -187,14 +177,7 @@ function Setting({
   icone: any;
   valor: boolean;
   onChange: (valor: boolean) => void;
-  cores: {
-    card: string;
-    texto: string;
-    textoSecundario: string;
-    verde: string;
-    iconeFundo: string;
-    borda: string;
-  };
+  cores: CoresTema;
 }) {
   return (
     <View
@@ -210,13 +193,13 @@ function Setting({
         <View
           style={[
             styles.menuIconContainer,
-            { backgroundColor: cores.iconeFundo },
+            { backgroundColor: cores.primariaSuave },
           ]}
         >
           <Ionicons
             name={icone}
             size={20}
-            color={cores.verde}
+            color={cores.primariaTexto}
           />
         </View>
 
@@ -234,10 +217,10 @@ function Setting({
         value={valor}
         onValueChange={onChange}
         trackColor={{
-          false: "#D5D5D5",
-          true: "#A8D5B5",
+          false: cores.borda,
+          true: cores.primariaSuave,
         }}
-        thumbColor={valor ? cores.verde : "#F4F4F4"}
+        thumbColor={valor ? cores.primariaTexto : cores.card}
       />
     </View>
   );

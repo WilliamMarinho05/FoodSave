@@ -4,6 +4,8 @@ import {
   StatusHistorico,
 } from "@/src/services/historico";
 
+import { useTheme } from "@/src/context/ThemeContext";
+
 import {
   useFocusEffect,
   useRouter,
@@ -77,6 +79,7 @@ const historicoDemonstracao: ItemHistorico[] = [
 
 export default function Historico() {
   const router = useRouter();
+  const { cores } = useTheme();
 
   const [busca, setBusca] = useState("");
 
@@ -189,28 +192,28 @@ export default function Historico() {
     status: StatusHistorico
   ) => {
     if (status === "Consumido") {
-      return styles.statusConsumido;
+      return { backgroundColor: cores.sucessoSuave };
     }
 
     if (status === "Descartado") {
-      return styles.statusDescartado;
+      return { backgroundColor: cores.atencaoSuave };
     }
 
-    return styles.statusVencido;
+    return { backgroundColor: cores.perigoSuave };
   };
 
   const getStatusTextStyle = (
     status: StatusHistorico
   ) => {
     if (status === "Consumido") {
-      return styles.textoConsumido;
+      return { color: cores.sucesso };
     }
 
     if (status === "Descartado") {
-      return styles.textoDescartado;
+      return { color: cores.atencao };
     }
 
-    return styles.textoVencido;
+    return { color: cores.perigo };
   };
 
   // ----------------------------------------------------
@@ -223,16 +226,21 @@ export default function Historico() {
     item: ItemHistorico;
   }) => {
     return (
-      <View style={styles.card}>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: cores.card, borderColor: cores.borda },
+        ]}
+      >
         <View style={styles.cardTopo}>
           <View style={styles.conteudoCard}>
             <Text
-              style={styles.nomeAlimento}
+              style={[styles.nomeAlimento, { color: cores.primariaTexto }]}
             >
               {item.nome}
             </Text>
 
-            <Text style={styles.categoria}>
+            <Text style={[styles.categoria, { color: cores.textoSecundario }]}>
               {item.categoria}
             </Text>
           </View>
@@ -256,15 +264,15 @@ export default function Historico() {
           </View>
         </View>
 
-        <View style={styles.divisor} />
+        <View style={[styles.divisor, { backgroundColor: cores.bordaSuave }]} />
 
         <View style={styles.cardRodape}>
           <View>
-            <Text style={styles.label}>
+            <Text style={[styles.label, { color: cores.textoFraco }]}>
               Quantidade
             </Text>
 
-            <Text style={styles.valor}>
+            <Text style={[styles.valor, { color: cores.textoSecundario }]}>
               {item.quantidade}{" "}
               {item.unidade}
             </Text>
@@ -273,11 +281,11 @@ export default function Historico() {
           <View
             style={styles.dataContainer}
           >
-            <Text style={styles.label}>
+            <Text style={[styles.label, { color: cores.textoFraco }]}>
               Data
             </Text>
 
-            <Text style={styles.valor}>
+            <Text style={[styles.valor, { color: cores.textoSecundario }]}>
               {item.data}
             </Text>
           </View>
@@ -287,26 +295,29 @@ export default function Historico() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: cores.fundo }]}>
 
       {/* CABEÇALHO */}
 
       <View style={styles.header}>
         <Pressable
-          style={styles.botaoVoltar}
+          style={[
+            styles.botaoVoltar,
+            { backgroundColor: cores.card, borderColor: cores.borda },
+          ]}
           onPress={() => router.back()}
         >
-          <Text style={styles.setaVoltar}>
+          <Text style={[styles.setaVoltar, { color: cores.primariaTexto }]}>
             ‹
           </Text>
         </Pressable>
 
         <View style={styles.headerTexto}>
-          <Text style={styles.titulo}>
+          <Text style={[styles.titulo, { color: cores.texto }]}>
             Histórico
           </Text>
 
-          <Text style={styles.subtitulo}>
+          <Text style={[styles.subtitulo, { color: cores.textoSecundario }]}>
             Acompanhe seus alimentos anteriores
           </Text>
         </View>
@@ -314,15 +325,20 @@ export default function Historico() {
 
       {/* BUSCA */}
 
-      <View style={styles.buscaContainer}>
-        <Text style={styles.iconeBusca}>
+      <View
+        style={[
+          styles.buscaContainer,
+          { backgroundColor: cores.card, borderColor: cores.borda },
+        ]}
+      >
+        <Text style={[styles.iconeBusca, { color: cores.primariaTexto }]}>
           ⌕
         </Text>
 
         <TextInput
-          style={styles.inputBusca}
+          style={[styles.inputBusca, { color: cores.texto }]}
           placeholder="Buscar alimento..."
-          placeholderTextColor="#9AA5A0"
+          placeholderTextColor={cores.textoFraco}
           value={busca}
           onChangeText={setBusca}
         />
@@ -335,8 +351,11 @@ export default function Historico() {
         <Pressable
           style={[
             styles.botaoFiltro,
-            filtro === "Todos" &&
-              styles.botaoFiltroSelecionado,
+            { backgroundColor: cores.card, borderColor: cores.borda },
+            filtro === "Todos" && {
+              backgroundColor: cores.primaria,
+              borderColor: cores.primaria,
+            },
           ]}
           onPress={() =>
             setFiltro("Todos")
@@ -344,9 +363,8 @@ export default function Historico() {
         >
           <Text
             style={[
-              styles.textoFiltro,
-              filtro === "Todos" &&
-                styles.textoFiltroSelecionado,
+              [styles.textoFiltro, { color: cores.textoSecundario }],
+              filtro === "Todos" && styles.textoFiltroSelecionado,
             ]}
           >
             Todos
@@ -356,8 +374,11 @@ export default function Historico() {
         <Pressable
           style={[
             styles.botaoFiltro,
-            filtro === "Consumido" &&
-              styles.botaoFiltroSelecionado,
+            { backgroundColor: cores.card, borderColor: cores.borda },
+            filtro === "Consumido" && {
+              backgroundColor: cores.primaria,
+              borderColor: cores.primaria,
+            },
           ]}
           onPress={() =>
             setFiltro("Consumido")
@@ -365,9 +386,8 @@ export default function Historico() {
         >
           <Text
             style={[
-              styles.textoFiltro,
-              filtro === "Consumido" &&
-                styles.textoFiltroSelecionado,
+              [styles.textoFiltro, { color: cores.textoSecundario }],
+              filtro === "Consumido" && styles.textoFiltroSelecionado,
             ]}
           >
             Consumidos
@@ -377,8 +397,11 @@ export default function Historico() {
         <Pressable
           style={[
             styles.botaoFiltro,
-            filtro === "Descartado" &&
-              styles.botaoFiltroSelecionado,
+            { backgroundColor: cores.card, borderColor: cores.borda },
+            filtro === "Descartado" && {
+              backgroundColor: cores.primaria,
+              borderColor: cores.primaria,
+            },
           ]}
           onPress={() =>
             setFiltro("Descartado")
@@ -386,9 +409,8 @@ export default function Historico() {
         >
           <Text
             style={[
-              styles.textoFiltro,
-              filtro === "Descartado" &&
-                styles.textoFiltroSelecionado,
+              [styles.textoFiltro, { color: cores.textoSecundario }],
+              filtro === "Descartado" && styles.textoFiltroSelecionado,
             ]}
           >
             Descartados
@@ -398,8 +420,11 @@ export default function Historico() {
         <Pressable
           style={[
             styles.botaoFiltro,
-            filtro === "Vencido" &&
-              styles.botaoFiltroSelecionado,
+            { backgroundColor: cores.card, borderColor: cores.borda },
+            filtro === "Vencido" && {
+              backgroundColor: cores.primaria,
+              borderColor: cores.primaria,
+            },
           ]}
           onPress={() =>
             setFiltro("Vencido")
@@ -407,9 +432,8 @@ export default function Historico() {
         >
           <Text
             style={[
-              styles.textoFiltro,
-              filtro === "Vencido" &&
-                styles.textoFiltroSelecionado,
+              [styles.textoFiltro, { color: cores.textoSecundario }],
+              filtro === "Vencido" && styles.textoFiltroSelecionado,
             ]}
           >
             Vencidos
@@ -423,12 +447,12 @@ export default function Historico() {
       <View
         style={styles.tituloListaContainer}
       >
-        <Text style={styles.tituloLista}>
+        <Text style={[styles.tituloLista, { color: cores.texto }]}>
           Histórico de alimentos
         </Text>
 
         <Text
-          style={styles.quantidadeResultados}
+          style={[styles.quantidadeResultados, { color: cores.textoSecundario }]}
         >
           {historicoFiltrado.length} itens
         </Text>
@@ -437,7 +461,7 @@ export default function Historico() {
       {/* CARREGANDO */}
 
       {carregando && (
-        <Text style={styles.carregando}>
+        <Text style={[styles.carregando, { color: cores.textoSecundario }]}>
           Atualizando histórico...
         </Text>
       )}
@@ -455,16 +479,16 @@ export default function Historico() {
         }
         ListEmptyComponent={
           <View style={styles.listaVazia}>
-            <Text style={styles.iconeVazio}>
+            <Text style={[styles.iconeVazio, { color: cores.textoFraco }]}>
               ⌕
             </Text>
 
-            <Text style={styles.textoVazio}>
+            <Text style={[styles.textoVazio, { color: cores.texto }]}>
               Nenhum alimento encontrado
             </Text>
 
             <Text
-              style={styles.subtextoVazio}
+              style={[styles.subtextoVazio, { color: cores.textoSecundario }]}
             >
               Tente buscar outro alimento
               ou alterar os filtros.

@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { useTheme } from "../context/ThemeContext";
 
 import {
   DIAS_SEMANA,
@@ -35,6 +36,7 @@ export default function CalendarioModal({
   aoSelecionar,
   aoFechar,
 }: Props) {
+  const { cores } = useTheme();
   const hoje = hojeISO();
 
   const [ano, setAno] = useState(new Date().getFullYear());
@@ -100,43 +102,51 @@ export default function CalendarioModal({
       animationType="fade"
       onRequestClose={aoFechar}
     >
-      <View style={styles.overlay}>
+      <View style={[styles.overlay, { backgroundColor: cores.overlay }]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={aoFechar} />
 
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: cores.card, shadowColor: cores.sombra }]}>
           <View style={styles.topo}>
-            <Text style={styles.titulo}>{titulo}</Text>
+            <Text style={[styles.titulo, { color: cores.texto }]}>{titulo}</Text>
 
             <Pressable onPress={aoFechar} hitSlop={10}>
-              <Ionicons name="close" size={22} color="#46534D" />
+              <Ionicons name="close" size={22} color={cores.textoSecundario} />
             </Pressable>
           </View>
 
-          <View style={styles.navegacao}>
+          <View style={[styles.navegacao, { backgroundColor: cores.primariaSuave }]}>
             <Pressable
-              style={[styles.setaMes, !podeVoltar && styles.setaDesabilitada]}
+              style={[
+                styles.setaMes,
+                { backgroundColor: cores.card },
+                !podeVoltar && styles.setaDesabilitada,
+              ]}
               onPress={() => podeVoltar && mudarMes(-1)}
               disabled={!podeVoltar}
             >
-              <Ionicons name="chevron-back" size={20} color="#43855F" />
+              <Ionicons name="chevron-back" size={20} color={cores.primariaTexto} />
             </Pressable>
 
-            <Text style={styles.mesAno}>
+            <Text style={[styles.mesAno, { color: cores.texto }]}>
               {MESES[mes]} {ano}
             </Text>
 
             <Pressable
-              style={[styles.setaMes, !podeAvancar && styles.setaDesabilitada]}
+              style={[
+                styles.setaMes,
+                { backgroundColor: cores.card },
+                !podeAvancar && styles.setaDesabilitada,
+              ]}
               onPress={() => podeAvancar && mudarMes(1)}
               disabled={!podeAvancar}
             >
-              <Ionicons name="chevron-forward" size={20} color="#43855F" />
+              <Ionicons name="chevron-forward" size={20} color={cores.primariaTexto} />
             </Pressable>
           </View>
 
           <View style={styles.semana}>
             {DIAS_SEMANA.map((d, i) => (
-              <Text key={i} style={styles.diaSemana}>
+              <Text key={i} style={[styles.diaSemana, { color: cores.textoSecundario }]}>
                 {d}
               </Text>
             ))}
@@ -163,14 +173,18 @@ export default function CalendarioModal({
                   <View
                     style={[
                       styles.dia,
-                      eHoje && styles.diaHoje,
-                      selecionado && styles.diaSelecionado,
+                      eHoje && [styles.diaHoje, { borderColor: cores.primaria }],
+                      selecionado && [
+                        styles.diaSelecionado,
+                        { backgroundColor: cores.primaria },
+                      ],
                     ]}
                   >
                     <Text
                       style={[
                         styles.diaTexto,
-                        foraDoLimite && styles.diaTextoDesabilitado,
+                        { color: cores.texto },
+                        foraDoLimite && { color: cores.textoFraco, opacity: 0.5 },
                         selecionado && styles.diaTextoSelecionado,
                       ]}
                     >
@@ -183,9 +197,11 @@ export default function CalendarioModal({
           </View>
 
           {!!aviso && (
-            <View style={styles.aviso}>
-              <Ionicons name="alert-circle" size={18} color="#C0392B" />
-              <Text style={styles.avisoTexto}>{aviso}</Text>
+            <View style={[styles.aviso, { backgroundColor: cores.perigoSuave }]}>
+              <Ionicons name="alert-circle" size={18} color={cores.perigo} />
+              <Text style={[styles.avisoTexto, { color: cores.perigo }]}>
+                {aviso}
+              </Text>
             </View>
           )}
         </View>

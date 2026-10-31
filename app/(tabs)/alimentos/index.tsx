@@ -14,7 +14,7 @@ import {
 import CardAlimento from "@/src/components/CardAlimento";
 import FiltrosAlimentos from "@/src/components/FiltrosAlimentos";
 import { useTheme } from "@/src/context/ThemeContext";
-import { AlimentoComStatus, useListaAlimentos, } from "@/src/hooks/UseListaAlimentos";
+import { AlimentoComStatus, useListaAlimentos, } from "@/src/hooks/useListaAlimentos";
 
 const ROTULO_SITUACAO = {
   todos: "Todos",
@@ -25,16 +25,8 @@ const ROTULO_SITUACAO = {
 } as const;
 
 export default function Alimentos() {
-  const { modoEscuro } = useTheme();
+  const { cores } = useTheme();
 
-  const cores = {
-  fundo: modoEscuro ? "#121212" : "#F8F7F1",
-  card: modoEscuro ? "#1E1E1E" : "#FFFFFF",
-  texto: modoEscuro ? "#FFFFFF" : "#26332D",
-  textoSecundario: modoEscuro ? "#C4C4C4" : "#8C9AA0",
-  borda: modoEscuro ? "#2A2A2A" : "#D8D8D8",
-  chip: modoEscuro ? "#263B30" : "#EAF2EC",
-};
   const router = useRouter();
   const [filtrosAbertos, setFiltrosAbertos] = useState(false);
 
@@ -80,8 +72,10 @@ export default function Alimentos() {
   if (carregando) {
     return (
       <View style={[styles.centralizado,{ backgroundColor: cores.fundo },]}>
-        <ActivityIndicator size="large" color="#43855F" />
-        <Text style={styles.mensagem}>Carregando alimentos...</Text>
+        <ActivityIndicator size="large" color={cores.primariaTexto} />
+        <Text style={[styles.mensagem, { color: cores.textoSecundario }]}>
+          Carregando alimentos...
+        </Text>
       </View>
     );
   }
@@ -91,11 +85,11 @@ export default function Alimentos() {
       {/* BUSCA + BOTÃO DE FILTROS */}
       <View style={styles.linhaBusca}>
         <View style={[styles.campoBusca,{backgroundColor: cores.card,borderColor: cores.borda,},]}>
-          <Ionicons name="search-outline" size={18} color="#8C9AA0" />
+          <Ionicons name="search-outline" size={18} color={cores.textoFraco} />
           <TextInput
             style={[styles.input,{ color: cores.texto },]}
             placeholder="Buscar alimento"
-            placeholderTextColor="#8C9AA0"
+            placeholderTextColor={cores.textoFraco}
             value={busca}
             onChangeText={setBusca}
             autoCorrect={false}
@@ -103,19 +97,19 @@ export default function Alimentos() {
           />
           {busca.length > 0 && (
             <Pressable onPress={() => setBusca("")} hitSlop={8}>
-              <Ionicons name="close-circle" size={18} color="#B5BFC3" />
+              <Ionicons name="close-circle" size={18} color={cores.textoFraco} />
             </Pressable>
           )}
         </View>
 
         <Pressable
-          style={[styles.botaoFiltro,{backgroundColor:filtrosAtivos > 0 ? "#43855F" : cores.card,borderColor: "#43855F",},]}
+          style={[styles.botaoFiltro,{backgroundColor:filtrosAtivos > 0 ? cores.primaria : cores.card,borderColor: cores.primaria,},]}
           onPress={() => setFiltrosAbertos(true)}
         >
           <Ionicons
             name="options-outline"
             size={22}
-            color={filtrosAtivos > 0 ? "#FFFFFF" : "#43855F"}
+            color={filtrosAtivos > 0 ? "#FFFFFF" : cores.primariaTexto}
           />
           {filtrosAtivos > 0 && (
             <View style={styles.badge}>
@@ -180,7 +174,7 @@ export default function Alimentos() {
 
       {/* CADASTRAR */}
       <Pressable
-        style={styles.fab}
+        style={[styles.fab, { backgroundColor: cores.primaria, shadowColor: cores.sombra }]}
         onPress={() => router.push("/cadastrar_alimento")}
       >
         <Ionicons name="add" size={26} color="#FFFFFF" />
@@ -210,10 +204,17 @@ function ChipAtivo({
   rotulo: string;
   onRemover: () => void;
 }) {
+  const { cores } = useTheme();
+
   return (
-    <Pressable style={styles.chipAtivo} onPress={onRemover}>
-      <Text style={styles.chipAtivoTexto}>{rotulo}</Text>
-      <Ionicons name="close" size={13} color="#43855F" />
+    <Pressable
+      style={[styles.chipAtivo, { backgroundColor: cores.primariaSuave }]}
+      onPress={onRemover}
+    >
+      <Text style={[styles.chipAtivoTexto, { color: cores.primariaTexto }]}>
+        {rotulo}
+      </Text>
+      <Ionicons name="close" size={13} color={cores.primariaTexto} />
     </Pressable>
   );
 }

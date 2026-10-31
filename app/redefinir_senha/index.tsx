@@ -1,8 +1,10 @@
+import { useTheme } from "@/src/context/ThemeContext";
 import { supabase } from "@/src/lib/supabase";
 import { useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View, } from "react-native";
 
 export default function RedefinirSenha() {
+  const { cores } = useTheme();
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
 
@@ -87,31 +89,47 @@ export default function RedefinirSenha() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.titulo}>Redefinir Senha</Text>
+    <View style={[styles.container, { backgroundColor: cores.fundo }]}>
+      <Text style={[styles.titulo, { color: cores.primariaTexto }]}>Redefinir Senha</Text>
 
-      <Text style={styles.subtitulo}>
+      <Text style={[styles.subtitulo, { color: cores.textoSecundario }]}>
         Digite sua nova senha abaixo.
       </Text>
 
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            color: cores.texto,
+            backgroundColor: cores.input,
+            borderColor: cores.borda,
+          },
+        ]}
         placeholder="Nova senha"
+        placeholderTextColor={cores.textoFraco}
         secureTextEntry
         value={novaSenha}
         onChangeText={setNovaSenha}
       />
 
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            color: cores.texto,
+            backgroundColor: cores.input,
+            borderColor: cores.borda,
+          },
+        ]}
         placeholder="Confirmar nova senha"
+        placeholderTextColor={cores.textoFraco}
         secureTextEntry
         value={confirmarSenha}
         onChangeText={setConfirmarSenha}
       />
 
       <TouchableOpacity
-        style={styles.botao}
+        style={[styles.botao, { backgroundColor: cores.primaria }]}
         onPress={redefinirSenha}
       >
         <Text style={styles.textoBotao}>
