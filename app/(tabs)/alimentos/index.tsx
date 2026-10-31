@@ -139,6 +139,26 @@ export default function Alimentos() {
         {total === 1 ? "alimento" : "alimentos"}
       </Text>
 
+      {/* AVISO DE ERRO AO ATUALIZAR (mantém a lista anterior visível) */}
+      {erro && filtrados.length > 0 && (
+        <View
+          style={[
+            styles.erroBanner,
+            { backgroundColor: cores.perigoSuave, borderColor: cores.perigo },
+          ]}
+        >
+          <Ionicons name="alert-circle-outline" size={18} color={cores.perigo} />
+          <Text style={[styles.erroBannerTexto, { color: cores.perigo }]}>
+            Não foi possível atualizar a lista.
+          </Text>
+          <Pressable onPress={() => recarregar(true)} hitSlop={8}>
+            <Text style={[styles.erroBannerAcao, { color: cores.perigo }]}>
+              Tentar
+            </Text>
+          </Pressable>
+        </View>
+      )}
+
       {/* LISTA */}
       <FlatList
         data={filtrados}
@@ -163,11 +183,19 @@ export default function Alimentos() {
             <Text
         style={[styles.mensagem,{ color: cores.textoSecundario },]}>
               {erro
-                ? "Puxe a lista para baixo para tentar novamente."
+                ? "Verifique sua conexão e tente novamente."
                 : temFiltroOuBusca
                 ? "Tente ajustar a busca ou os filtros."
                 : "Cadastre seu primeiro alimento para começar."}
             </Text>
+            {erro && (
+              <Pressable
+                style={[styles.botaoTentar, { backgroundColor: cores.primaria }]}
+                onPress={() => recarregar()}
+              >
+                <Text style={styles.textoBotaoTentar}>Tentar novamente</Text>
+              </Pressable>
+            )}
           </View>
         }
       />
@@ -314,6 +342,36 @@ const styles = StyleSheet.create({
     color: "#8C9AA0",
     marginTop: 12,
     marginBottom: 8,
+  },
+  erroBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 8,
+  },
+  erroBannerTexto: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  erroBannerAcao: {
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  botaoTentar: {
+    marginTop: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  textoBotaoTentar: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "bold",
   },
   lista: {
     paddingBottom: 100,

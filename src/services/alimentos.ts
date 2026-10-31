@@ -175,7 +175,7 @@ export async function buscarAlimentosEmEstoque(): Promise<AlimentoBanco[]> {
 
   if (erroUsuario) {
     console.error("Erro ao identificar usuário:", erroUsuario.message);
-    return [];
+    throw new Error("Não foi possível identificar o usuário.");
   }
 
   if (!user) {
@@ -202,7 +202,7 @@ export async function buscarAlimentosEmEstoque(): Promise<AlimentoBanco[]> {
 
   if (error) {
     console.error("Erro ao buscar alimentos:", error.message);
-    return [];
+    throw new Error("Não foi possível carregar os alimentos.");
   }
 
   return (data ?? []).map((item) => ({

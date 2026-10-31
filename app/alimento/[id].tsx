@@ -1,8 +1,17 @@
 import { useTheme } from '@/src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { consumirAlimento } from '../../src/services/alimentos';
 import { atualizarProgressoMissao } from '../../src/services/missoes';
 
@@ -13,6 +22,8 @@ export default function DetalhesAlimento() {
   const [quantidadeAtual, setQuantidadeAtual] = useState(
   Number(alimento.quantidade ?? 0)
 );
+  const [consumindo, setConsumindo] = useState(false);
+  const consumindoRef = useRef(false);
 
   useEffect(() => {
   async function registrarVerificacao() {
@@ -23,6 +34,12 @@ export default function DetalhesAlimento() {
 }, []);
 
   const handleConsumir = async () => {
+    // Evita duplo toque: ignora novos toques enquanto a operação está em andamento
+    if (consumindoRef.current) return;
+
+    consumindoRef.current = true;
+    setConsumindo(true);
+
     try {
       const resultado = await consumirAlimento(
         String(alimento.id)
@@ -42,15 +59,29 @@ export default function DetalhesAlimento() {
         mensagem += `\n\n🎉 PARABÉNS! Você alcançou o Nível ${resultado.resultadoExp.nivel}!`;
       }
 
-      alert(mensagem);
-
       if (resultado.consumido) {
-        router.back();
+        if (Platform.OS === "web") {
+          // No web o Alert não executa o botão; navega em seguida
+          Alert.alert("Alimento consumido", mensagem);
+          router.back();
+        } else {
+          Alert.alert("Alimento consumido", mensagem, [
+            { text: "OK", onPress: () => router.back() },
+          ]);
+        }
+      } else {
+        Alert.alert("Alimento consumido", mensagem);
       }
       
     } catch (erro) {
       console.error("Erro ao consumir alimento:", erro);
-      alert("Não foi possível consumir o alimento.");
+      Alert.alert(
+        "Erro ao consumir",
+        "Não foi possível consumir o alimento. Verifique sua conexão e tente novamente."
+      );
+    } finally {
+      consumindoRef.current = false;
+      setConsumindo(false);
     }
   };
 
@@ -107,17 +138,28 @@ export default function DetalhesAlimento() {
         </View>
       </View>
       <Pressable
-      style={[styles.botaoConsumir, { backgroundColor: cores.primaria }]}
+      style={({ pressed }) => [
+        styles.botaoConsumir,
+        { backgroundColor: cores.primaria },
+        (pressed || consumindo) && styles.botaoConsumirPressionado,
+      ]}
       onPress={handleConsumir}
+      disabled={consumindo}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: consumindo, busy: consumindo }}
     >
-      <Ionicons
-        name="restaurant-outline"
-        size={20}
-        color="#FFFFFF"
-      />
+      {consumindo ? (
+        <ActivityIndicator size="small" color="#FFFFFF" />
+      ) : (
+        <Ionicons
+          name="restaurant-outline"
+          size={20}
+          color="#FFFFFF"
+        />
+      )}
 
       <Text style={styles.textoBotaoConsumir}>
-        Consumir alimento
+        {consumindo ? "Consumindo..." : "Consumir alimento"}
       </Text>
     </Pressable>
     </ScrollView>
@@ -189,6 +231,10 @@ const styles = StyleSheet.create({
   alignItems: "center",
   flexDirection: "row",
   marginTop: 15,
+},
+
+botaoConsumirPressionado: {
+  opacity: 0.7,
 },
 
 textoBotaoConsumir: {
