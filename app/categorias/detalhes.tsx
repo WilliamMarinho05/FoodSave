@@ -1,4 +1,5 @@
 import { buscarAlimentosEmEstoque } from "@/src/services/alimentos";
+import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -43,6 +44,7 @@ const categorias = {
 
 export default function DetalhesCategoria() {
   const router = useRouter();
+  const { cores } = useTheme();
   const { categoria } = useLocalSearchParams();
   const [alimentos, setAlimentos] = useState<any[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -87,13 +89,15 @@ export default function DetalhesCategoria() {
 
   if (!categoriaAtual) {
     return (
-      <View style={styles.erro}>
-        <Text style={styles.erroTexto}>
+      <View style={[styles.erro, { backgroundColor: cores.fundo }]}>
+        <Text style={[styles.erroTexto, { color: cores.textoSecundario }]}>
           Categoria não encontrada.
         </Text>
 
         <Pressable onPress={() => router.back()}>
-          <Text style={styles.voltarLink}>Voltar</Text>
+          <Text style={[styles.voltarLink, { color: cores.primariaTexto }]}>
+            Voltar
+          </Text>
         </Pressable>
       </View>
     );
@@ -101,54 +105,58 @@ export default function DetalhesCategoria() {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: cores.fundo }]}
       contentContainerStyle={styles.content}
     >
       <Pressable
         style={styles.voltar}
         onPress={() => router.back()}
       >
-        <Ionicons name="arrow-back" size={24} color="#43855F" />
-        <Text style={styles.voltarTexto}>Voltar</Text>
+        <Ionicons name="arrow-back" size={24} color={cores.primariaTexto} />
+        <Text style={[styles.voltarTexto, { color: cores.primariaTexto }]}>
+          Voltar
+        </Text>
       </Pressable>
 
       <View style={styles.cabecalho}>
-        <View style={styles.iconeContainer}>
+        <View
+          style={[styles.iconeContainer, { backgroundColor: cores.primariaSuave }]}
+        >
           <Ionicons
             name={categoriaAtual.icone}
             size={30}
-            color="#43855F"
+            color={cores.primariaTexto}
           />
         </View>
 
-        <Text style={styles.titulo}>
+        <Text style={[styles.titulo, { color: cores.primariaTexto }]}>
           {categoriaAtual.nome}
         </Text>
       </View>
 
-      <Text style={styles.subtitulo}>
+      <Text style={[styles.subtitulo, { color: cores.textoSecundario }]}>
         Alimentos cadastrados nesta categoria.
       </Text>
 
       {carregando ? (
-  <View style={styles.vazio}>
-    <Text style={styles.vazioTitulo}>
+  <View style={[styles.vazio, { backgroundColor: cores.card }]}>
+    <Text style={[styles.vazioTitulo, { color: cores.texto }]}>
       Carregando alimentos...
     </Text>
   </View>
 ) : alimentos.length === 0 ? (
-  <View style={styles.vazio}>
+  <View style={[styles.vazio, { backgroundColor: cores.card }]}>
     <Ionicons
       name="fast-food-outline"
       size={45}
-      color="#B8C8BC"
+      color={cores.textoFraco}
     />
 
-    <Text style={styles.vazioTitulo}>
+    <Text style={[styles.vazioTitulo, { color: cores.texto }]}>
       Nenhum alimento encontrado
     </Text>
 
-    <Text style={styles.vazioTexto}>
+    <Text style={[styles.vazioTexto, { color: cores.textoSecundario }]}>
       Os alimentos cadastrados nesta categoria aparecerão
       aqui.
     </Text>
@@ -156,22 +164,27 @@ export default function DetalhesCategoria() {
 ) : (
   <View style={styles.lista}>
     {alimentos.map((alimento) => (
-      <View key={alimento.id} style={styles.alimentoCard}>
-        <View style={styles.alimentoIcone}>
+      <View
+        key={alimento.id}
+        style={[styles.alimentoCard, { backgroundColor: cores.card }]}
+      >
+        <View
+          style={[styles.alimentoIcone, { backgroundColor: cores.primariaSuave }]}
+        >
           <Ionicons
             name="fast-food-outline"
             size={24}
-            color="#43855F"
+            color={cores.primariaTexto}
           />
         </View>
 
         <View style={styles.alimentoInfo}>
-          <Text style={styles.alimentoNome}>
+          <Text style={[styles.alimentoNome, { color: cores.texto }]}>
             {alimento.nome}
           </Text>
 
           {alimento.quantidade && (
-            <Text style={styles.alimentoDetalhe}>
+            <Text style={[styles.alimentoDetalhe, { color: cores.textoSecundario }]}>
               Quantidade: {alimento.quantidade}
             </Text>
           )}

@@ -1,3 +1,4 @@
+import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -32,43 +33,48 @@ const problemas = [
 
 export default function Problemas() {
   const router = useRouter();
+  const { cores } = useTheme();
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: cores.fundo }]}
       contentContainerStyle={styles.content}
     >
       <Pressable
         style={styles.voltar}
         onPress={() => router.back()}
       >
-        <Ionicons name="arrow-back" size={24} color="#43855F" />
-        <Text style={styles.voltarTexto}>Voltar</Text>
+        <Ionicons name="arrow-back" size={24} color={cores.primariaTexto} />
+        <Text style={[styles.voltarTexto, { color: cores.primariaTexto }]}>
+          Voltar
+        </Text>
       </Pressable>
 
-      <Text style={styles.titulo}>Problemas no aplicativo</Text>
+      <Text style={[styles.titulo, { color: cores.primariaTexto }]}>
+        Problemas no aplicativo
+      </Text>
 
-      <Text style={styles.subtitulo}>
+      <Text style={[styles.subtitulo, { color: cores.textoSecundario }]}>
         Confira algumas orientações para resolver problemas comuns.
       </Text>
 
       <View style={styles.lista}>
         {problemas.map((problema) => (
-          <View key={problema.titulo} style={styles.card}>
-            <View style={styles.iconeContainer}>
+          <View key={problema.titulo} style={[styles.card, { backgroundColor: cores.card }]}>
+            <View style={[styles.iconeContainer, { backgroundColor: cores.primariaSuave }]}>
               <Ionicons
                 name={problema.icone}
                 size={25}
-                color="#43855F"
+                color={cores.primariaTexto}
               />
             </View>
 
             <View style={styles.textos}>
-              <Text style={styles.cardTitulo}>
+              <Text style={[styles.cardTitulo, { color: cores.texto }]}>
                 {problema.titulo}
               </Text>
 
-              <Text style={styles.cardDescricao}>
+              <Text style={[styles.cardDescricao, { color: cores.textoSecundario }]}>
                 {problema.descricao}
               </Text>
             </View>

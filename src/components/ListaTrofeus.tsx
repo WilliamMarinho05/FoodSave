@@ -9,6 +9,7 @@ import Animated, {
     withTiming,
 } from 'react-native-reanimated';
 import { useTrofeus } from '../hooks/useTrofeus';
+import { useTheme } from '../context/ThemeContext';
 import { TrofeuUsuario } from '../types/trofeu';
 
 /* ---------- Medalha (usada aqui e na tela de conquista) ---------- */
@@ -48,6 +49,7 @@ export function TrofeuMedalha({
   comHalo = false,
   animado = false,
 }: TrofeuMedalhaProps) {
+  const { cores } = useTheme();
   const pulso = useSharedValue(1);
 
   useEffect(() => {
@@ -105,7 +107,7 @@ export function TrofeuMedalha({
             width: tamanho,
             height: tamanho,
             borderRadius: tamanho / 2,
-            backgroundColor: bloqueado ? '#E3E8E2' : '#F3B93A',
+            backgroundColor: bloqueado ? cores.cardSecundario : '#F3B93A',
           },
           !bloqueado && styles.sombraDourada,
         ]}
@@ -115,9 +117,9 @@ export function TrofeuMedalha({
             width: interno,
             height: interno,
             borderRadius: interno / 2,
-            backgroundColor: bloqueado ? '#F2F5F1' : '#FFD86B',
+            backgroundColor: bloqueado ? cores.card : '#FFD86B',
             borderWidth: Math.max(1.5, tamanho * 0.02),
-            borderColor: bloqueado ? '#DDE3DC' : 'rgba(255,255,255,0.65)',
+            borderColor: bloqueado ? cores.borda : 'rgba(255,255,255,0.65)',
             alignItems: 'center',
             justifyContent: 'center',
           }}
@@ -125,7 +127,7 @@ export function TrofeuMedalha({
           <Ionicons
             name={resolverIcone(icone)}
             size={tamanho * 0.4}
-            color={bloqueado ? '#B3BDB5' : '#2F6B4A'}
+            color={bloqueado ? cores.textoFraco : '#2F6B4A'}
           />
         </View>
       </View>
@@ -140,10 +142,16 @@ export function TrofeuMedalha({
               borderRadius: tamanho * 0.16,
               right: (area - tamanho) / 2,
               bottom: (area - tamanho) / 2,
+              backgroundColor: cores.card,
+              borderColor: cores.borda,
             },
           ]}
         >
-          <Ionicons name="lock-closed" size={tamanho * 0.17} color="#8C9AA0" />
+          <Ionicons
+            name="lock-closed"
+            size={tamanho * 0.17}
+            color={cores.textoFraco}
+          />
         </View>
       )}
     </View>
@@ -152,21 +160,38 @@ export function TrofeuMedalha({
 
 /* ---------- Cartão de um troféu ---------- */
 function CartaoTrofeu({ trofeu }: { trofeu: TrofeuUsuario }) {
+  const { cores } = useTheme();
   const percentual = Math.min(trofeu.progresso_atual / trofeu.meta_quantidade, 1) * 100;
 
   return (
-    <View style={[styles.cartao, !trofeu.conquistado && styles.cartaoBloqueado]}>
+    <View
+      style={[
+        styles.cartao,
+        { backgroundColor: cores.card, borderColor: cores.bordaSuave },
+        !trofeu.conquistado && { backgroundColor: cores.cardSecundario },
+      ]}
+    >
       <TrofeuMedalha icone={trofeu.icone} tamanho={68} bloqueado={!trofeu.conquistado} />
 
-      <Text style={[styles.nome, !trofeu.conquistado && styles.nomeBloqueado]} numberOfLines={2}>
+      <Text
+        style={[
+          styles.nome,
+          { color: cores.texto },
+          !trofeu.conquistado && { color: cores.textoFraco },
+        ]}
+        numberOfLines={2}
+      >
         {trofeu.nome}
       </Text>
-      <Text style={styles.descricao} numberOfLines={3}>
+      <Text
+        style={[styles.descricao, { color: cores.textoSecundario }]}
+        numberOfLines={3}
+      >
         {trofeu.descricao}
       </Text>
 
       {trofeu.conquistado ? (
-        <Text style={styles.conquistadoEm}>
+        <Text style={[styles.conquistadoEm, { color: cores.primariaTexto }]}>
           Conquistado
           {trofeu.conquistado_em
             ? ` em ${new Date(trofeu.conquistado_em).toLocaleDateString('pt-BR')}`
@@ -174,10 +199,15 @@ function CartaoTrofeu({ trofeu }: { trofeu: TrofeuUsuario }) {
         </Text>
       ) : (
         <View style={styles.progressoArea}>
-          <View style={styles.barraFundo}>
-            <View style={[styles.barraPreenchida, { width: `${percentual}%` }]} />
+          <View style={[styles.barraFundo, { backgroundColor: cores.primariaSuave }]}>
+            <View
+              style={[
+                styles.barraPreenchida,
+                { width: `${percentual}%`, backgroundColor: cores.primaria },
+              ]}
+            />
           </View>
-          <Text style={styles.progressoTexto}>
+          <Text style={[styles.progressoTexto, { color: cores.textoSecundario }]}>
             {trofeu.progresso_atual}/{trofeu.meta_quantidade}
           </Text>
         </View>
@@ -189,25 +219,40 @@ function CartaoTrofeu({ trofeu }: { trofeu: TrofeuUsuario }) {
 /* ---------- Lista: resumo + grade de troféus ---------- */
 // Sem ScrollView próprio: coloque dentro de uma tela que já role.
 export default function ListaTrofeus() {
+  const { cores } = useTheme();
   const { trofeus, loading, totalConquistados } = useTrofeus();
   const percentual = trofeus.length > 0 ? (totalConquistados / trofeus.length) * 100 : 0;
 
   return (
     <View>
-      <View style={styles.resumo}>
-        <Text style={styles.resumoTitulo}>Minhas conquistas</Text>
-        <Text style={styles.resumoSubtitulo}>
+      <View
+        style={[
+          styles.resumo,
+          { backgroundColor: cores.card, borderColor: cores.bordaSuave },
+        ]}
+      >
+        <Text style={[styles.resumoTitulo, { color: cores.texto }]}>
+          Minhas conquistas
+        </Text>
+        <Text style={[styles.resumoSubtitulo, { color: cores.textoSecundario }]}>
           {totalConquistados} de {trofeus.length} troféus desbloqueados
         </Text>
-        <View style={styles.barraFundo}>
-          <View style={[styles.barraPreenchida, { width: `${percentual}%` }]} />
+        <View style={[styles.barraFundo, { backgroundColor: cores.primariaSuave }]}>
+          <View
+            style={[
+              styles.barraPreenchida,
+              { width: `${percentual}%`, backgroundColor: cores.primaria },
+            ]}
+          />
         </View>
       </View>
 
       {loading && trofeus.length === 0 ? (
-        <ActivityIndicator color="#43855F" style={styles.carregando} />
+        <ActivityIndicator color={cores.primariaTexto} style={styles.carregando} />
       ) : trofeus.length === 0 ? (
-        <Text style={styles.vazio}>Nenhum troféu disponível no momento.</Text>
+        <Text style={[styles.vazio, { color: cores.textoSecundario }]}>
+          Nenhum troféu disponível no momento.
+        </Text>
       ) : (
         <View style={styles.grade}>
           {trofeus.map((trofeu) => (
