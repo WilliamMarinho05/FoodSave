@@ -1,6 +1,7 @@
 import { supabase } from "@/src/lib/supabase";
+import { mostrarAlerta, traduzirErroAuth } from "@/src/utils/mensagens";
 import { useEffect, useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View, } from "react-native";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, } from "react-native";
 
 export default function RedefinirSenha() {
   const [novaSenha, setNovaSenha] = useState("");
@@ -45,17 +46,17 @@ export default function RedefinirSenha() {
 
   async function redefinirSenha() {
     if (!novaSenha || !confirmarSenha) {
-      Alert.alert("Atenção", "Preencha os dois campos.");
+      mostrarAlerta("Atenção", "Preencha os dois campos.");
       return;
     }
 
     if (novaSenha !== confirmarSenha) {
-      Alert.alert("Atenção", "As senhas não são iguais.");
+      mostrarAlerta("Atenção", "As senhas não são iguais.");
       return;
     }
 
     if (novaSenha.length < 6) {
-      Alert.alert(
+      mostrarAlerta(
         "Atenção",
         "A senha deve ter pelo menos 6 caracteres."
       );
@@ -68,18 +69,18 @@ export default function RedefinirSenha() {
       });
 
       if (error) {
-        Alert.alert("Erro", error.message);
+        mostrarAlerta("Erro", traduzirErroAuth(error.message, error.code));
         return;
       }
 
-      Alert.alert(
+      mostrarAlerta(
         "Sucesso",
         "Sua senha foi alterada com sucesso!"
       );
     } catch (erro) {
       console.error("Erro ao redefinir senha:", erro);
 
-      Alert.alert(
+      mostrarAlerta(
         "Erro",
         "Não foi possível alterar sua senha."
       );

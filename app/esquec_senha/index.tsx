@@ -1,6 +1,7 @@
 import { supabase } from "@/src/lib/supabase";
+import { mostrarAlerta, traduzirErroAuth } from "@/src/utils/mensagens";
 import { useState } from "react";
-import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View, } from "react-native";
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View, } from "react-native";
 
 export default function EsqueceuSenha() {
   const [email, setEmail] = useState("");
@@ -8,7 +9,7 @@ export default function EsqueceuSenha() {
 
   async function enviarEmail() {
     if (!email.trim()) {
-      Alert.alert("Atenção", "Digite seu e-mail.");
+      mostrarAlerta("Atenção", "Digite seu e-mail.");
       return;
     }
 
@@ -23,18 +24,18 @@ export default function EsqueceuSenha() {
         );
 
       if (error) {
-        Alert.alert("Erro", error.message);
+        mostrarAlerta("Erro", traduzirErroAuth(error.message, error.code));
         return;
       }
 
-      Alert.alert(
+      mostrarAlerta(
         "E-mail enviado",
         "Se esse e-mail estiver cadastrado, você receberá um link para recuperar sua senha."
       );
     } catch (erro) {
       console.error("Erro ao recuperar senha:", erro);
 
-      Alert.alert(
+      mostrarAlerta(
         "Erro",
         "Não foi possível enviar o e-mail de recuperação."
       );

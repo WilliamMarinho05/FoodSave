@@ -1,8 +1,9 @@
 
 import { useCallback, useState } from "react";
-import {ActivityIndicator,FlatList,StyleSheet,Text,View,} from "react-native";
+import {ActivityIndicator,FlatList,Pressable,StyleSheet,Text,View,} from "react-native";
 import { useFocusEffect } from "expo-router";
 import {AlimentoBanco,buscarAlimentosEmEstoque,} from "../../../src/services/alimentos";
+import { Ionicons } from "@expo/vector-icons";
 
 type Alerta = {
   titulo: string;
@@ -105,15 +106,46 @@ export default function Alertas() {
     );
   }
 
-  if (erro) {
-    return (
-      <View style={styles.centralizado}>
-        <Text style={styles.mensagem}>
-          Não foi possível carregar os alertas.
-        </Text>
-      </View>
-    );
-  }
+    if (erro) {
+      return (
+        <View style={styles.centralizado}>
+          <Ionicons
+            name="cloud-offline-outline"
+            size={48}
+            color="#D97757"
+          />
+
+          <Text style={styles.erroTitulo}>
+            Não foi possível carregar os alertas
+          </Text>
+
+          <Text style={styles.mensagem}>
+            Verifique sua conexão com a internet e tente novamente.
+          </Text>
+
+          <Pressable
+            style={styles.botaoTentarNovamente}
+            onPress={carregarAlimentos}
+            disabled={carregando}
+          >
+            {carregando ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <>
+                <Ionicons
+                  name="refresh-outline"
+                  size={18}
+                  color="#FFFFFF"
+                />
+                <Text style={styles.botaoTexto}>
+                  Tentar novamente
+                </Text>
+              </>
+            )}
+          </Pressable>
+        </View>
+      );
+    }
 
   const totalAlertas =
     vencidos.length + vencemHoje.length + vencemEmBreve.length;
@@ -276,5 +308,30 @@ const styles = StyleSheet.create({
     color: "#65736B",
     textAlign: "center",
     marginTop: 8,
+  },
+  erroTitulo: {
+    fontSize: 17,
+    fontWeight: "bold",
+    color: "#26332D",
+    marginTop: 14,
+    textAlign: "center",
+  },
+
+  botaoTentarNovamente: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#43855F",
+    paddingHorizontal: 22,
+    paddingVertical: 13,
+    borderRadius: 10,
+    gap: 8,
+    marginTop: 20,
+  },
+
+  botaoTexto: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "bold",
   },
 });
