@@ -13,16 +13,8 @@ interface PainelProps {
 }
 
 export default function PainelValidade({ painel, nomeUsuario }: PainelProps) {
-  const { modoEscuro } = useTheme();
-  
-  const cores = {
-  card: modoEscuro ? "#1E1E1E" : "#FFFFFF",
-  texto: modoEscuro ? "#FFFFFF" : "#111111",
-  textoSecundario: modoEscuro ? "#C4C4C4" : "#666666",
-  bordaNoPrazo: modoEscuro ? "#31583C" : "#D1F2D9",
-  bordaAtencao: modoEscuro ? "#5A452D" : "#FFE3C5",
-  bordaVencidos: modoEscuro ? "#5A3030" : "#FFD6D6",
-};
+  const { cores } = useTheme();
+
   return (
     <View style={styles.container}>
       <Text style={[styles.greeting,{ color: cores.textoSecundario },]}>Olá, {nomeUsuario || 'User'}!</Text>
@@ -30,37 +22,37 @@ export default function PainelValidade({ painel, nomeUsuario }: PainelProps) {
 
       <View style={styles.cardsRow}>
         {/* Card No Prazo */}
-        <View style={[styles.card,{backgroundColor: cores.card,borderColor: cores.bordaNoPrazo,},]}>
+        <View style={[styles.card,{backgroundColor: cores.card,borderColor: cores.sucessoSuave,},]}>
           <Text style={[styles.cardHeader,{ color: cores.texto },]} numberOfLines={1} adjustsFontSizeToFit>
             NO PRAZO
           </Text>
-          <Text style={[styles.cardValue, { color: '#2ECC71' }]}>
+          <Text style={[styles.cardValue, { color: cores.sucesso }]}>
             {painel.noPrazo}
           </Text>
           <Text style={[styles.cardSubtitle,{ color: cores.textoSecundario },]}>itens saudáveis</Text>
         </View>
 
         {/* Card Atenção */}
-        <View style={[styles.card,{backgroundColor: cores.card,borderColor: cores.bordaAtencao,},]}>
+        <View style={[styles.card,{backgroundColor: cores.card,borderColor: cores.atencaoSuave,},]}>
           <View style={styles.headerWithIcon}>
             <Text style={[styles.cardHeader,{ color: cores.texto },]} numberOfLines={1} adjustsFontSizeToFit>
               ATENÇÃO
             </Text>
             {/* Ícone levemente menor para acompanhar a fonte */}
-            <Feather name="alert-triangle" size={10} color="#FF9800" />
+            <Feather name="alert-triangle" size={10} color={cores.atencao} />
           </View>
-          <Text style={[styles.cardValue, { color: '#FF9800' }]}>
+          <Text style={[styles.cardValue, { color: cores.atencao }]}>
             {painel.atencao}
           </Text>
           <Text style={[styles.cardSubtitle,{ color: cores.textoSecundario },]}>vencem em breve</Text>
         </View>
 
         {/* Card Vencidos */}
-        <View style={[styles.card,{backgroundColor: cores.card,borderColor: cores.bordaVencidos,},]}>
+        <View style={[styles.card,{backgroundColor: cores.card,borderColor: cores.perigoSuave,},]}>
           <Text style={[styles.cardHeader,{ color: cores.texto },]} numberOfLines={1} adjustsFontSizeToFit>
             VENCIDOS
           </Text>
-          <Text style={[styles.cardValue, { color: '#FF4D4D' }]}>
+          <Text style={[styles.cardValue, { color: cores.perigo }]}>
             {painel.vencidos}
           </Text>
           <Text style={[styles.cardSubtitle,{ color: cores.textoSecundario },]}>precisa descartar</Text>

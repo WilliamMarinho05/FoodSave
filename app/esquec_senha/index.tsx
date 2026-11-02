@@ -1,8 +1,10 @@
+import { useTheme } from "@/src/context/ThemeContext";
 import { supabase } from "@/src/lib/supabase";
 import { useState } from "react";
 import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View, } from "react-native";
 
 export default function EsqueceuSenha() {
+  const { cores } = useTheme();
   const [email, setEmail] = useState("");
   const [carregando, setCarregando] = useState(false);
 
@@ -44,7 +46,7 @@ export default function EsqueceuSenha() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: cores.fundo }]}>
       <Image
         source={require("../../assets/images/logo.jpeg")}
         style={styles.logo}
@@ -52,11 +54,19 @@ export default function EsqueceuSenha() {
       />
 
       <View style={styles.campos}>
-        <Text style={styles.titulo}>Recuperar Senha</Text>
+        <Text style={[styles.titulo, { color: cores.texto }]}>Recuperar Senha</Text>
 
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              color: cores.texto,
+              backgroundColor: cores.input,
+              borderColor: cores.borda,
+            },
+          ]}
           placeholder="Digite seu e-mail"
+          placeholderTextColor={cores.textoFraco}
           keyboardType="email-address"
           autoCapitalize="none"
           value={email}
@@ -66,7 +76,7 @@ export default function EsqueceuSenha() {
 
       <View style={styles.campos}>
         <TouchableOpacity
-          style={styles.botao}
+          style={[styles.botao, { backgroundColor: cores.primaria }]}
           onPress={enviarEmail}
           disabled={carregando}
         >

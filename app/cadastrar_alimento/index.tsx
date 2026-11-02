@@ -1,3 +1,4 @@
+import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -73,6 +74,7 @@ type Erros = Partial<
 
 export default function CadastrarAlimento() {
   const router = useRouter();
+  const { cores } = useTheme();
   const scrollRef = useRef<ScrollView>(null);
 
   const [nome, setNome] = useState("");
@@ -266,35 +268,52 @@ export default function CadastrarAlimento() {
   return (
     <ScrollView
       ref={scrollRef}
-      style={styles.container}
+      style={[styles.container, { backgroundColor: cores.fundo }]}
       contentContainerStyle={styles.conteudo}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
       {/* BOTÃO VOLTAR */}
       <Pressable style={styles.voltar} onPress={handleVoltar}>
-        <Ionicons name="arrow-back" size={24} color="#43855F" />
-        <Text style={styles.voltarTexto}>Voltar</Text>
+        <Ionicons name="arrow-back" size={24} color={cores.primariaTexto} />
+        <Text style={[styles.voltarTexto, { color: cores.primariaTexto }]}>
+          Voltar
+        </Text>
       </Pressable>
 
       {/* CABEÇALHO */}
       <View style={styles.cabecalho}>
-        <Text style={styles.titulo}>Cadastrar Alimento</Text>
-        <Text style={styles.subtitulo}>Preencha os dados do alimento</Text>
+        <Text style={[styles.titulo, { color: cores.texto }]}>
+          Cadastrar Alimento
+        </Text>
+        <Text style={[styles.subtitulo, { color: cores.textoSecundario }]}>
+          Preencha os dados do alimento
+        </Text>
       </View>
 
       {/* FOTO */}
       <View style={styles.areaFoto}>
-        <View style={styles.circuloCamera}>
-          <Ionicons name="camera-outline" size={28} color="#43855F" />
+        <View
+          style={[
+            styles.circuloCamera,
+            { borderColor: cores.primaria, backgroundColor: cores.primariaSuave },
+          ]}
+        >
+          <Ionicons name="camera-outline" size={28} color={cores.primariaTexto} />
         </View>
 
-        <Text style={styles.textoFoto}>Tirar Foto do Alimento</Text>
+        <Text style={[styles.textoFoto, { color: cores.primariaTexto }]}>
+          Tirar Foto do Alimento
+        </Text>
       </View>
 
       {/* SOBRE O ALIMENTO */}
-      <View style={styles.secao}>
-        <Text style={styles.tituloSecao}>Sobre o alimento</Text>
+      <View
+        style={[styles.secao, { backgroundColor: cores.card, shadowColor: cores.sombra }]}
+      >
+        <Text style={[styles.tituloSecao, { color: cores.primariaTexto }]}>
+          Sobre o alimento
+        </Text>
 
         <CampoSugestoes
           label="Nome do Alimento"
@@ -327,23 +346,33 @@ export default function CadastrarAlimento() {
       </View>
 
       {/* QUANTIDADE E MEDIDA */}
-      <View style={styles.secao}>
-        <Text style={styles.tituloSecao}>Quantidade e medida</Text>
+      <View
+        style={[styles.secao, { backgroundColor: cores.card, shadowColor: cores.sombra }]}
+      >
+        <Text style={[styles.tituloSecao, { color: cores.primariaTexto }]}>
+          Quantidade e medida
+        </Text>
 
         <View style={styles.linha}>
           <View style={styles.campoMetade}>
             <View style={styles.campo}>
-              <Text style={styles.label}>Quantidade</Text>
+              <Text style={[styles.label, { color: cores.textoSecundario }]}>
+                Quantidade
+              </Text>
 
               <View
-                style={[styles.inputBox, !!erros.quantidade && styles.inputErro]}
+                style={[
+                  styles.inputBox,
+                  { backgroundColor: cores.input, borderColor: cores.borda },
+                  !!erros.quantidade && [styles.inputErro, { borderColor: cores.perigo }],
+                ]}
               >
-                <Ionicons name="layers-outline" size={18} color="#43855F" />
+                <Ionicons name="layers-outline" size={18} color={cores.primariaTexto} />
 
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: cores.texto }]}
                   placeholder="Ex: 2"
-                  placeholderTextColor="#8C9AA0"
+                  placeholderTextColor={cores.textoFraco}
                   keyboardType="number-pad"
                   value={quantidade}
                   onChangeText={(texto) => {
@@ -355,7 +384,9 @@ export default function CadastrarAlimento() {
               </View>
 
               {!!erros.quantidade && (
-                <Text style={styles.erro}>{erros.quantidade}</Text>
+                <Text style={[styles.erro, { color: cores.perigo }]}>
+                  {erros.quantidade}
+                </Text>
               )}
             </View>
           </View>
@@ -378,15 +409,23 @@ export default function CadastrarAlimento() {
         </View>
 
         <View style={styles.campo}>
-          <Text style={styles.label}>Peso (kg) · opcional</Text>
+          <Text style={[styles.label, { color: cores.textoSecundario }]}>
+            Peso (kg) · opcional
+          </Text>
 
-          <View style={[styles.inputBox, !!erros.peso && styles.inputErro]}>
-            <Ionicons name="barbell-outline" size={18} color="#43855F" />
+          <View
+            style={[
+              styles.inputBox,
+              { backgroundColor: cores.input, borderColor: cores.borda },
+              !!erros.peso && [styles.inputErro, { borderColor: cores.perigo }],
+            ]}
+          >
+            <Ionicons name="barbell-outline" size={18} color={cores.primariaTexto} />
 
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: cores.texto }]}
               placeholder="Ex: 1,5"
-              placeholderTextColor="#8C9AA0"
+              placeholderTextColor={cores.textoFraco}
               keyboardType="decimal-pad"
               value={peso}
               onChangeText={(texto) => {
@@ -397,26 +436,40 @@ export default function CadastrarAlimento() {
             />
           </View>
 
-          {!!erros.peso && <Text style={styles.erro}>{erros.peso}</Text>}
+          {!!erros.peso && (
+            <Text style={[styles.erro, { color: cores.perigo }]}>{erros.peso}</Text>
+          )}
         </View>
       </View>
 
       {/* DATAS */}
-      <View style={styles.secao}>
-        <Text style={styles.tituloSecao}>Datas</Text>
+      <View
+        style={[styles.secao, { backgroundColor: cores.card, shadowColor: cores.sombra }]}
+      >
+        <Text style={[styles.tituloSecao, { color: cores.primariaTexto }]}>Datas</Text>
 
         <View style={styles.linha}>
           <View style={styles.campoMetade}>
-            <Text style={styles.label}>Data de Compra</Text>
+            <Text style={[styles.label, { color: cores.textoSecundario }]}>
+              Data de Compra
+            </Text>
 
             <Pressable
-              style={[styles.inputBox, !!erros.dataCompra && styles.inputErro]}
+              style={[
+                styles.inputBox,
+                { backgroundColor: cores.input, borderColor: cores.borda },
+                !!erros.dataCompra && [styles.inputErro, { borderColor: cores.perigo }],
+              ]}
               onPress={() => setCalendarioAberto("compra")}
             >
-              <Ionicons name="calendar-outline" size={18} color="#43855F" />
+              <Ionicons name="calendar-outline" size={18} color={cores.primariaTexto} />
 
               <Text
-                style={[styles.valorData, !dataCompra && styles.placeholder]}
+                style={[
+                  styles.valorData,
+                  { color: cores.texto },
+                  !dataCompra && { color: cores.textoFraco },
+                ]}
                 numberOfLines={1}
               >
                 {dataCompra ? formatarBR(dataCompra) : "Selecione"}
@@ -424,21 +477,33 @@ export default function CadastrarAlimento() {
             </Pressable>
 
             {!!erros.dataCompra && (
-              <Text style={styles.erro}>{erros.dataCompra}</Text>
+              <Text style={[styles.erro, { color: cores.perigo }]}>
+                {erros.dataCompra}
+              </Text>
             )}
           </View>
 
           <View style={styles.campoMetade}>
-            <Text style={styles.label}>Validade</Text>
+            <Text style={[styles.label, { color: cores.textoSecundario }]}>
+              Validade
+            </Text>
 
             <Pressable
-              style={[styles.inputBox, !!erros.validade && styles.inputErro]}
+              style={[
+                styles.inputBox,
+                { backgroundColor: cores.input, borderColor: cores.borda },
+                !!erros.validade && [styles.inputErro, { borderColor: cores.perigo }],
+              ]}
               onPress={abrirCalendarioValidade}
             >
-              <Ionicons name="hourglass-outline" size={18} color="#43855F" />
+              <Ionicons name="hourglass-outline" size={18} color={cores.primariaTexto} />
 
               <Text
-                style={[styles.valorData, !validade && styles.placeholder]}
+                style={[
+                  styles.valorData,
+                  { color: cores.texto },
+                  !validade && { color: cores.textoFraco },
+                ]}
                 numberOfLines={1}
               >
                 {validade ? formatarBR(validade) : "Selecione"}
@@ -446,7 +511,9 @@ export default function CadastrarAlimento() {
             </Pressable>
 
             {!!erros.validade && (
-              <Text style={styles.erro}>{erros.validade}</Text>
+              <Text style={[styles.erro, { color: cores.perigo }]}>
+                {erros.validade}
+              </Text>
             )}
           </View>
         </View>
@@ -454,7 +521,11 @@ export default function CadastrarAlimento() {
 
       {/* BOTÃO SALVAR */}
       <Pressable
-        style={[styles.botaoSalvar, salvando && styles.botaoDesabilitado]}
+        style={[
+          styles.botaoSalvar,
+          { backgroundColor: cores.primaria },
+          salvando && styles.botaoDesabilitado,
+        ]}
         onPress={handleSalvar}
         disabled={salvando}
       >
@@ -466,12 +537,18 @@ export default function CadastrarAlimento() {
 
       {/* BOTÃO CADASTRAR POR NOTA FISCAL */}
       <Pressable
-        style={[styles.botaoNota, salvando && styles.botaoDesabilitado]}
+        style={[
+          styles.botaoNota,
+          { backgroundColor: cores.card, borderColor: cores.primaria },
+          salvando && styles.botaoDesabilitado,
+        ]}
         onPress={handleCadastrarPorNotaFiscal}
         disabled={salvando}
       >
-        <Ionicons name="receipt-outline" size={20} color="#43855F" />
-        <Text style={styles.textoBotaoNota}>Cadastrar por Nota Fiscal</Text>
+        <Ionicons name="receipt-outline" size={20} color={cores.primariaTexto} />
+        <Text style={[styles.textoBotaoNota, { color: cores.primariaTexto }]}>
+          Cadastrar por Nota Fiscal
+        </Text>
       </Pressable>
 
       {/* CALENDÁRIOS */}
