@@ -44,6 +44,14 @@ function ConteudoRaiz() {
         />
 
         <Stack.Screen
+          name="redefinir_senha/index"
+          options={{
+            title: "Redefinir Senha",
+            headerBackTitle: "Voltar",
+          }}
+        />
+
+        <Stack.Screen
           name="cadastro/index"
           options={{
             title: "Cadastro",

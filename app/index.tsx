@@ -46,7 +46,7 @@ export default function Index() {
 
       router.replace("/home");
 
-    } catch (error) {
+    } catch {
       setErroLogin(
         "Não foi possível conectar ao servidor. Verifique sua internet e tente novamente."
       );
