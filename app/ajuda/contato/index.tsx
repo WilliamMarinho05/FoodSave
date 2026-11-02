@@ -1,3 +1,4 @@
+import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -12,6 +13,7 @@ import {
 
 export default function Contato() {
   const router = useRouter();
+  const { cores } = useTheme();
 
   const abrirEmail = () => {
     Linking.openURL("mailto:suporte@foodsave.com");
@@ -19,46 +21,52 @@ export default function Contato() {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: cores.fundo }]}
       contentContainerStyle={styles.content}
     >
       <Pressable
         style={styles.voltar}
         onPress={() => router.back()}
       >
-        <Ionicons name="arrow-back" size={24} color="#43855F" />
-        <Text style={styles.voltarTexto}>Voltar</Text>
+        <Ionicons name="arrow-back" size={24} color={cores.primariaTexto} />
+        <Text style={[styles.voltarTexto, { color: cores.primariaTexto }]}>
+          Voltar
+        </Text>
       </Pressable>
 
-      <Text style={styles.titulo}>Entrar em contato</Text>
+      <Text style={[styles.titulo, { color: cores.primariaTexto }]}>
+        Entrar em contato
+      </Text>
 
-      <Text style={styles.subtitulo}>
+      <Text style={[styles.subtitulo, { color: cores.textoSecundario }]}>
         Precisa de ajuda? Nossa equipe está disponível para receber
         dúvidas, sugestões e relatos de problemas.
       </Text>
 
-      <View style={styles.card}>
-        <View style={styles.iconeContainer}>
+      <View style={[styles.card, { backgroundColor: cores.card }]}>
+        <View
+          style={[styles.iconeContainer, { backgroundColor: cores.primariaSuave }]}
+        >
           <Ionicons
             name="mail-outline"
             size={30}
-            color="#43855F"
+            color={cores.primariaTexto}
           />
         </View>
 
-        <Text style={styles.cardTitulo}>E-mail</Text>
+        <Text style={[styles.cardTitulo, { color: cores.texto }]}>E-mail</Text>
 
-        <Text style={styles.email}>
+        <Text style={[styles.email, { color: cores.primariaTexto }]}>
           suporte@foodsave.com
         </Text>
 
-        <Text style={styles.descricao}>
+        <Text style={[styles.descricao, { color: cores.textoSecundario }]}>
           Clique no botão abaixo para abrir seu aplicativo de
           e-mail e entrar em contato conosco.
         </Text>
 
         <Pressable
-          style={styles.botao}
+          style={[styles.botao, { backgroundColor: cores.primaria }]}
           onPress={abrirEmail}
         >
           <Ionicons

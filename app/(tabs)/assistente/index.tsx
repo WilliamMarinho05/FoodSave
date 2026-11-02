@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useHeaderHeight } from "@react-navigation/elements";
+import { useTheme } from "@/src/context/ThemeContext";
 import { Mensagem } from "@/src/types/conversa";
 import {
   carregarConversa,
@@ -72,11 +73,18 @@ function rotuloDia(criadoEm: string) {
 }
 
 function AvatarAssistente({ tamanho }: { tamanho: number }) {
+  const { cores } = useTheme();
+
   return (
     <View
       style={[
         estilos.avatarBase,
-        { width: tamanho, height: tamanho, borderRadius: tamanho / 2 },
+        {
+          width: tamanho,
+          height: tamanho,
+          borderRadius: tamanho / 2,
+          backgroundColor: cores.primaria,
+        },
       ]}
     >
       <Ionicons name="sparkles" size={tamanho * 0.5} color="#FFFFFF" />
@@ -85,6 +93,7 @@ function AvatarAssistente({ tamanho }: { tamanho: number }) {
 }
 
 function IndicadorDigitando() {
+  const { cores } = useTheme();
   const opacidade = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
@@ -113,12 +122,20 @@ function IndicadorDigitando() {
       <AvatarAssistente tamanho={30} />
 
       <Animated.View
-        style={[estilos.balao, estilos.balaoIA, { opacity: opacidade }]}
+        style={[
+          estilos.balao,
+          estilos.balaoIA,
+          {
+            opacity: opacidade,
+            backgroundColor: cores.card,
+            borderColor: cores.borda,
+          },
+        ]}
       >
         <View style={estilos.digitando}>
-          <View style={estilos.ponto} />
-          <View style={estilos.ponto} />
-          <View style={estilos.ponto} />
+          <View style={[estilos.ponto, { backgroundColor: cores.textoSecundario }]} />
+          <View style={[estilos.ponto, { backgroundColor: cores.textoSecundario }]} />
+          <View style={[estilos.ponto, { backgroundColor: cores.textoSecundario }]} />
         </View>
       </Animated.View>
     </View>
@@ -127,6 +144,7 @@ function IndicadorDigitando() {
 
 export default function Assistente() {
   const alturaHeader = useHeaderHeight();
+  const { cores } = useTheme();
 
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -250,7 +268,14 @@ export default function Assistente() {
       <View style={estilos.grupoMensagem}>
         {dia && (
           <View style={estilos.linhaDia}>
-            <Text style={estilos.textoDia}>{dia}</Text>
+            <Text
+              style={[
+                estilos.textoDia,
+                { color: cores.textoSecundario, backgroundColor: cores.primariaSuave },
+              ]}
+            >
+              {dia}
+            </Text>
           </View>
         )}
 
@@ -263,13 +288,31 @@ export default function Assistente() {
           {!ehUsuario && <AvatarAssistente tamanho={30} />}
 
           <View
-            style={[estilos.balao, ehUsuario ? estilos.balaoUsuario : estilos.balaoIA]}
+            style={[
+              estilos.balao,
+              ehUsuario
+                ? [estilos.balaoUsuario, { backgroundColor: cores.primaria }]
+                : [
+                    estilos.balaoIA,
+                    { backgroundColor: cores.card, borderColor: cores.borda },
+                  ],
+            ]}
           >
-            <Text style={ehUsuario ? estilos.textoUsuario : estilos.textoIA}>
+            <Text
+              style={[
+                ehUsuario ? estilos.textoUsuario : estilos.textoIA,
+                !ehUsuario && { color: cores.texto },
+              ]}
+            >
               {mensagem.texto}
             </Text>
 
-            <Text style={ehUsuario ? estilos.horaUsuario : estilos.horaIA}>
+            <Text
+              style={[
+                ehUsuario ? estilos.horaUsuario : estilos.horaIA,
+                !ehUsuario && { color: cores.textoSecundario },
+              ]}
+            >
               {formatarHora(mensagem.criadoEm)}
             </Text>
           </View>
@@ -280,26 +323,37 @@ export default function Assistente() {
 
   if (carregando) {
     return (
-      <View style={estilos.centralizado}>
-        <ActivityIndicator size="large" color="#43855F" />
-        <Text style={estilos.mensagemCarregando}>Carregando conversa...</Text>
+      <View style={[estilos.centralizado, { backgroundColor: cores.fundo }]}>
+        <ActivityIndicator size="large" color={cores.primariaTexto} />
+        <Text style={[estilos.mensagemCarregando, { color: cores.textoSecundario }]}>
+          Carregando conversa...
+        </Text>
       </View>
     );
   }
 
   return (
     <KeyboardAvoidingView
-      style={estilos.container}
+      style={[estilos.container, { backgroundColor: cores.fundo }]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={alturaHeader}
     >
       {/* TOPO DO CHAT */}
-      <View style={estilos.topo}>
+      <View
+        style={[
+          estilos.topo,
+          { backgroundColor: cores.fundo, borderBottomColor: cores.borda },
+        ]}
+      >
         <AvatarAssistente tamanho={34} />
 
         <View style={estilos.infoTopo}>
-          <Text style={estilos.topoNome}>Assistente FoodSave</Text>
-          <Text style={estilos.topoStatus}>● online</Text>
+          <Text style={[estilos.topoNome, { color: cores.texto }]}>
+            Assistente FoodSave
+          </Text>
+          <Text style={[estilos.topoStatus, { color: cores.primariaTexto }]}>
+            ● online
+          </Text>
         </View>
 
         <Pressable
@@ -307,7 +361,7 @@ export default function Assistente() {
           onPress={confirmarLimpeza}
           hitSlop={8}
         >
-          <Ionicons name="trash-outline" size={20} color="#9AA79F" />
+          <Ionicons name="trash-outline" size={20} color={cores.textoSecundario} />
         </Pressable>
       </View>
 
@@ -316,27 +370,46 @@ export default function Assistente() {
         <View style={estilos.bemVindo}>
           <AvatarAssistente tamanho={72} />
 
-          <Text style={estilos.bemVindoTitulo}>Olá! 👋</Text>
-          <Text style={estilos.bemVindoTexto}>
+          <Text style={[estilos.bemVindoTitulo, { color: cores.texto }]}>
+            Olá! 👋
+          </Text>
+          <Text style={[estilos.bemVindoTexto, { color: cores.textoSecundario }]}>
             Sou o assistente do FoodSave. Posso dar dicas de armazenamento,
             receitas para usar o que está perto do vencimento e ajudar a
             organizar seus alimentos.
           </Text>
 
-          <Text style={estilos.bemVindoDica}>
+          <Text
+            style={[
+              estilos.bemVindoDica,
+              {
+                color: cores.textoSecundario,
+                backgroundColor: cores.sucessoSuave,
+              },
+            ]}
+          >
             ✨ Enquanto a IA real não é conectada, as respostas aqui são apenas
             exemplos de demonstração.
           </Text>
 
-          <Text style={estilos.tituloSugestoes}>Que tal começar com:</Text>
+          <Text style={[estilos.tituloSugestoes, { color: cores.texto }]}>
+            Que tal começar com:
+          </Text>
           <View style={estilos.listaSugestoes}>
             {SUGESTOES.map((sugestao) => (
               <Pressable
                 key={sugestao}
-                style={estilos.sugestao}
+                style={[
+                  estilos.sugestao,
+                  { backgroundColor: cores.card, borderColor: cores.borda },
+                ]}
                 onPress={() => enviarTexto(sugestao)}
               >
-                <Text style={estilos.textoSugestao}>{sugestao}</Text>
+                <Text
+                  style={[estilos.textoSugestao, { color: cores.primariaTexto }]}
+                >
+                  {sugestao}
+                </Text>
               </Pressable>
             ))}
           </View>
@@ -355,12 +428,22 @@ export default function Assistente() {
       )}
 
       {/* CAMPO DE MENSAGEM */}
-      <View style={estilos.barraEntrada}>
-        <View style={estilos.caixaEntrada}>
+      <View
+        style={[
+          estilos.barraEntrada,
+          { backgroundColor: cores.fundo, borderTopColor: cores.borda },
+        ]}
+      >
+        <View
+          style={[
+            estilos.caixaEntrada,
+            { backgroundColor: cores.input, borderColor: cores.borda },
+          ]}
+        >
           <TextInput
-            style={estilos.entrada}
+            style={[estilos.entrada, { color: cores.texto }]}
             placeholder="Escreva sua mensagem..."
-            placeholderTextColor="#9AA79F"
+            placeholderTextColor={cores.textoFraco}
             value={texto}
             onChangeText={setTexto}
             multiline
@@ -370,7 +453,8 @@ export default function Assistente() {
         <Pressable
           style={[
             estilos.botaoEnviar,
-            enviavel ? null : estilos.botaoEnviarDesativado,
+            { backgroundColor: cores.primaria },
+            enviavel ? null : { backgroundColor: cores.borda },
           ]}
           onPress={() => enviarTexto(texto)}
           disabled={!enviavel}

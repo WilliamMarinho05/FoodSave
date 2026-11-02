@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useTheme } from "../context/ThemeContext";
 
 export type OpcaoSelecao = { valor: string; rotulo: string };
 
@@ -33,31 +34,40 @@ export default function CampoSelecao({
   aoSelecionar,
   erro,
 }: Props) {
+  const { cores } = useTheme();
   const [aberto, setAberto] = useState(false);
 
   const rotuloAtual = opcoes.find((o) => o.valor === valor)?.rotulo ?? "";
 
   return (
     <View style={styles.campo}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, { color: cores.textoSecundario }]}>{label}</Text>
 
       <Pressable
-        style={[styles.inputBox, !!erro && styles.inputErro]}
+        style={[
+          styles.inputBox,
+          { backgroundColor: cores.input, borderColor: cores.borda },
+          !!erro && { borderColor: cores.perigo },
+        ]}
         onPress={() => setAberto(true)}
       >
-        <Ionicons name={icone} size={18} color="#43855F" />
+        <Ionicons name={icone} size={18} color={cores.primariaTexto} />
 
         <Text
-          style={[styles.valor, !valor && styles.placeholder]}
+          style={[
+            styles.valor,
+            { color: cores.texto },
+            !valor && { color: cores.textoFraco },
+          ]}
           numberOfLines={1}
         >
           {rotuloAtual || placeholder}
         </Text>
 
-        <Ionicons name="chevron-down" size={18} color="#8C9AA0" />
+        <Ionicons name="chevron-down" size={18} color={cores.textoFraco} />
       </Pressable>
 
-      {!!erro && <Text style={styles.erro}>{erro}</Text>}
+      {!!erro && <Text style={[styles.erro, { color: cores.perigo }]}>{erro}</Text>}
 
       <Modal
         visible={aberto}
@@ -65,16 +75,16 @@ export default function CampoSelecao({
         animationType="slide"
         onRequestClose={() => setAberto(false)}
       >
-        <View style={styles.overlay}>
+        <View style={[styles.overlay, { backgroundColor: cores.overlay }]}>
           <Pressable
             style={StyleSheet.absoluteFill}
             onPress={() => setAberto(false)}
           />
 
-          <View style={styles.sheet}>
-            <View style={styles.puxador} />
+          <View style={[styles.sheet, { backgroundColor: cores.card }]}>
+            <View style={[styles.puxador, { backgroundColor: cores.borda }]} />
 
-            <Text style={styles.tituloSheet}>{titulo}</Text>
+            <Text style={[styles.tituloSheet, { color: cores.texto }]}>{titulo}</Text>
 
             <ScrollView showsVerticalScrollIndicator={false}>
               {opcoes.map((opcao) => {
@@ -85,7 +95,7 @@ export default function CampoSelecao({
                     key={opcao.valor}
                     style={[
                       styles.opcao,
-                      selecionada && styles.opcaoSelecionada,
+                      selecionada && { backgroundColor: cores.primariaSuave },
                     ]}
                     onPress={() => {
                       aoSelecionar(opcao.valor);
@@ -95,7 +105,11 @@ export default function CampoSelecao({
                     <Text
                       style={[
                         styles.opcaoTexto,
-                        selecionada && styles.opcaoTextoSelecionada,
+                        { color: cores.texto },
+                        selecionada && {
+                          color: cores.primariaTexto,
+                          fontWeight: "bold",
+                        },
                       ]}
                     >
                       {opcao.rotulo}
@@ -105,7 +119,7 @@ export default function CampoSelecao({
                       <Ionicons
                         name="checkmark-circle"
                         size={20}
-                        color="#43855F"
+                        color={cores.primariaTexto}
                       />
                     )}
                   </Pressable>
