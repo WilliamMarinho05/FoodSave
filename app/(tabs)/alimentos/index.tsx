@@ -42,14 +42,7 @@ export default function Alimentos() {
     }).start();
   };
 
-  const cores = {
-  fundo: modoEscuro ? "#121212" : "#F8F7F1",
-  card: modoEscuro ? "#1E1E1E" : "#FFFFFF",
-  texto: modoEscuro ? "#FFFFFF" : "#26332D",
-  textoSecundario: modoEscuro ? "#C4C4C4" : "#8C9AA0",
-  borda: modoEscuro ? "#2A2A2A" : "#D8D8D8",
-  chip: modoEscuro ? "#263B30" : "#EAF2EC",
-};
+
   const router = useRouter();
   const [filtrosAbertos, setFiltrosAbertos] = useState(false);
 
