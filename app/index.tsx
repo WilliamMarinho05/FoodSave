@@ -3,7 +3,6 @@ import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Pressable,
   StyleSheet,
@@ -12,6 +11,8 @@ import {
   View
 } from "react-native";
 import { supabase } from "../src/lib/supabase";
+import { traduzirErroAuth } from "../src/utils/mensagens";
+
 
 export default function Index() {
   const router = useRouter();
@@ -20,25 +21,38 @@ export default function Index() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [erroLogin, setErroLogin] = useState("");
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Atenção", "Por favor, preencha o e-mail e a senha.");
+    setErroLogin("");
+
+    if (!email.trim() || !password) {
+      setErroLogin("Por favor, preencha o e-mail e a senha.");
       return;
     }
 
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password,
+      });
 
-    if (error) {
-      Alert.alert("Erro no Login", error.message);
+      if (error) {
+        setErroLogin(traduzirErroAuth(error.message, error.code));
+        return;
+      }
+
+      router.replace("/home");
+
+    } catch (error) {
+      setErroLogin(
+        "Não foi possível conectar ao servidor. Verifique sua internet e tente novamente."
+      );
+
+    } finally {
       setLoading(false);
-    } else {
-      router.replace("/home"); 
     }
   };
 
@@ -91,7 +105,7 @@ export default function Index() {
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(t) => { setEmail(t); setErroLogin(""); }}
           />
         </View>
 
@@ -112,7 +126,7 @@ export default function Index() {
             placeholderTextColor={cores.textoFraco}
             secureTextEntry
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(t) => { setPassword(t); setErroLogin(""); }}
           />
           <View style={styles.esqueciSenhaContainer}>
             <Link style={[styles.link, { color: cores.primariaTexto }]} href="/esquec_senha">
@@ -120,6 +134,12 @@ export default function Index() {
             </Link>
           </View>
         </View>
+
+        {erroLogin !== "" && (
+          <View style={styles.erroBox}>
+            <Text style={styles.erroTexto}>{erroLogin}</Text>
+          </View>
+        )}
 
         <Pressable
           style={({ pressed }) => [
@@ -241,6 +261,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     textDecorationLine: "none",
+  },
+  // ERRO
+  erroBox: {
+    backgroundColor: "#FDECEA",
+    borderColor: "#F5C2C0",
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginTop: 16,
+  },
+  erroTexto: {
+    color: "#B3261E",
+    fontSize: 13,
+    fontWeight: "600",
   },
   // BOTÃO
   botao: {

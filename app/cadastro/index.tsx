@@ -3,7 +3,6 @@ import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,6 +12,7 @@ import {
 } from "react-native";
 import { useTheme } from "@/src/context/ThemeContext";
 import { supabase } from "../../src/lib/supabase";
+import { mostrarAlerta, traduzirErroAuth } from "../../src/utils/mensagens";
 
 export default function Cadastro() {
   const router = useRouter();
@@ -54,12 +54,12 @@ export default function Cadastro() {
 
   const criarConta = async () => {
     if (!nome || !sobrenome || !dataNascimento || !email || !senha || !confirmacaoSenha) {
-      Alert.alert("Atenção", "Preencha todos os campos.");
+      mostrarAlerta("Atenção", "Preencha todos os campos.");
       return;
     }
 
     if (senha !== confirmacaoSenha) {
-      Alert.alert("Atenção", "As senhas não coincidem.");
+      mostrarAlerta("Atenção", "As senhas não coincidem.");
       return;
     }
 
@@ -67,7 +67,7 @@ export default function Cadastro() {
     const partesData = dataNascimento.split("/");
 
     if (partesData.length !== 3) {
-      Alert.alert("Atenção", "Digite uma data de nascimento válida.");
+      mostrarAlerta("Atenção", "Digite uma data de nascimento válida.");
       return;
     }
 
@@ -91,16 +91,16 @@ export default function Cadastro() {
       });
 
       if (authError) {
-        Alert.alert("Erro ao criar conta", authError.message);
+        mostrarAlerta("Erro ao criar conta", traduzirErroAuth(authError.message, authError.code));
         return;
       }
 
       if (!authData.user) {
-        Alert.alert("Erro", "Não foi possível criar o usuário.");
+        mostrarAlerta("Erro", "Não foi possível criar o usuário.");
         return;
       }
 
-      Alert.alert(
+      mostrarAlerta(
         "Sucesso!", 
         "Conta criada com sucesso! Se você habilitou a confirmação por e-mail no Supabase, verifique sua caixa de entrada."
       );
@@ -108,7 +108,7 @@ export default function Cadastro() {
       router.replace("/");
     } catch (error) {
       console.error("Erro inesperado:", error);
-      Alert.alert("Erro", "Ocorreu um erro ao criar a conta.");
+      mostrarAlerta("Erro", "Ocorreu um erro ao criar a conta.");
     } finally {
       setLoading(false);
     }
