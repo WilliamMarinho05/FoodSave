@@ -283,14 +283,6 @@ export default function CadastrarAlimento() {
         <Text style={styles.subtitulo}>Preencha os dados do alimento</Text>
       </View>
 
-      {/* FOTO */}
-      <View style={styles.areaFoto}>
-        <View style={styles.circuloCamera}>
-          <Ionicons name="camera-outline" size={28} color="#43855F" />
-        </View>
-
-        <Text style={styles.textoFoto}>Tirar Foto do Alimento</Text>
-      </View>
 
       {/* SOBRE O ALIMENTO */}
       <View style={styles.secao}>
