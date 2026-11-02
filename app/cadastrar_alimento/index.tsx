@@ -291,21 +291,6 @@ export default function CadastrarAlimento() {
         </Text>
       </View>
 
-      {/* FOTO */}
-      <View style={styles.areaFoto}>
-        <View
-          style={[
-            styles.circuloCamera,
-            { borderColor: cores.primaria, backgroundColor: cores.primariaSuave },
-          ]}
-        >
-          <Ionicons name="camera-outline" size={28} color={cores.primariaTexto} />
-        </View>
-
-        <Text style={[styles.textoFoto, { color: cores.primariaTexto }]}>
-          Tirar Foto do Alimento
-        </Text>
-      </View>
 
       {/* SOBRE O ALIMENTO */}
       <View
