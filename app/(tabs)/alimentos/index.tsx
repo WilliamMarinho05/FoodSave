@@ -9,6 +9,7 @@ import {
   Text,
   TextInput,
   View,
+  Animated,
 } from "react-native";
 
 import CardAlimento from "@/src/components/CardAlimento";
@@ -27,6 +28,28 @@ const ROTULO_SITUACAO = {
 export default function Alimentos() {
   const { cores } = useTheme();
 
+  const [hoverFAB, setHoverFAB] = useState(false);
+
+  const larguraFAB = React.useRef(new Animated.Value(55)).current;
+
+  const animarFAB = (expandir: boolean) => {
+    setHoverFAB(expandir);
+
+    Animated.timing(larguraFAB, {
+      toValue: expandir ? 195 : 55,
+      duration: 250,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const cores = {
+  fundo: modoEscuro ? "#121212" : "#F8F7F1",
+  card: modoEscuro ? "#1E1E1E" : "#FFFFFF",
+  texto: modoEscuro ? "#FFFFFF" : "#26332D",
+  textoSecundario: modoEscuro ? "#C4C4C4" : "#8C9AA0",
+  borda: modoEscuro ? "#2A2A2A" : "#D8D8D8",
+  chip: modoEscuro ? "#263B30" : "#EAF2EC",
+};
   const router = useRouter();
   const [filtrosAbertos, setFiltrosAbertos] = useState(false);
 
@@ -201,12 +224,35 @@ export default function Alimentos() {
       />
 
       {/* CADASTRAR */}
-      <Pressable
-        style={[styles.fab, { backgroundColor: cores.primaria, shadowColor: cores.sombra }]}
-        onPress={() => router.push("/cadastrar_alimento")}
+      <Animated.View
+        style={[
+          styles.fab,
+          {
+            width: larguraFAB,
+          },
+        ]}
       >
-        <Ionicons name="add" size={26} color="#FFFFFF" />
-      </Pressable>
+        <Pressable
+          onPress={() => {
+            if (!hoverFAB) {
+              animarFAB(true);
+            } else {
+              router.push("/cadastrar_alimento");
+            }
+          }}
+          onHoverIn={() => animarFAB(true)}
+          onHoverOut={() => animarFAB(false)}
+          style={styles.fabConteudo}
+        >
+          <Ionicons name="add" size={26} color="#FFFFFF" />
+
+          {hoverFAB && (
+            <Text style={styles.fabTexto} numberOfLines={1}>
+              Cadastrar alimento
+            </Text>
+          )}
+        </Pressable>
+      </Animated.View>
 
       <FiltrosAlimentos
         visivel={filtrosAbertos}
@@ -399,16 +445,30 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 22,
     bottom: 25,
-    width: 55,
     height: 55,
     borderRadius: 28,
     backgroundColor: "#43855F",
-    justifyContent: "center",
-    alignItems: "center",
+    overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 6,
+    zIndex: 999,
   },
+
+  fabConteudo: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14.5,
+  },
+
+  fabTexto: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "bold",
+    marginLeft: 10,
+    whiteSpace: "nowrap",
+  } as any,
 });
