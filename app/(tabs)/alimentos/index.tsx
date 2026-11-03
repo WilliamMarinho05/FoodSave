@@ -2,13 +2,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  Animated,
 } from "react-native";
 
 import CardAlimento from "@/src/components/CardAlimento";
@@ -25,16 +26,23 @@ const ROTULO_SITUACAO = {
 } as const;
 
 export default function Alimentos() {
-  const { modoEscuro } = useTheme();
+  const { cores } = useTheme();
 
-  const cores = {
-  fundo: modoEscuro ? "#121212" : "#F8F7F1",
-  card: modoEscuro ? "#1E1E1E" : "#FFFFFF",
-  texto: modoEscuro ? "#FFFFFF" : "#26332D",
-  textoSecundario: modoEscuro ? "#C4C4C4" : "#8C9AA0",
-  borda: modoEscuro ? "#2A2A2A" : "#D8D8D8",
-  chip: modoEscuro ? "#263B30" : "#EAF2EC",
-};
+  const [hoverFAB, setHoverFAB] = useState(false);
+
+  const larguraFAB = React.useRef(new Animated.Value(55)).current;
+
+  const animarFAB = (expandir: boolean) => {
+    setHoverFAB(expandir);
+
+    Animated.timing(larguraFAB, {
+      toValue: expandir ? 195 : 55,
+      duration: 250,
+      useNativeDriver: false,
+    }).start();
+  };
+
+
   const router = useRouter();
   const [filtrosAbertos, setFiltrosAbertos] = useState(false);
 
@@ -80,8 +88,10 @@ export default function Alimentos() {
   if (carregando) {
     return (
       <View style={[styles.centralizado,{ backgroundColor: cores.fundo },]}>
-        <ActivityIndicator size="large" color="#43855F" />
-        <Text style={styles.mensagem}>Carregando alimentos...</Text>
+        <ActivityIndicator size="large" color={cores.primariaTexto} />
+        <Text style={[styles.mensagem, { color: cores.textoSecundario }]}>
+          Carregando alimentos...
+        </Text>
       </View>
     );
   }
@@ -91,11 +101,11 @@ export default function Alimentos() {
       {/* BUSCA + BOTÃO DE FILTROS */}
       <View style={styles.linhaBusca}>
         <View style={[styles.campoBusca,{backgroundColor: cores.card,borderColor: cores.borda,},]}>
-          <Ionicons name="search-outline" size={18} color="#8C9AA0" />
+          <Ionicons name="search-outline" size={18} color={cores.textoFraco} />
           <TextInput
             style={[styles.input,{ color: cores.texto },]}
             placeholder="Buscar alimento"
-            placeholderTextColor="#8C9AA0"
+            placeholderTextColor={cores.textoFraco}
             value={busca}
             onChangeText={setBusca}
             autoCorrect={false}
@@ -103,19 +113,19 @@ export default function Alimentos() {
           />
           {busca.length > 0 && (
             <Pressable onPress={() => setBusca("")} hitSlop={8}>
-              <Ionicons name="close-circle" size={18} color="#B5BFC3" />
+              <Ionicons name="close-circle" size={18} color={cores.textoFraco} />
             </Pressable>
           )}
         </View>
 
         <Pressable
-          style={[styles.botaoFiltro,{backgroundColor:filtrosAtivos > 0 ? "#43855F" : cores.card,borderColor: "#43855F",},]}
+          style={[styles.botaoFiltro,{backgroundColor:filtrosAtivos > 0 ? cores.primaria : cores.card,borderColor: cores.primaria,},]}
           onPress={() => setFiltrosAbertos(true)}
         >
           <Ionicons
             name="options-outline"
             size={22}
-            color={filtrosAtivos > 0 ? "#FFFFFF" : "#43855F"}
+            color={filtrosAtivos > 0 ? "#FFFFFF" : cores.primariaTexto}
           />
           {filtrosAtivos > 0 && (
             <View style={styles.badge}>
@@ -145,6 +155,26 @@ export default function Alimentos() {
         {total === 1 ? "alimento" : "alimentos"}
       </Text>
 
+      {/* AVISO DE ERRO AO ATUALIZAR (mantém a lista anterior visível) */}
+      {erro && filtrados.length > 0 && (
+        <View
+          style={[
+            styles.erroBanner,
+            { backgroundColor: cores.perigoSuave, borderColor: cores.perigo },
+          ]}
+        >
+          <Ionicons name="alert-circle-outline" size={18} color={cores.perigo} />
+          <Text style={[styles.erroBannerTexto, { color: cores.perigo }]}>
+            Não foi possível atualizar a lista.
+          </Text>
+          <Pressable onPress={() => recarregar(true)} hitSlop={8}>
+            <Text style={[styles.erroBannerAcao, { color: cores.perigo }]}>
+              Tentar
+            </Text>
+          </Pressable>
+        </View>
+      )}
+
       {/* LISTA */}
       <FlatList
         data={filtrados}
@@ -169,22 +199,53 @@ export default function Alimentos() {
             <Text
         style={[styles.mensagem,{ color: cores.textoSecundario },]}>
               {erro
-                ? "Puxe a lista para baixo para tentar novamente."
+                ? "Verifique sua conexão e tente novamente."
                 : temFiltroOuBusca
                 ? "Tente ajustar a busca ou os filtros."
                 : "Cadastre seu primeiro alimento para começar."}
             </Text>
+            {erro && (
+              <Pressable
+                style={[styles.botaoTentar, { backgroundColor: cores.primaria }]}
+                onPress={() => recarregar()}
+              >
+                <Text style={styles.textoBotaoTentar}>Tentar novamente</Text>
+              </Pressable>
+            )}
           </View>
         }
       />
 
       {/* CADASTRAR */}
-      <Pressable
-        style={styles.fab}
-        onPress={() => router.push("/cadastrar_alimento")}
+      <Animated.View
+        style={[
+          styles.fab,
+          {
+            width: larguraFAB,
+          },
+        ]}
       >
-        <Ionicons name="add" size={26} color="#FFFFFF" />
-      </Pressable>
+        <Pressable
+          onPress={() => {
+            if (!hoverFAB) {
+              animarFAB(true);
+            } else {
+              router.push("/cadastrar_alimento");
+            }
+          }}
+          onHoverIn={() => animarFAB(true)}
+          onHoverOut={() => animarFAB(false)}
+          style={styles.fabConteudo}
+        >
+          <Ionicons name="add" size={26} color="#FFFFFF" />
+
+          {hoverFAB && (
+            <Text style={styles.fabTexto} numberOfLines={1}>
+              Cadastrar alimento
+            </Text>
+          )}
+        </Pressable>
+      </Animated.View>
 
       <FiltrosAlimentos
         visivel={filtrosAbertos}
@@ -210,10 +271,17 @@ function ChipAtivo({
   rotulo: string;
   onRemover: () => void;
 }) {
+  const { cores } = useTheme();
+
   return (
-    <Pressable style={styles.chipAtivo} onPress={onRemover}>
-      <Text style={styles.chipAtivoTexto}>{rotulo}</Text>
-      <Ionicons name="close" size={13} color="#43855F" />
+    <Pressable
+      style={[styles.chipAtivo, { backgroundColor: cores.primariaSuave }]}
+      onPress={onRemover}
+    >
+      <Text style={[styles.chipAtivoTexto, { color: cores.primariaTexto }]}>
+        {rotulo}
+      </Text>
+      <Ionicons name="close" size={13} color={cores.primariaTexto} />
     </Pressable>
   );
 }
@@ -314,6 +382,36 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 8,
   },
+  erroBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 8,
+  },
+  erroBannerTexto: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  erroBannerAcao: {
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  botaoTentar: {
+    marginTop: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  textoBotaoTentar: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "bold",
+  },
   lista: {
     paddingBottom: 100,
   },
@@ -340,16 +438,30 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 22,
     bottom: 25,
-    width: 55,
     height: 55,
     borderRadius: 28,
     backgroundColor: "#43855F",
-    justifyContent: "center",
-    alignItems: "center",
+    overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 6,
+    zIndex: 999,
   },
+
+  fabConteudo: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14.5,
+  },
+
+  fabTexto: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "bold",
+    marginLeft: 10,
+    whiteSpace: "nowrap",
+  } as any,
 });

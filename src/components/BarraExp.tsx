@@ -5,7 +5,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { buscarProgressoNivel, calcularExpNecessario } from "../services/nivelamento";
 
 export default function BarraExp() {
-  const { modoEscuro } = useTheme();
+  const { cores } = useTheme();
   const [nivel, setNivel] = useState(1);
   const [exp, setExp] = useState(0);
 
@@ -25,13 +25,13 @@ export default function BarraExp() {
   const porcentagem = Math.min((exp / expNecessario) * 100, 100);
 
   return (
-    <View style={[styles.container,{backgroundColor: modoEscuro ? "#1E1E1E" : "#FFFFFF",borderColor: modoEscuro ? "#2A2A2A" : "#E2E8E4",},]}>
+    <View style={[styles.container,{backgroundColor: cores.card,borderColor: cores.borda,shadowColor: cores.sombra,},]}>
       <View style={styles.header}>
-        <Text style={[styles.textoNivel,{color: modoEscuro ? "#FFFFFF" : "#374151",},]}>Nível {nivel}</Text>
-        <Text style={[styles.textoExp,{color: modoEscuro ? "#AAAAAA" : "#7B8491",},]}>{exp} / {expNecessario} XP</Text>
+        <Text style={[styles.textoNivel,{color: cores.texto},]}>Nível {nivel}</Text>
+        <Text style={[styles.textoExp,{color: cores.textoSecundario},]}>{exp} / {expNecessario} XP</Text>
       </View>
 
-      <View style={[styles.barraFundo,{backgroundColor: modoEscuro ? "#3A3A3A" : "#E2E8E4",},]}>
+      <View style={[styles.barraFundo,{backgroundColor: cores.borda},]}>
         <View style={[styles.barraPreenchida, { width: `${porcentagem}%` }]} />
       </View>
     </View>

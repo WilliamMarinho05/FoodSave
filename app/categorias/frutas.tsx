@@ -1,3 +1,4 @@
+import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -10,20 +11,25 @@ import {
 
 export default function Frutas() {
   const router = useRouter();
+  const { cores } = useTheme();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: cores.fundo }]}>
       <Pressable
         style={styles.voltar}
         onPress={() => router.back()}
       >
-        <Ionicons name="arrow-back" size={24} color="#43855F" />
-        <Text style={styles.voltarTexto}>Voltar</Text>
+        <Ionicons name="arrow-back" size={24} color={cores.primariaTexto} />
+        <Text style={[styles.voltarTexto, { color: cores.primariaTexto }]}>
+          Voltar
+        </Text>
       </Pressable>
 
-      <Text style={styles.titulo}>Frutas</Text>
+      <Text style={[styles.titulo, { color: cores.primariaTexto }]}>
+        Frutas
+      </Text>
 
-      <Text style={styles.texto}>
+      <Text style={[styles.texto, { color: cores.textoSecundario }]}>
         Esta é a tela da categoria de frutas.
       </Text>
     </View>

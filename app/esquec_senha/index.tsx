@@ -1,14 +1,31 @@
+import { useTheme } from "@/src/context/ThemeContext";
 import { supabase } from "@/src/lib/supabase";
+import { mostrarAlerta, traduzirErroAuth } from "@/src/utils/mensagens";
+import { obterUrlRedirecionamento } from "@/src/utils/recuperacaoSenha";
 import { useState } from "react";
-import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View, } from "react-native";
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View, } from "react-native";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function EsqueceuSenha() {
+  const { cores } = useTheme();
   const [email, setEmail] = useState("");
   const [carregando, setCarregando] = useState(false);
 
   async function enviarEmail() {
-    if (!email.trim()) {
-      Alert.alert("Atenção", "Digite seu e-mail.");
+    if (carregando) {
+      return;
+    }
+
+    const emailNormalizado = email.trim();
+
+    if (!emailNormalizado) {
+      mostrarAlerta("Atenção", "Digite seu e-mail.");
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(emailNormalizado)) {
+      mostrarAlerta("Atenção", "Digite um e-mail válido.");
       return;
     }
 
@@ -16,25 +33,25 @@ export default function EsqueceuSenha() {
       setCarregando(true);
 
       const { error } = await supabase.auth.resetPasswordForEmail(
-        email.trim(),
+        emailNormalizado,
         {
-        redirectTo: "http://localhost:8081/redefinir_senha",
+          redirectTo: obterUrlRedirecionamento(),
         }
         );
 
       if (error) {
-        Alert.alert("Erro", error.message);
+        mostrarAlerta("Erro", traduzirErroAuth(error.message, error.code));
         return;
       }
 
-      Alert.alert(
+      mostrarAlerta(
         "E-mail enviado",
         "Se esse e-mail estiver cadastrado, você receberá um link para recuperar sua senha."
       );
     } catch (erro) {
       console.error("Erro ao recuperar senha:", erro);
 
-      Alert.alert(
+      mostrarAlerta(
         "Erro",
         "Não foi possível enviar o e-mail de recuperação."
       );
@@ -44,7 +61,7 @@ export default function EsqueceuSenha() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: cores.fundo }]}>
       <Image
         source={require("../../assets/images/logo.jpeg")}
         style={styles.logo}
@@ -52,11 +69,19 @@ export default function EsqueceuSenha() {
       />
 
       <View style={styles.campos}>
-        <Text style={styles.titulo}>Recuperar Senha</Text>
+        <Text style={[styles.titulo, { color: cores.texto }]}>Recuperar Senha</Text>
 
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              color: cores.texto,
+              backgroundColor: cores.input,
+              borderColor: cores.borda,
+            },
+          ]}
           placeholder="Digite seu e-mail"
+          placeholderTextColor={cores.textoFraco}
           keyboardType="email-address"
           autoCapitalize="none"
           value={email}
@@ -66,7 +91,11 @@ export default function EsqueceuSenha() {
 
       <View style={styles.campos}>
         <TouchableOpacity
-          style={styles.botao}
+          style={[
+            styles.botao,
+            { backgroundColor: cores.primaria },
+            carregando && styles.botaoDesabilitado,
+          ]}
           onPress={enviarEmail}
           disabled={carregando}
         >
@@ -114,6 +143,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 10,
+  },
+
+  botaoDesabilitado: {
+    opacity: 0.6,
   },
 
   textoBotao: {

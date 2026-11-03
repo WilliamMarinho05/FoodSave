@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { useTheme } from "../context/ThemeContext";
 import { FiltroSituacao, Ordem } from "../hooks/useListaAlimentos";
 
 interface Props {
@@ -35,6 +36,8 @@ const ORDENS: { valor: Ordem; rotulo: string }[] = [
 ];
 
 export default function FiltrosAlimentos(p: Props) {
+  const { cores } = useTheme();
+
   return (
     <Modal
       visible={p.visivel}
@@ -42,19 +45,26 @@ export default function FiltrosAlimentos(p: Props) {
       animationType="slide"
       onRequestClose={p.onFechar}
     >
-      <Pressable style={styles.fundo} onPress={p.onFechar} />
+      <Pressable
+        style={[styles.fundo, { backgroundColor: cores.overlay }]}
+        onPress={p.onFechar}
+      />
 
-      <View style={styles.sheet}>
+      <View style={[styles.sheet, { backgroundColor: cores.fundo }]}>
         <View style={styles.cabecalho}>
-          <Text style={styles.titulo}>Filtros</Text>
+          <Text style={[styles.titulo, { color: cores.texto }]}>Filtros</Text>
           <Pressable onPress={p.onLimpar} hitSlop={8}>
-            <Text style={styles.limpar}>Limpar</Text>
+            <Text style={[styles.limpar, { color: cores.primariaTexto }]}>
+              Limpar
+            </Text>
           </Pressable>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* SITUAÇÃO */}
-          <Text style={styles.secao}>Situação da validade</Text>
+          <Text style={[styles.secao, { color: cores.textoSecundario }]}>
+            Situação da validade
+          </Text>
           <View style={styles.chips}>
             {SITUACOES.map((s) => (
               <Chip
@@ -67,7 +77,9 @@ export default function FiltrosAlimentos(p: Props) {
           </View>
 
           {/* CATEGORIA */}
-          <Text style={styles.secao}>Categoria</Text>
+          <Text style={[styles.secao, { color: cores.textoSecundario }]}>
+            Categoria
+          </Text>
           <View style={styles.chips}>
             <Chip
               rotulo="Todas"
@@ -85,7 +97,9 @@ export default function FiltrosAlimentos(p: Props) {
           </View>
 
           {/* ORDEM */}
-          <Text style={styles.secao}>Ordenar por</Text>
+          <Text style={[styles.secao, { color: cores.textoSecundario }]}>
+            Ordenar por
+          </Text>
           <View style={styles.chips}>
             {ORDENS.map((o) => (
               <Chip
@@ -98,7 +112,10 @@ export default function FiltrosAlimentos(p: Props) {
           </View>
         </ScrollView>
 
-        <Pressable style={styles.botaoAplicar} onPress={p.onFechar}>
+        <Pressable
+          style={[styles.botaoAplicar, { backgroundColor: cores.primaria }]}
+          onPress={p.onFechar}
+        >
           <Ionicons name="checkmark" size={18} color="#FFFFFF" />
           <Text style={styles.textoAplicar}>Aplicar</Text>
         </Pressable>
@@ -116,12 +133,24 @@ function Chip({
   ativo: boolean;
   onPress: () => void;
 }) {
+  const { cores } = useTheme();
+
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.chip, ativo && styles.chipAtivo]}
+      style={[
+        styles.chip,
+        { backgroundColor: cores.card, borderColor: cores.borda },
+        ativo && { backgroundColor: cores.primaria, borderColor: cores.primaria },
+      ]}
     >
-      <Text style={[styles.chipTexto, ativo && styles.chipTextoAtivo]}>
+      <Text
+        style={[
+          styles.chipTexto,
+          { color: cores.textoSecundario },
+          ativo && styles.chipTextoAtivo,
+        ]}
+      >
         {rotulo}
       </Text>
     </Pressable>
