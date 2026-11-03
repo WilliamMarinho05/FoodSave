@@ -2,19 +2,19 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    ActivityIndicator,
+    FlatList,
+    Pressable,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
 
 import CardAlimento from "@/src/components/CardAlimento";
 import FiltrosAlimentos from "@/src/components/FiltrosAlimentos";
 import { useTheme } from "@/src/context/ThemeContext";
-import { AlimentoComStatus, useListaAlimentos, } from "@/src/hooks/UseListaAlimentos";
+import { AlimentoComStatus, useListaAlimentos, } from "@/src/hooks/useListaAlimentos";
 
 const ROTULO_SITUACAO = {
   todos: "Todos",

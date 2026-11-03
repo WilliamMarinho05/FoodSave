@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { FiltroSituacao, Ordem } from "../hooks/UseListaAlimentos";
+import { FiltroSituacao, Ordem } from "../hooks/useListaAlimentos";
 
 interface Props {
   visivel: boolean;
