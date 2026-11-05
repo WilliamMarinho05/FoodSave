@@ -57,24 +57,23 @@ export default function Home() {
           }
 
           // Busca o nome do usuário logado
-          const { data: { user } } = await supabase.auth.getUser();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+
           if (user && ativo) {
             const { data: perfil } = await supabase
               .from("perfis")
               .select("nome")
               .eq("id", user.id)
               .single();
-              
+
             if (perfil?.nome) {
               setNomeUsuario(perfil.nome);
             }
           }
-
         } catch (erro) {
-          console.error(
-            "Erro ao carregar Home:",
-            erro
-          );
+          console.error("Erro ao carregar Home:", erro);
         } finally {
           if (ativo) {
             setCarregando(false);
@@ -96,6 +95,11 @@ export default function Home() {
 
   const handleMissoes = () => {
     router.push("/missoes");
+  };
+
+  // TROFÉUS
+  const handleTrofeus = () => {
+    router.push("/trofeus");
   };
 
   const handleHistorico = () => {
@@ -152,7 +156,10 @@ export default function Home() {
   return (
     <View style={styles.container}>
       {/* PAINEL */}
-      <PainelValidade painel={painel} nomeUsuario={nomeUsuario} />
+      <PainelValidade
+        painel={painel}
+        nomeUsuario={nomeUsuario}
+      />
 
       {/* BARRA DE EXPERIÊNCIA */}
       <View style={styles.containerBarraExp}>
@@ -201,6 +208,32 @@ export default function Home() {
         </View>
 
         <Text style={styles.setaMissao}>
+          &gt;
+        </Text>
+      </Pressable>
+
+      {/* TROFÉUS */}
+      <Pressable
+        style={styles.cardTrofeus}
+        onPress={handleTrofeus}
+      >
+        <View style={styles.iconeTrofeus}>
+          <Text style={styles.iconeTrofeu}>
+            🏆
+          </Text>
+        </View>
+
+        <View style={styles.conteudoCard}>
+          <Text style={styles.tituloCard}>
+            Troféus
+          </Text>
+
+          <Text style={styles.descricaoCard}>
+            Acompanhe suas conquistas e seu progresso
+          </Text>
+        </View>
+
+        <Text style={styles.setaTrofeu}>
           &gt;
         </Text>
       </Pressable>
@@ -257,7 +290,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     backgroundColor: "#F8F7F1",
   },
-  
+
   containerBarraExp: {
     width: "90%",
     marginTop: 15,
@@ -306,6 +339,76 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#777777",
   },
+
+  /* MISSÕES */
+
+  cardMissoes: {
+    width: "90%",
+    padding: 12,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: "#D5D5D5",
+    borderRadius: 10,
+    backgroundColor: "#FFFFFF",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  iconeMissoes: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#EAF2EC",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+
+  iconeMissao: {
+    fontSize: 18,
+  },
+
+  setaMissao: {
+    fontSize: 18,
+    color: "#43855F",
+    fontWeight: "bold",
+  },
+
+  /* TROFÉUS */
+
+  cardTrofeus: {
+    width: "90%",
+    padding: 12,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: "#D5D5D5",
+    borderRadius: 10,
+    backgroundColor: "#FFFFFF",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  iconeTrofeus: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#EAF2EC",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+
+  iconeTrofeu: {
+    fontSize: 18,
+  },
+
+  setaTrofeu: {
+    fontSize: 18,
+    color: "#43855F",
+    fontWeight: "bold",
+  },
+
+  /* LISTA DE ALIMENTOS */
 
   listaContainer: {
     width: "90%",
@@ -367,6 +470,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
+  /* HISTÓRICO */
+
   botaoHistorico: {
     position: "absolute",
     right: 22,
@@ -398,38 +503,6 @@ const styles = StyleSheet.create({
   textoHistorico: {
     color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: "bold",
-  },
-
-  cardMissoes: {
-    width: "90%",
-    padding: 12,
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: "#D5D5D5",
-    borderRadius: 10,
-    backgroundColor: "#FFFFFF",
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  iconeMissoes: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#EAF2EC",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-
-  iconeMissao: {
-    fontSize: 18,
-  },
-
-  setaMissao: {
-    fontSize: 18,
-    color: "#43855F",
     fontWeight: "bold",
   },
 });
