@@ -1,7 +1,10 @@
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from "@/src/lib/supabase";
+
 import BarraExp from "@/src/components/BarraExp";
 import PainelValidade from "@/src/components/PainelValidade";
 import { useTheme } from "@/src/context/ThemeContext";
-import { supabase } from "@/src/lib/supabase";
 
 import {
   AlimentoBanco,
@@ -12,15 +15,42 @@ import { getResumoValidades } from "@/src/services/painelAlimentos";
 
 import { useFocusEffect, useRouter } from "expo-router";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import {
-  FlatList,
+  Modal,
+  Platform,
   Pressable,
+  RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+
+// Onboarding: mostra apenas na primeira abertura do app
+const CHAVE_ONBOARDING = "@foodsave_onboarding_visto";
+
+const PASSOS_ONBOARDING = [
+  {
+    icone: "add-circle-outline" as const,
+    titulo: "Cadastre seus alimentos",
+    descricao:
+      "Toque em “Cadastrar novo alimento” e informe nome, quantidade e datas.",
+  },
+  {
+    icone: "notifications-outline" as const,
+    titulo: "Fique de olho nos alertas",
+    descricao:
+      "A aba Alertas mostra o que venceu ou está perto do vencimento.",
+  },
+  {
+    icone: "help-circle-outline" as const,
+    titulo: "Ajuda sempre disponível",
+    descricao:
+      "Use o card Ajuda e Suporte ou o Assistente para dúv idas e dicas.",
+  },
+];
 
 
 export default function Home() {
@@ -36,61 +66,90 @@ export default function Home() {
 
   const [alimentos, setAlimentos] = useState<AlimentoBanco[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [atualizandoLista, setAtualizandoLista] = useState(false);
+  const [onboardingVisivel, setOnboardingVisivel] = useState(false);
+
+  // Heurística 10: onboarding na primeira abertura do app
+  useEffect(() => {
+    async function verificarPrimeiroUso() {
+      try {
+        const visto = await AsyncStorage.getItem(CHAVE_ONBOARDING);
+
+        if (visto === null) {
+          setOnboardingVisivel(true);
+        }
+      } catch (erro) {
+        console.error("Erro ao verificar onboarding:", erro);
+      }
+    }
+
+    verificarPrimeiroUso();
+  }, []);
+
+  const fecharOnboarding = async () => {
+    setOnboardingVisivel(false);
+
+    try {
+      await AsyncStorage.setItem(CHAVE_ONBOARDING, "true");
+    } catch (erro) {
+      console.error("Erro ao salvar onboarding:", erro);
+    }
+  };
+
+  const verPassoAPasso = async () => {
+    await fecharOnboarding();
+    router.push("/ajuda/como_usar");
+  };
+
+  // Carrega painel, alimentos e nome do usuário. Quando vem de um
+  // pull-to-refresh, mantém o conteúdo na tela e usa o spinner da lista.
+  const carregarDados = useCallback(async (puxadoParaAtualizar = false) => {
+    if (puxadoParaAtualizar) {
+      setAtualizandoLista(true);
+    } else {
+      setCarregando(true);
+    }
+
+    try {
+      // Busca painel
+      const resumo = await getResumoValidades();
+
+      if (resumo) {
+        setPainel(resumo);
+      }
+
+      // Busca alimentos reais do Supabase
+      const alimentosBanco = await buscarAlimentosEmEstoque();
+      setAlimentos(alimentosBanco);
+
+      // Busca o nome do usuário logado
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: perfil } = await supabase
+          .from("perfis")
+          .select("nome")
+          .eq("id", user.id)
+          .single();
+
+        if (perfil?.nome) {
+          setNomeUsuario(perfil.nome);
+        }
+      }
+    } catch (erro) {
+      console.error(
+        "Erro ao carregar Home:",
+        erro
+      );
+    } finally {
+      setAtualizandoLista(false);
+      setCarregando(false);
+    }
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      let ativo = true;
-
-      async function carregarDados() {
-        try {
-          setCarregando(true);
-
-          // Busca painel
-          const resumo = await getResumoValidades();
-
-          if (resumo && ativo) {
-            setPainel(resumo);
-          }
-
-          // Busca alimentos reais do Supabase
-          const alimentosBanco = await buscarAlimentosEmEstoque();
-
-          if (ativo) {
-            setAlimentos(alimentosBanco);
-          }
-
-          // Busca o nome do usuário logado
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user && ativo) {
-            const { data: perfil } = await supabase
-              .from("perfis")
-              .select("nome")
-              .eq("id", user.id)
-              .single();
-              
-            if (perfil?.nome) {
-              setNomeUsuario(perfil.nome);
-            }
-          }
-
-        } catch (erro) {
-          console.error(
-            "Erro ao carregar Home:",
-            erro
-          );
-        } finally {
-          if (ativo) {
-            setCarregando(false);
-          }
-        }
-      }
-
       carregarDados();
-
-      return () => {
-        ativo = false;
-      };
-    }, [])
+    }, [carregarDados])
   );
 
   const handleCadastrarAlimento = () => {
@@ -103,6 +162,10 @@ export default function Home() {
 
   const handleHistorico = () => {
     router.push("/historico");
+  };
+
+  const handleAjuda = () => {
+    router.push("/ajuda");
   };
 
   const renderCardAlimento = ({
@@ -154,6 +217,20 @@ export default function Home() {
 
   return (
   <View style={[styles.container,{ backgroundColor: cores.fundo },]}>
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.conteudoScroll}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      refreshControl={
+        <RefreshControl
+          refreshing={atualizandoLista}
+          onRefresh={() => carregarDados(true)}
+          tintColor={cores.primaria}
+          colors={[cores.primaria]}
+        />
+      }
+    >
       {/* PAINEL */}
       <PainelValidade painel={painel} nomeUsuario={nomeUsuario} />
 
@@ -208,33 +285,71 @@ export default function Home() {
         </Text>
       </Pressable>
 
+      {/* AJUDA E SUPORTE */}
+      <Pressable
+        style={[styles.cardMissoes,{backgroundColor: cores.card,borderColor: cores.borda,},]}
+        onPress={handleAjuda}
+      >
+        <View style={[styles.iconeMissoes, { backgroundColor: cores.primariaSuave }]}>
+          <Ionicons name="help-circle-outline" size={18} color={cores.primariaTexto} />
+        </View>
+
+        <View style={styles.conteudoCard}>
+          <Text style={[styles.tituloCard,{ color: cores.texto },]}>
+            Ajuda e Suporte
+          </Text>
+
+          <Text style={[styles.descricaoCard,{ color: cores.textoSecundario },]}>
+            FAQ, passo a passo e contato com a equipe
+          </Text>
+        </View>
+
+        <Text style={[styles.setaMissao, { color: cores.primariaTexto }]}>
+          &gt;
+        </Text>
+      </Pressable>
+
       {/* ALIMENTOS */}
       <View style={styles.listaContainer}>
-        <Text style={[styles.tituloLista,{ color: cores.texto },]}>
-          Adicionados Recentemente
-        </Text>
+        <View style={styles.tituloListaLinha}>
+          <Text style={[styles.tituloLista,{ color: cores.texto },]}>
+            Adicionados Recentemente
+          </Text>
+
+          {/* No web o pull-to-refresh não é suportado; botão manual */}
+          {Platform.OS === "web" && (
+            <Pressable
+              onPress={() => carregarDados(true)}
+              disabled={atualizandoLista}
+              hitSlop={8}
+              accessibilityLabel="Atualizar lista de alimentos"
+            >
+              <Ionicons
+                name="refresh"
+                size={20}
+                color={atualizandoLista ? cores.textoFraco : cores.primariaTexto}
+              />
+            </Pressable>
+          )}
+        </View>
 
         {carregando ? (
           <Text style={[styles.mensagem, { color: cores.textoSecundario }]}>
             Carregando alimentos...
           </Text>
+        ) : alimentos.length === 0 ? (
+          <Text style={[styles.mensagem, { color: cores.textoSecundario }]}>
+            Nenhum alimento cadastrado.
+          </Text>
         ) : (
-          <FlatList
-            data={alimentos}
-            keyExtractor={(item) => item.id}
-            renderItem={renderCardAlimento}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingBottom: 100,
-            }}
-            ListEmptyComponent={
-              <Text style={[styles.mensagem, { color: cores.textoSecundario }]}>
-                Nenhum alimento cadastrado.
-              </Text>
-            }
-          />
+          alimentos.map((item) => (
+            <React.Fragment key={item.id}>
+              {renderCardAlimento({ item })}
+            </React.Fragment>
+          ))
         )}
       </View>
+    </ScrollView>
 
       {/* HISTÓRICO */}
       <Pressable
@@ -249,16 +364,184 @@ export default function Home() {
           Histórico
         </Text>
       </Pressable>
+      {/* ONBOARDING PRIMEIRO USO */}
+      <Modal
+        visible={onboardingVisivel}
+        transparent
+        animationType="fade"
+        onRequestClose={fecharOnboarding}
+      >
+        <View style={[styles.onboardingOverlay, { backgroundColor: cores.overlay }]}>
+          <View
+            style={[
+              styles.onboardingCard,
+              { backgroundColor: cores.card, borderColor: cores.borda },
+            ]}
+          >
+            <Text style={[styles.onboardingTitulo, { color: cores.texto }]}>
+              Bem-vindo ao FoodSave!
+            </Text>
+
+            <Text
+              style={[
+                styles.onboardingSubtitulo,
+                { color: cores.textoSecundario },
+              ]}
+            >
+              Em 1 minuto você já sabe usar o app:
+            </Text>
+
+            {PASSOS_ONBOARDING.map((passo) => (
+              <View key={passo.titulo} style={styles.onboardingPasso}>
+                <View
+                  style={[
+                    styles.onboardingIcone,
+                    { backgroundColor: cores.primariaSuave },
+                  ]}
+                >
+                  <Ionicons
+                    name={passo.icone}
+                    size={20}
+                    color={cores.primariaTexto}
+                  />
+                </View>
+
+                <View style={styles.onboardingTextos}>
+                  <Text style={[styles.onboardingPassoTitulo, { color: cores.texto }]}>
+                    {passo.titulo}
+                  </Text>
+
+                  <Text
+                    style={[
+                      styles.onboardingPassoDescricao,
+                      { color: cores.textoSecundario },
+                    ]}
+                  >
+                    {passo.descricao}
+                  </Text>
+                </View>
+              </View>
+            ))}
+
+            <Pressable
+              style={[styles.onboardingBotao, { backgroundColor: cores.primaria }]}
+              onPress={fecharOnboarding}
+            >
+              <Text style={styles.onboardingBotaoTexto}>Começar</Text>
+            </Pressable>
+
+            <Pressable onPress={verPassoAPasso} hitSlop={8}>
+              <Text
+                style={[
+                  styles.onboardingLink,
+                  { color: cores.primariaTexto },
+                ]}
+              >
+                Ver passo a passo completo
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-  flex: 1,
-  alignItems: "center",
-  paddingTop: 10,
-},
+    flex: 1,
+  },
+
+  scroll: {
+    flex: 1,
+  },
+
+  conteudoScroll: {
+    alignItems: "center",
+    paddingTop: 10,
+    // Espaço para o botão flutuante "Histórico" não cobrir o último item
+    paddingBottom: 110,
+  },
+
+  onboardingOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+
+  onboardingCard: {
+    width: "100%",
+    maxWidth: 420,
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 20,
+  },
+
+  onboardingTitulo: {
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+
+  onboardingSubtitulo: {
+    fontSize: 13,
+    textAlign: "center",
+    marginTop: 6,
+    marginBottom: 16,
+  },
+
+  onboardingPasso: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 12,
+  },
+
+  onboardingIcone: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+
+  onboardingTextos: {
+    flex: 1,
+  },
+
+  onboardingPassoTitulo: {
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+
+  onboardingPassoDescricao: {
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 2,
+  },
+
+  onboardingBotao: {
+    height: 46,
+    borderRadius: 23,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 12,
+  },
+
+  onboardingBotaoTexto: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "bold",
+  },
+
+  onboardingLink: {
+    fontSize: 13,
+    fontWeight: "600",
+    textAlign: "center",
+    marginTop: 12,
+    textDecorationLine: "underline",
+  },
   
   containerBarraExp: {
     width: "90%",
@@ -309,8 +592,14 @@ const styles = StyleSheet.create({
 
   listaContainer: {
     width: "90%",
-    flex: 1,
     marginTop: 15,
+  },
+
+  tituloListaLinha: {
+    alignSelf: "stretch",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
 
   tituloLista: {
