@@ -1,6 +1,6 @@
+import { supabase } from "@/src/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { supabase } from "@/src/lib/supabase";
 
 import BarraExp from "@/src/components/BarraExp";
 import PainelValidade from "@/src/components/PainelValidade";
