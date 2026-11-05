@@ -1,6 +1,6 @@
 
 import { useCallback, useState } from "react";
-import {ActivityIndicator,FlatList,Pressable,StyleSheet,Text,View,} from "react-native";
+import {ActivityIndicator,FlatList,Platform,Pressable,RefreshControl,StyleSheet,Text,View,} from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useTheme } from "@/src/context/ThemeContext";
 import {AlimentoBanco,buscarAlimentosEmEstoque,} from "../../../src/services/alimentos";
@@ -56,10 +56,17 @@ export default function Alertas() {
   const { cores } = useTheme();
   const [alimentos, setAlimentos] = useState<AlimentoBanco[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [atualizando, setAtualizando] = useState(false);
   const [erro, setErro] = useState(false);
 
-  const carregarAlimentos = useCallback(async () => {
-    setCarregando(true);
+  const carregarAlimentos = useCallback(async (puxadoParaAtualizar = false) => {
+    if (puxadoParaAtualizar) {
+      // Pull-to-refresh: mantém o conteúdo na tela e mostra o spinner da lista
+      setAtualizando(true);
+    } else {
+      setCarregando(true);
+    }
+
     setErro(false);
 
     try {
@@ -69,6 +76,7 @@ export default function Alertas() {
       console.error("Erro ao carregar alertas:", error);
       setErro(true);
     } finally {
+      setAtualizando(false);
       setCarregando(false);
     }
   }, []);
@@ -129,7 +137,7 @@ export default function Alertas() {
 
           <Pressable
             style={styles.botaoTentarNovamente}
-            onPress={carregarAlimentos}
+            onPress={() => carregarAlimentos()}
             disabled={carregando}
           >
             {carregando ? (
@@ -160,9 +168,42 @@ export default function Alertas() {
       contentContainerStyle={styles.conteudo}
       data={alertas}
       keyExtractor={(item) => item.titulo}
+      // Puxar para atualizar: força o recarregamento dos alertas
+      refreshControl={
+        <RefreshControl
+          refreshing={atualizando}
+          onRefresh={() => carregarAlimentos(true)}
+          tintColor={cores.primaria}
+          colors={[cores.primaria]}
+        />
+      }
       ListHeaderComponent={
         <View>
-          <Text style={[styles.titulo, { color: cores.texto }]}>Alertas</Text>
+          <View style={styles.tituloLinha}>
+            <Text style={[styles.titulo, { color: cores.texto }]}>Alertas</Text>
+
+            {/* No web o pull-to-refresh não é suportado; botão manual */}
+            {Platform.OS === "web" && (
+              <Pressable
+                onPress={() => carregarAlimentos(true)}
+                disabled={atualizando}
+                hitSlop={8}
+                style={styles.botaoAtualizar}
+                accessibilityLabel="Atualizar alertas"
+              >
+                {atualizando ? (
+                  <ActivityIndicator size="small" color={cores.primariaTexto} />
+                ) : (
+                  <Ionicons
+                    name="refresh"
+                    size={20}
+                    color={cores.primariaTexto}
+                  />
+                )}
+              </Pressable>
+            )}
+          </View>
+
           <Text style={[styles.subtitulo, { color: cores.textoSecundario }]}>
             Acompanhe os alimentos que precisam da sua atenção.
           </Text>
@@ -261,6 +302,14 @@ const styles = StyleSheet.create({
     color: "#65736B",
     marginTop: 6,
     marginBottom: 16,
+  },
+  tituloLinha: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  botaoAtualizar: {
+    padding: 6,
   },
   resumo: {
     backgroundColor: "#FFFFFF",

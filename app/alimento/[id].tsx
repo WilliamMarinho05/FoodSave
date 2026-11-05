@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -23,6 +24,7 @@ export default function DetalhesAlimento() {
   Number(alimento.quantidade ?? 0)
 );
   const [consumindo, setConsumindo] = useState(false);
+  const [confirmacaoVisivel, setConfirmacaoVisivel] = useState(false);
   const consumindoRef = useRef(false);
 
   useEffect(() => {
@@ -33,7 +35,28 @@ export default function DetalhesAlimento() {
   registrarVerificacao();
 }, []);
 
-  const handleConsumir = async () => {
+  // Confirmar antes de executar: consumir baixa a quantidade e dá XP
+  // (ação destrutiva), então o usuário escolhe antes de confirmar.
+  const handleConsumir = () => {
+    if (Platform.OS === "web") {
+      // No web o Alert não é suportado; usa um modal próprio de confirmação
+      setConfirmacaoVisivel(true);
+      return;
+    }
+
+    Alert.alert(
+      "Consumir alimento",
+      `Consumir 1 ${alimento.unidade || "unidade"} de ${String(
+        alimento.nome || "alimento"
+      )}? Esta ação não pode ser desfeita.`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Consumir", onPress: consumirAgora },
+      ]
+    );
+  };
+
+  const consumirAgora = async () => {
     // Evita duplo toque: ignora novos toques enquanto a operação está em andamento
     if (consumindoRef.current) return;
 
@@ -87,7 +110,7 @@ export default function DetalhesAlimento() {
 
 
   return (
-     
+    <>
     <ScrollView style={[styles.container, { backgroundColor: cores.fundo }]}>
     <Stack.Screen options={{ title: String(alimento.nome || "Detalhes") }} />
       <View style={styles.cabecalho}>
@@ -163,6 +186,69 @@ export default function DetalhesAlimento() {
       </Text>
     </Pressable>
     </ScrollView>
+
+    {/* CONFIRMAÇÃO (modal para o web, onde o Alert não é suportado) */}
+    <Modal
+      visible={confirmacaoVisivel}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setConfirmacaoVisivel(false)}
+    >
+      <View style={[styles.confirmarOverlay, { backgroundColor: cores.overlay }]}>
+        <View
+          style={[
+            styles.confirmarCard,
+            { backgroundColor: cores.card, borderColor: cores.borda },
+          ]}
+        >
+          <Text style={[styles.confirmarTitulo, { color: cores.texto }]}>
+            Consumir alimento
+          </Text>
+
+          <Text
+            style={[styles.confirmarMensagem, { color: cores.textoSecundario }]}
+          >
+            Confirmar o consumo de 1 {alimento.unidade || "unidade"} de{" "}
+            {String(alimento.nome || "alimento")}? Esta ação não pode ser
+            desfeita.
+          </Text>
+
+          <View style={styles.confirmarBotoes}>
+            <Pressable
+              style={[
+                styles.confirmarBotao,
+                styles.confirmarBotaoSecundario,
+                { borderColor: cores.borda },
+              ]}
+              onPress={() => setConfirmacaoVisivel(false)}
+            >
+              <Text
+                style={[
+                  styles.confirmarBotaoTextoSecundario,
+                  { color: cores.textoSecundario },
+                ]}
+              >
+                Cancelar
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={[
+                styles.confirmarBotao,
+                { backgroundColor: cores.primaria },
+              ]}
+              onPress={() => {
+                setConfirmacaoVisivel(false);
+                consumirAgora();
+              }}
+            >
+              <Text style={styles.confirmarBotaoTexto}>Consumir</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
+    </>
   );
 }
 
@@ -243,4 +329,61 @@ textoBotaoConsumir: {
   fontWeight: "bold",
   marginLeft: 8,
 },
+
+  confirmarOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+
+  confirmarCard: {
+    width: "100%",
+    maxWidth: 360,
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 20,
+  },
+
+  confirmarTitulo: {
+    fontSize: 17,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+
+  confirmarMensagem: {
+    fontSize: 13,
+    textAlign: "center",
+    marginTop: 8,
+    lineHeight: 18,
+  },
+
+  confirmarBotoes: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 18,
+  },
+
+  confirmarBotao: {
+    flex: 1,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  confirmarBotaoSecundario: {
+    borderWidth: 1,
+  },
+
+  confirmarBotaoTexto: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+
+  confirmarBotaoTextoSecundario: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
 });
