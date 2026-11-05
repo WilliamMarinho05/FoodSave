@@ -1,3 +1,4 @@
+import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { Stack, useRouter } from "expo-router";
@@ -60,24 +61,36 @@ const recursos = [
 
 export default function SobreOApp() {
   const router = useRouter();
+  const { cores } = useTheme();
   const versao = Constants.expoConfig?.version ?? "1.0.0";
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: cores.fundo }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
       <Stack.Screen options={{ title: "Sobre o App" }} />
 
       <Pressable style={styles.voltar} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={24} color="#43855F" />
-        <Text style={styles.voltarTexto}>Voltar</Text>
+        <Ionicons name="arrow-back" size={24} color={cores.primariaTexto} />
+        <Text style={[styles.voltarTexto, { color: cores.primariaTexto }]}>
+          Voltar
+        </Text>
       </Pressable>
 
       {/* APRESENTAÇÃO / PROMOÇÃO */}
-      <View style={styles.hero}>
-        <View style={styles.logoBorda}>
+      <View
+        style={[
+          styles.hero,
+          {
+            backgroundColor: cores.card,
+            borderColor: cores.borda,
+            shadowColor: cores.sombra,
+          },
+        ]}
+      >
+        <View style={[styles.logoBorda, { borderColor: cores.primaria }]}>
           <Image
             source={require("../../assets/images/logo.jpeg")}
             style={styles.logo}
@@ -85,83 +98,130 @@ export default function SobreOApp() {
           />
         </View>
 
-        <Text style={styles.nomeApp}>FoodSave</Text>
-        <Text style={styles.slogan}>{SLOGAN}</Text>
+        <Text style={[styles.nomeApp, { color: cores.primariaTexto }]}>
+          FoodSave
+        </Text>
+        <Text style={[styles.slogan, { color: cores.textoSecundario }]}>
+          {SLOGAN}
+        </Text>
 
-        <View style={styles.versaoPill}>
-          <Text style={styles.versaoTexto}>Versão {versao}</Text>
+        <View style={[styles.versaoPill, { backgroundColor: cores.primariaSuave }]}>
+          <Text style={[styles.versaoTexto, { color: cores.primariaTexto }]}>
+            Versão {versao}
+          </Text>
         </View>
       </View>
 
       {/* O QUE É */}
-      <Text style={styles.secao}>O que é o FoodSave</Text>
-      <View style={styles.cardTexto}>
-        <Text style={styles.paragrafo}>{APRESENTACAO}</Text>
+      <Text style={[styles.secao, { color: cores.texto }]}>
+        O que é o FoodSave
+      </Text>
+      <View style={[styles.cardTexto, { backgroundColor: cores.card }]}>
+        <Text style={[styles.paragrafo, { color: cores.textoSecundario }]}>
+          {APRESENTACAO}
+        </Text>
       </View>
 
       {/* MISSÃO */}
-      <Text style={styles.secao}>Nossa missão</Text>
-      <View style={styles.cardTexto}>
+      <Text style={[styles.secao, { color: cores.texto }]}>Nossa missão</Text>
+      <View style={[styles.cardTexto, { backgroundColor: cores.card }]}>
         <View style={styles.missaoLinha}>
-          <View style={styles.iconeContainer}>
-            <Ionicons name="leaf-outline" size={22} color="#43855F" />
+          <View
+            style={[styles.iconeContainer, { backgroundColor: cores.primariaSuave }]}
+          >
+            <Ionicons name="leaf-outline" size={22} color={cores.primariaTexto} />
           </View>
-          <Text style={[styles.paragrafo, styles.missaoTexto]}>{MISSAO}</Text>
+          <Text
+            style={[
+              styles.paragrafo,
+              styles.missaoTexto,
+              { color: cores.textoSecundario },
+            ]}
+          >
+            {MISSAO}
+          </Text>
         </View>
       </View>
 
       {/* RECURSOS */}
-      <Text style={styles.secao}>O que você pode fazer</Text>
+      <Text style={[styles.secao, { color: cores.texto }]}>
+        O que você pode fazer
+      </Text>
       <View style={styles.lista}>
         {recursos.map((r) => (
-          <View key={r.titulo} style={styles.cardRecurso}>
-            <View style={styles.iconeContainer}>
-              <Ionicons name={r.icone} size={22} color="#43855F" />
+          <View
+            key={r.titulo}
+            style={[styles.cardRecurso, { backgroundColor: cores.card }]}
+          >
+            <View
+              style={[styles.iconeContainer, { backgroundColor: cores.primariaSuave }]}
+            >
+              <Ionicons name={r.icone} size={22} color={cores.primariaTexto} />
             </View>
 
             <View style={styles.textos}>
-              <Text style={styles.cardTitulo}>{r.titulo}</Text>
-              <Text style={styles.cardDescricao}>{r.descricao}</Text>
+              <Text style={[styles.cardTitulo, { color: cores.texto }]}>
+                {r.titulo}
+              </Text>
+              <Text style={[styles.cardDescricao, { color: cores.textoSecundario }]}>
+                {r.descricao}
+              </Text>
             </View>
           </View>
         ))}
       </View>
 
       {/* AJUDA / CONTATO */}
-      <Text style={styles.secao}>Fale com a gente</Text>
+      <Text style={[styles.secao, { color: cores.texto }]}>
+        Fale com a gente
+      </Text>
       <View style={styles.lista}>
         <Pressable
-          style={styles.cardRecurso}
+          style={[styles.cardRecurso, { backgroundColor: cores.card }]}
           onPress={() => Linking.openURL(`mailto:${EMAIL_SUPORTE}`)}
         >
-          <View style={styles.iconeContainer}>
-            <Ionicons name="mail-outline" size={22} color="#43855F" />
+          <View
+            style={[styles.iconeContainer, { backgroundColor: cores.primariaSuave }]}
+          >
+            <Ionicons name="mail-outline" size={22} color={cores.primariaTexto} />
           </View>
           <View style={styles.textos}>
-            <Text style={styles.cardTitulo}>E-mail de suporte</Text>
-            <Text style={styles.cardDescricao}>{EMAIL_SUPORTE}</Text>
+            <Text style={[styles.cardTitulo, { color: cores.texto }]}>
+              E-mail de suporte
+            </Text>
+            <Text style={[styles.cardDescricao, { color: cores.textoSecundario }]}>
+              {EMAIL_SUPORTE}
+            </Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#888" />
+          <Ionicons name="chevron-forward" size={20} color={cores.textoFraco} />
         </Pressable>
 
         <Pressable
-          style={styles.cardRecurso}
+          style={[styles.cardRecurso, { backgroundColor: cores.card }]}
           onPress={() => router.push("/ajuda")}
         >
-          <View style={styles.iconeContainer}>
-            <Ionicons name="help-circle-outline" size={22} color="#43855F" />
+          <View
+            style={[styles.iconeContainer, { backgroundColor: cores.primariaSuave }]}
+          >
+            <Ionicons
+              name="help-circle-outline"
+              size={22}
+              color={cores.primariaTexto}
+            />
           </View>
           <View style={styles.textos}>
-            <Text style={styles.cardTitulo}>Ajuda e Suporte</Text>
-            <Text style={styles.cardDescricao}>
+            <Text style={[styles.cardTitulo, { color: cores.texto }]}>
+              Ajuda e Suporte
+            </Text>
+            <Text style={[styles.cardDescricao, { color: cores.textoSecundario }]}>
               Dúvidas frequentes, tutoriais e mais.
             </Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#888" />
+          <Ionicons name="chevron-forward" size={20} color={cores.textoFraco} />
         </Pressable>
       </View>
 
-      <Text style={styles.rodape}>
+      <Text style={[styles.rodape, { color: cores.textoFraco }]}>
         © {new Date().getFullYear()} FoodSave. Todos os direitos reservados.
       </Text>
     </ScrollView>

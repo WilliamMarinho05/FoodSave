@@ -1,13 +1,16 @@
 import BarraExp from '@/src/components/BarraExp';
+import { CoresTema, useTheme } from "@/src/context/ThemeContext";
 import { supabase } from '@/src/lib/supabase';
 import { getEstatisticasPerfil } from '@/src/services/painelAlimentos';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function Perfil() {
   const router = useRouter();
+  const { cores } = useTheme();
+
   const [email, setEmail] = useState<string | null>('Carregando...');
   const [nome, setNome] = useState<string | null>('Usuário');
   const [estatisticas, setEstatisticas] = useState({ cadastrados: 0, salvos: 0, descartados: 0 });
@@ -37,14 +40,13 @@ export default function Perfil() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Cabeçalho */}
-      <View style={styles.header}>
-        <Text style={styles.title}>PERFIL</Text>
-        <Pressable style={styles.bellButton}>
-          <Feather name="bell" size={20} color="#333" />
-        </Pressable>
-      </View>
+    <ScrollView
+  style={[
+    styles.container,
+    { backgroundColor: cores.fundo },
+  ]}
+  contentContainerStyle={styles.content}
+>
 
       {/* Info do Usuário */}
       <View style={styles.userInfoContainer}>
@@ -54,8 +56,13 @@ export default function Perfil() {
             style={styles.profileImage} 
           />
         </View>
-        <Text style={styles.userName}>{nome}</Text>
-        <Text style={styles.userEmail}>{email}</Text>
+        <Text style={[styles.userName, { color: cores.texto }]}>
+           {nome}
+      </Text>
+
+        <Text style={[styles.userEmail, { color: cores.textoSecundario }]}>
+          {email}
+      </Text>
       </View>
 
       {/* Barra de XP Dinâmica */}
@@ -65,59 +72,162 @@ export default function Perfil() {
 
       {/* Cards de Estatísticas */}
       <View style={styles.statsRow}>
-        <View style={styles.statCard}>
-          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>CADASTRADOS</Text>
-          <Text style={[styles.statValue, { color: '#43855F' }]}>{estatisticas.cadastrados}</Text>
-          <Text style={styles.statDesc}>itens no total</Text>
-        </View>
-        
-        <View style={styles.statCard}>
-          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>SALVOS</Text>
-          <Text style={[styles.statValue, { color: '#2ECC71' }]}>{estatisticas.salvos}</Text>
-          <Text style={styles.statDesc}>consumidos</Text>
-        </View>
+  <View
+    style={[
+      styles.statCard,
+      { backgroundColor: cores.card, shadowColor: cores.sombra },
+    ]}
+  >
+    <Text
+      style={[
+        styles.statLabel,
+        { color: cores.textoSecundario },
+      ]}
+      numberOfLines={1}
+      adjustsFontSizeToFit
+    >
+      CADASTRADOS
+    </Text>
 
-        <View style={styles.statCard}>
-          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>DESCARTADOS</Text>
-          <Text style={[styles.statValue, { color: '#FF4D4D' }]}>{estatisticas.descartados}</Text>
-          <Text style={styles.statDesc}>não consumidos</Text>
-        </View>
-      </View>
+    <Text style={[styles.statValue, { color: cores.primariaTexto }]}>
+      {estatisticas.cadastrados}
+    </Text>
+
+    <Text
+      style={[
+        styles.statDesc,
+        { color: cores.textoSecundario },
+      ]}
+    >
+      itens no total
+    </Text>
+  </View>
+
+  <View
+    style={[
+      styles.statCard,
+      { backgroundColor: cores.card, shadowColor: cores.sombra },
+    ]}
+  >
+    <Text
+      style={[
+        styles.statLabel,
+        { color: cores.textoSecundario },
+      ]}
+      numberOfLines={1}
+      adjustsFontSizeToFit
+    >
+      SALVOS
+    </Text>
+
+    <Text style={[styles.statValue, { color: cores.sucesso }]}>
+      {estatisticas.salvos}
+    </Text>
+
+    <Text
+      style={[
+        styles.statDesc,
+        { color: cores.textoSecundario },
+      ]}
+    >
+      consumidos
+    </Text>
+  </View>
+
+  <View
+    style={[
+      styles.statCard,
+      { backgroundColor: cores.card, shadowColor: cores.sombra },
+    ]}
+  >
+    <Text
+      style={[
+        styles.statLabel,
+        { color: cores.textoSecundario },
+      ]}
+      numberOfLines={1}
+      adjustsFontSizeToFit
+    >
+      DESCARTADOS
+    </Text>
+
+    <Text style={[styles.statValue, { color: cores.perigo }]}>
+      {estatisticas.descartados}
+    </Text>
+
+    <Text
+      style={[
+        styles.statDesc,
+        { color: cores.textoSecundario },
+      ]}
+    >
+      não consumidos
+    </Text>
+  </View>
+</View>
 
       {/* Menu de Opções */}
       <View style={styles.menuContainer}>
-        <OpcaoMenu icone="person-outline" texto="Dados Pessoais" onPress={() => router.push("../dados_pessoais")}/>
-        <OpcaoMenu icone="notifications-outline" texto="Notificações"/>
-        <OpcaoMenu icone="list-outline"texto="Categorias de Alimentos"onPress={() => router.push("/categorias")}/> 
-        <OpcaoMenu icone="information-circle-outline"texto="Sobre o App" onPress={() => router.push("../sobre") } />
-        <OpcaoMenu icone="help-circle-outline"texto="Ajuda e Suporte"onPress={() => router.push("/ajuda")}/>
+        <OpcaoMenu icone="person-outline" texto="Dados Pessoais" onPress={() => router.push("../dados_pessoais")}cores={cores}/>
+        <OpcaoMenu icone="settings"texto="Configurações"onPress={() => router.push("/configuracoes")}cores={cores}/>
+        <OpcaoMenu icone="list-outline"texto="Categorias de Alimentos"onPress={() => router.push("/categorias")}cores={cores}/> 
+        <OpcaoMenu icone="information-circle-outline"texto="Sobre o App" onPress={() => router.push("../sobre") }cores={cores} />
+        <OpcaoMenu icone="help-circle-outline"texto="Ajuda e Suporte"onPress={() => router.push("/ajuda")}cores={cores}/>
       </View>
 
       {/* Botão Sair */}
-      <Pressable style={styles.logoutButton} onPress={handleSair}>
-        <Text style={styles.logoutText}>Sair da Conta</Text>
+      <Pressable
+        style={[styles.logoutButton, { borderColor: cores.perigo }]}
+        onPress={handleSair}
+      >
+        <Text style={[styles.logoutText, { color: cores.perigo }]}>
+          Sair da Conta
+        </Text>
       </Pressable>
     </ScrollView>
   );
 }
 
 // Componente para renderizar cada linha do menu dinamicamente
-function OpcaoMenu({ icone, texto ,onPress }: { icone: any, texto: string ;onPress?: ()=>void; }) {
+function OpcaoMenu({icone,texto,onPress,cores,}: {icone: any;texto: string;onPress?: () => void;
+  cores: CoresTema;
+}) {
   return (
     <Pressable
-      style={styles.menuItem}
+      style={[
+        styles.menuItem,
+        {
+          backgroundColor: cores.card,
+          borderColor: cores.borda,
+          shadowColor: cores.sombra,
+        },
+      ]}
       onPress={onPress}
     >
       <View style={styles.menuItemLeft}>
-        <View style={styles.menuIconContainer}>
+        <View
+          style={[
+            styles.menuIconContainer,
+            {
+              backgroundColor: cores.primariaSuave,
+            },
+          ]}
+        >
           <Ionicons
             name={icone}
             size={20}
-            color="#43855F"
+            color={cores.primariaTexto}
           />
         </View>
 
-        <Text style={styles.menuItemText}>
+        <Text
+          style={[
+            styles.menuItemText,
+            {
+              color: cores.texto,
+            },
+          ]}
+        >
           {texto}
         </Text>
       </View>
@@ -125,7 +235,7 @@ function OpcaoMenu({ icone, texto ,onPress }: { icone: any, texto: string ;onPre
       <Ionicons
         name="chevron-forward"
         size={20}
-        color="#888"
+        color={cores.textoSecundario}
       />
     </Pressable>
   );

@@ -1,3 +1,4 @@
+import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -42,10 +43,11 @@ const categorias = [
 
 export default function Categorias() {
   const router = useRouter();
+  const { cores } = useTheme();
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: cores.fundo }]}
       contentContainerStyle={styles.content}
     >
       <Pressable
@@ -55,16 +57,18 @@ export default function Categorias() {
         <Ionicons
           name="arrow-back"
           size={24}
-          color="#43855F"
+          color={cores.primariaTexto}
         />
-        <Text style={styles.voltarTexto}>Voltar</Text>
+        <Text style={[styles.voltarTexto, { color: cores.primariaTexto }]}>
+          Voltar
+        </Text>
       </Pressable>
 
-      <Text style={styles.titulo}>
+      <Text style={[styles.titulo, { color: cores.primariaTexto }]}>
         Categorias de Alimentos
       </Text>
 
-      <Text style={styles.subtitulo}>
+      <Text style={[styles.subtitulo, { color: cores.textoSecundario }]}>
         Organize seus alimentos por categoria.
       </Text>
 
@@ -72,7 +76,7 @@ export default function Categorias() {
         {categorias.map((categoria) => (
           <Pressable
            key={categoria.nome}
-            style={styles.card}
+            style={[styles.card, { backgroundColor: cores.card }]}
             onPress={() => {
             const rotas: Record<string, string> = {
             Frutas: "frutas",
@@ -92,22 +96,24 @@ export default function Categorias() {
             });
           }}
           >
-            <View style={styles.iconeContainer}>
+            <View
+              style={[styles.iconeContainer, { backgroundColor: cores.primariaSuave }]}
+            >
               <Ionicons
                 name={categoria.icone}
                 size={25}
-                color="#43855F"
+                color={cores.primariaTexto}
               />
             </View>
 
-            <Text style={styles.nomeCategoria}>
+            <Text style={[styles.nomeCategoria, { color: cores.texto }]}>
               {categoria.nome}
             </Text>
 
             <Ionicons
               name="chevron-forward"
               size={20}
-              color="#888"
+              color={cores.textoFraco}
             />
           </Pressable>
         ))}

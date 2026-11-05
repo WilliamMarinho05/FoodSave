@@ -1,3 +1,4 @@
+import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -34,29 +35,37 @@ const opcoes = [
 
 export default function Ajuda() {
   const router = useRouter();
+  const { cores } = useTheme();
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: cores.fundo }]}
       contentContainerStyle={styles.content}
     >
       <Pressable
         style={styles.voltar}
         onPress={() => router.back()}
       >
-        <Ionicons name="arrow-back" size={24} color="#43855F" />
-        <Text style={styles.voltarTexto}>Voltar</Text>
+        <Ionicons name="arrow-back" size={24} color={cores.primariaTexto} />
+        <Text style={[styles.voltarTexto, { color: cores.primariaTexto }]}>
+          Voltar
+        </Text>
       </Pressable>
 
-      <Text style={styles.titulo}>Ajuda e Suporte</Text>
+      <Text style={[styles.titulo, { color: cores.primariaTexto }]}>
+        Ajuda e Suporte
+      </Text>
 
-      <Text style={styles.subtitulo}>
+      <Text style={[styles.subtitulo, { color: cores.textoSecundario }]}>
         Encontre informações e ajuda para utilizar o FoodSave.
       </Text>
 
       <View style={styles.lista}>
         {opcoes.map((opcao) => (
-          <Pressable key={opcao.titulo} style={styles.card} onPress={() => {
+          <Pressable
+            key={opcao.titulo}
+            style={[styles.card, { backgroundColor: cores.card }]}
+            onPress={() => {
         if (opcao.titulo === "Dúvidas frequentes") {
         router.push("/ajuda/duvidas");
             }
@@ -72,20 +81,22 @@ export default function Ajuda() {
         }
             }}
             >
-            <View style={styles.iconeContainer}>
+            <View
+              style={[styles.iconeContainer, { backgroundColor: cores.primariaSuave }]}
+            >
               <Ionicons
                 name={opcao.icone}
                 size={25}
-                color="#43855F"
+                color={cores.primariaTexto}
               />
             </View>
 
             <View style={styles.textos}>
-              <Text style={styles.cardTitulo}>
+              <Text style={[styles.cardTitulo, { color: cores.texto }]}>
                 {opcao.titulo}
               </Text>
 
-              <Text style={styles.cardDescricao}>
+              <Text style={[styles.cardDescricao, { color: cores.textoSecundario }]}>
                 {opcao.descricao}
               </Text>
             </View>
@@ -93,7 +104,7 @@ export default function Ajuda() {
             <Ionicons
               name="chevron-forward"
               size={20}
-              color="#888"
+              color={cores.textoFraco}
             />
           </Pressable>
         ))}

@@ -1,9 +1,11 @@
+import { useTheme } from "@/src/context/ThemeContext";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { buscarProgressoNivel, calcularExpNecessario } from "../services/nivelamento";
 
 export default function BarraExp() {
+  const { cores } = useTheme();
   const [nivel, setNivel] = useState(1);
   const [exp, setExp] = useState(0);
 
@@ -23,13 +25,13 @@ export default function BarraExp() {
   const porcentagem = Math.min((exp / expNecessario) * 100, 100);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container,{backgroundColor: cores.card,borderColor: cores.borda,shadowColor: cores.sombra,},]}>
       <View style={styles.header}>
-        <Text style={styles.textoNivel}>Nível {nivel}</Text>
-        <Text style={styles.textoExp}>{exp} / {expNecessario} XP</Text>
+        <Text style={[styles.textoNivel,{color: cores.texto},]}>Nível {nivel}</Text>
+        <Text style={[styles.textoExp,{color: cores.textoSecundario},]}>{exp} / {expNecessario} XP</Text>
       </View>
 
-      <View style={styles.barraFundo}>
+      <View style={[styles.barraFundo,{backgroundColor: cores.borda},]}>
         <View style={[styles.barraPreenchida, { width: `${porcentagem}%` }]} />
       </View>
     </View>
