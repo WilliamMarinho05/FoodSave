@@ -1,3 +1,4 @@
+import BotaoVoltar from "@/src/components/BotaoVoltar";
 import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -248,14 +249,6 @@ export default function CadastrarAlimento() {
     }
   };
 
-  // Volta para a tela anterior; se não houver histórico, vai para a home
-  const handleVoltar = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace("/home");
-    }
-  };
 
   // TODO: integrar a leitura da nota fiscal (QR Code / foto) quando estiver pronta
   const handleCadastrarPorNotaFiscal = () => {
@@ -273,13 +266,9 @@ export default function CadastrarAlimento() {
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
-      {/* BOTÃO VOLTAR */}
-      <Pressable style={styles.voltar} onPress={handleVoltar}>
-        <Ionicons name="arrow-back" size={24} color={cores.primariaTexto} />
-        <Text style={[styles.voltarTexto, { color: cores.primariaTexto }]}>
-          Voltar
-        </Text>
-      </Pressable>
+      <View style={styles.areaVoltar}>
+         <BotaoVoltar />
+      </View>
 
       {/* CABEÇALHO */}
       <View style={styles.cabecalho}>
@@ -571,19 +560,10 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  voltar: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 25,
-  },
-
-  voltarTexto: {
-    fontSize: 16,
-    color: "#43855F",
-    fontWeight: "600",
-    marginLeft: 6,
-  },
+  areaVoltar: {
+   marginTop: 20,
+   marginBottom: 25,
+  },  
 
   cabecalho: {
     marginBottom: 20,

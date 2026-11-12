@@ -1,3 +1,5 @@
+import BotaoVoltar from "@/src/components/BotaoVoltar";
+import { useTheme } from "@/src/context/ThemeContext";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
@@ -13,6 +15,8 @@ import {
 } from "../../src/services/missoes";
 
 export default function Missoes() {
+  const { cores } = useTheme();
+
   const [missoes, setMissoes] = useState<
     MissaoComProgresso[]
   >([]);
@@ -20,9 +24,7 @@ export default function Missoes() {
   useFocusEffect(
     useCallback(() => {
       async function carregarMissoes() {
-        const dados =
-          await buscarMissoesComProgresso();
-
+        const dados = await buscarMissoesComProgresso();
         setMissoes(dados);
       }
 
@@ -54,9 +56,7 @@ export default function Missoes() {
     return "🎯";
   }
 
-  function renderizarMissao(
-    missao: MissaoComProgresso
-  ) {
+  function renderizarMissao(missao: MissaoComProgresso) {
     const porcentagem =
       missao.meta > 0
         ? Math.min(
@@ -66,32 +66,67 @@ export default function Missoes() {
         : 0;
 
     return (
-      <View style={styles.card} key={missao.id}>
-        <Text style={styles.missaoTitulo}>
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: cores.card,
+            borderColor: cores.borda,
+          },
+        ]}
+        key={missao.id}
+      >
+        <Text
+          style={[
+            styles.missaoTitulo,
+            { color: cores.texto },
+          ]}
+        >
           {obterIcone(missao.codigo)} {missao.titulo}
         </Text>
 
-        <Text style={styles.descricao}>
+        <Text
+          style={[
+            styles.descricao,
+            { color: cores.textoSecundario },
+          ]}
+        >
           {missao.descricao}
         </Text>
 
-        <Text style={styles.progresso}>
+        <Text
+          style={[
+            styles.progresso,
+            { color: cores.texto },
+          ]}
+        >
           {missao.progresso}/{missao.meta}
         </Text>
 
-        <View style={styles.barraFundo}>
+        <View
+          style={[
+            styles.barraFundo,
+            { backgroundColor: cores.borda },
+          ]}
+        >
           <View
             style={[
               styles.barraProgresso,
               {
                 width: `${porcentagem}%`,
+                backgroundColor: cores.primaria,
               },
             ]}
           />
         </View>
 
         {missao.concluida && (
-          <Text style={styles.concluida}>
+          <Text
+            style={[
+              styles.concluida,
+              { color: cores.primariaTexto },
+            ]}
+          >
             ✓{" "}
             {missao.periodicidade === "semanal"
               ? "Missão semanal concluída!"
@@ -99,7 +134,12 @@ export default function Missoes() {
           </Text>
         )}
 
-        <Text style={styles.recompensa}>
+        <Text
+          style={[
+            styles.recompensa,
+            { color: cores.texto },
+          ]}
+        >
           ⭐ +{missao.recompensa_pontos} pontos
         </Text>
       </View>
@@ -108,24 +148,52 @@ export default function Missoes() {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[
+        styles.container,
+        { backgroundColor: cores.fundo },
+      ]}
       contentContainerStyle={styles.conteudo}
+      showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.titulo}>
+      <View style={styles.areaVoltar}>
+        <BotaoVoltar />
+      </View>
+
+      <Text
+        style={[
+          styles.titulo,
+          { color: cores.texto },
+        ]}
+      >
         🎯 Missões Diárias
       </Text>
 
-      <Text style={styles.subtitulo}>
+      <Text
+        style={[
+          styles.subtitulo,
+          { color: cores.textoSecundario },
+        ]}
+      >
         Complete suas missões de hoje!
       </Text>
 
       {missoesDiarias.map(renderizarMissao)}
 
-      <Text style={styles.tituloSecao}>
+      <Text
+        style={[
+          styles.tituloSecao,
+          { color: cores.texto },
+        ]}
+      >
         📅 Missões Semanais
       </Text>
 
-      <Text style={styles.subtitulo}>
+      <Text
+        style={[
+          styles.subtitulo,
+          { color: cores.textoSecundario },
+        ]}
+      >
         Complete objetivos ao longo da semana!
       </Text>
 
@@ -137,12 +205,15 @@ export default function Missoes() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
   },
 
   conteudo: {
     padding: 20,
     paddingBottom: 35,
+  },
+
+  areaVoltar: {
+    marginBottom: 20,
   },
 
   titulo: {
@@ -160,17 +231,14 @@ const styles = StyleSheet.create({
 
   subtitulo: {
     fontSize: 16,
-    color: "#666",
     marginBottom: 25,
   },
 
   card: {
-    backgroundColor: "#f8f8f8",
     borderRadius: 12,
     padding: 18,
     marginBottom: 18,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
   },
 
   missaoTitulo: {
@@ -181,7 +249,6 @@ const styles = StyleSheet.create({
 
   descricao: {
     fontSize: 15,
-    color: "#555",
     marginBottom: 15,
   },
 
@@ -193,7 +260,6 @@ const styles = StyleSheet.create({
 
   barraFundo: {
     height: 10,
-    backgroundColor: "#ddd",
     borderRadius: 5,
     overflow: "hidden",
     marginBottom: 12,
@@ -201,7 +267,6 @@ const styles = StyleSheet.create({
 
   barraProgresso: {
     height: "100%",
-    backgroundColor: "#65B32E",
   },
 
   recompensa: {
@@ -212,7 +277,6 @@ const styles = StyleSheet.create({
   concluida: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#43855F",
     marginBottom: 8,
   },
 });
