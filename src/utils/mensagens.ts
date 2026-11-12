@@ -25,8 +25,19 @@ export function traduzirErroAuth(mensagem?: string, codigo?: string) {
   if (code === "email_not_confirmed" || erro.includes("email not confirmed")) {
     return "Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada.";
   }
-  if (code === "user_already_exists" || erro.includes("already registered")) {
+  if (
+    code === "user_already_exists" ||
+    code === "email_exists" ||
+    erro.includes("already registered") ||
+    erro.includes("already been registered")
+  ) {
     return "Este e-mail já está cadastrado.";
+  }
+  if (code === "signup_disabled") {
+    return "O cadastro está temporariamente desativado. Tente novamente mais tarde.";
+  }
+  if (erro.includes("database error")) {
+    return "Não foi possível concluir o cadastro no servidor. Tente novamente em instantes.";
   }
   if (code === "weak_password" || erro.includes("password should be at least")) {
     return "A senha é muito fraca. Use pelo menos 6 caracteres.";
