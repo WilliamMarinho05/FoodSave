@@ -1,18 +1,17 @@
+import BotaoVoltar from "@/src/components/BotaoVoltar";
 import { CoresTema, useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    View,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
 } from "react-native";
 
 export default function Configuracoes() {
-  const router = useRouter();
   const { modoEscuro, alternarTema, cores } = useTheme();
 
   const [notificacoes, setNotificacoes] = useState(true);
@@ -27,33 +26,21 @@ export default function Configuracoes() {
         { backgroundColor: cores.fundo },
       ]}
       contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
     >
-      {/* Cabeçalho */}
-      <View style={styles.header}>
-        <Pressable
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color={cores.primariaTexto}
-          />
-        </Pressable>
-
-        <Text
-          style={[
-            styles.title,
-            { color: cores.primariaTexto },
-          ]}
-        >
-          CONFIGURAÇÕES
-        </Text>
-
-        <View style={styles.headerSpace} />
+      <View style={styles.areaVoltar}>
+        <BotaoVoltar />
       </View>
 
-      {/* Conta */}
+      <Text
+        style={[
+          styles.title,
+          { color: cores.primariaTexto },
+        ]}
+      >
+        CONFIGURAÇÕES
+      </Text>
+
       <Text
         style={[
           styles.sectionTitle,
@@ -103,7 +90,6 @@ export default function Configuracoes() {
         />
       </Pressable>
 
-      {/* Notificações */}
       <Text
         style={[
           styles.sectionTitle,
@@ -145,7 +131,6 @@ export default function Configuracoes() {
         cores={cores}
       />
 
-      {/* Aparência */}
       <Text
         style={[
           styles.sectionTitle,
@@ -174,7 +159,7 @@ function Setting({
   cores,
 }: {
   texto: string;
-  icone: any;
+  icone: React.ComponentProps<typeof Ionicons>["name"];
   valor: boolean;
   onChange: (valor: boolean) => void;
   cores: CoresTema;
@@ -236,28 +221,15 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  areaVoltar: {
     paddingTop: 20,
-    paddingBottom: 20,
-  },
-
-  backButton: {
-    width: 32,
-    height: 32,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  headerSpace: {
-    width: 32,
+    marginBottom: 10,
   },
 
   title: {
     fontSize: 22,
     fontWeight: "900",
+    marginBottom: 20,
   },
 
   sectionTitle: {
@@ -275,7 +247,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 10,
     borderWidth: 1,
-
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -294,7 +265,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 10,
     borderWidth: 1,
-
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

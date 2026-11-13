@@ -1,16 +1,16 @@
 import BarraExp from "@/src/components/BarraExp";
+import BotaoVoltar from "@/src/components/BotaoVoltar";
 import { useTheme } from "@/src/context/ThemeContext";
 import { supabase } from "@/src/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  View,
+  View
 } from "react-native";
 
 type DadosUsuario = {
@@ -60,7 +60,6 @@ function iniciais(nome: string, sobrenome: string) {
 }
 
 export default function DadosPessoais() {
-  const router = useRouter();
   const { cores } = useTheme();
 
   const [dados, setDados] = useState<DadosUsuario | null>(null);
@@ -132,14 +131,11 @@ export default function DadosPessoais() {
       style={[styles.container, { backgroundColor: cores.fundo }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
-    >
-
-      <Pressable style={styles.voltar} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={24} color={cores.primariaTexto} />
-        <Text style={[styles.voltarTexto, { color: cores.primariaTexto }]}>
-          Voltar
-        </Text>
-      </Pressable>
+    > 
+      <View style={styles.areaVoltar}>
+        <BotaoVoltar />
+      </View>
+      
 
       <Text style={[styles.titulo, { color: cores.primariaTexto }]}>
         Dados Pessoais
@@ -304,16 +300,8 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  voltar: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 25,
-  },
-  voltarTexto: {
-    fontSize: 16,
-    color: "#43855F",
-    fontWeight: "600",
-    marginLeft: 6,
+  areaVoltar: {
+  marginBottom: 25,
   },
   titulo: {
     fontSize: 24,

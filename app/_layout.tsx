@@ -1,11 +1,9 @@
 import { ConquistaWatcher } from "@/src/components/ConquistaDesbloqueada";
 import { ThemeProvider, useTheme } from "@/src/context/ThemeContext";
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Pressable, Text } from "react-native";
 
 function ConteudoRaiz() {
-  const router = useRouter();
   const { cores } = useTheme();
 
   return (
@@ -18,7 +16,6 @@ function ConteudoRaiz() {
           headerStyle: { backgroundColor: cores.card },
           headerTintColor: cores.texto,
           headerTitleStyle: { color: cores.texto },
-          headerBackTitle: "Voltar",
         }}
       >
         <Stack.Screen
@@ -38,24 +35,21 @@ function ConteudoRaiz() {
         <Stack.Screen
           name="esquec_senha/index"
           options={{
-            title: "Recuperar Senha",
-            headerBackTitle: "Voltar",
+            headerShown: false,
           }}
         />
 
         <Stack.Screen
           name="redefinir_senha/index"
           options={{
-            title: "Redefinir Senha",
-            headerBackTitle: "Voltar",
+            headerShown: false,
           }}
         />
 
         <Stack.Screen
           name="cadastro/index"
           options={{
-            title: "Cadastro",
-            headerBackTitle: "Voltar",
+            headerShown: false,
           }}
         />
 
@@ -63,24 +57,18 @@ function ConteudoRaiz() {
           name="cadastrar_alimento/index"
           options={{
             headerShown: false,
-            headerTitle: () => (
-              <Pressable onPress={() => router.push("/")}>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: "bold",
-                    color: cores.texto,
-                  }}
-                >
-                  FoodSave
-                </Text>
-              </Pressable>
-            ),
           }}
         />
 
         <Stack.Screen
           name="sobre/index"
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="ajuda/index"
           options={{
             headerShown: false,
           }}
@@ -95,6 +83,20 @@ function ConteudoRaiz() {
 
         <Stack.Screen
           name="configuracoes/index"
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="missoes/index"
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="trofeus/index"
           options={{
             headerShown: false,
           }}

@@ -1,37 +1,49 @@
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import BotaoVoltar from "@/src/components/BotaoVoltar";
+import ListaTrofeus from "@/src/components/ListaTrofeus";
+import { useTheme } from "@/src/context/ThemeContext";
 import React from "react";
 import {
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
-import ListaTrofeus from "../../src/components/ListaTrofeus";
-
 export default function Trofeus() {
+  const { cores } = useTheme();
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.cabecalho}>
-        <TouchableOpacity
-          style={styles.botaoVoltar}
-          onPress={() => router.back()}
-          activeOpacity={0.7}
-        >
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color="#26332D"
-          />
-        </TouchableOpacity>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: cores.fundo },
+      ]}
+    >
+      <View
+        style={[
+          styles.cabecalho,
+          { backgroundColor: cores.card },
+        ]}
+      >
+        <BotaoVoltar />
 
         <View style={styles.cabecalhoTexto}>
-          <Text style={styles.titulo}>🏆 Troféus</Text>
+          <Text
+            style={[
+              styles.titulo,
+              { color: cores.texto },
+            ]}
+          >
+            🏆 Troféus
+          </Text>
 
-          <Text style={styles.subtitulo}>
+          <Text
+            style={[
+              styles.subtitulo,
+              { color: cores.textoSecundario },
+            ]}
+          >
             Acompanhe suas conquistas e seu progresso.
           </Text>
         </View>
@@ -51,42 +63,27 @@ export default function Trofeus() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F7FAF7",
   },
 
   cabecalho: {
-    flexDirection: "row",
-    alignItems: "flex-start",
     paddingHorizontal: 20,
     paddingTop: 18,
     paddingBottom: 10,
-    backgroundColor: "#FFFFFF",
-  },
-
-  botaoVoltar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 10,
   },
 
   cabecalhoTexto: {
-    flex: 1,
+    marginTop: 10,
   },
 
   titulo: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#26332D",
   },
 
   subtitulo: {
     marginTop: 4,
     fontSize: 14,
     lineHeight: 20,
-    color: "#8C9AA0",
   },
 
   scroll: {
