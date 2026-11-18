@@ -61,6 +61,13 @@ function ConteudoRaiz() {
         />
 
         <Stack.Screen
+          name="cadastrar_alimento/camera"
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
           name="sobre/index"
           options={{
             headerShown: false,

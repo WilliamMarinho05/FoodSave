@@ -76,4 +76,4 @@ respostas reais aparecem automaticamente.
 | Respostas continuam "[Modo demonstração]" | Função não criada/renomeada, ou deploy falhou |
 | Chat mostra "Ops! Não consegui responder agora." | Função existe mas a chamada falhou — veja **Edge Functions → ia-receitas → Logs** no painel |
 | Log mostra `Groq não respondeu: ...` | `GROQ_API_KEY` ausente/incorreto, ou quota gratuita estourada |
-| Log cita o modelo (`model_not_found`) | O modelo `llama-3.3-70b-versatile` mudou — pegue outro em `console.groq.com/docs/models` e troque só o `MODELO` no topo do arquivo |
+| Log cita o modelo (`model_not_found` / 403) | Modelo sem acesso no seu plano — liste os modelos disponíveis com `GET /openai/v1/models` e troque só o `MODELO` no topo do arquivo (hoje: `openai/gpt-oss-120b`; alternativa: `openai/gpt-oss-20b`) |
