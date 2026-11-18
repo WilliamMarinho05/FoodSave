@@ -1,3 +1,4 @@
+import BotaoVoltar from "@/src/components/BotaoVoltar";
 import { useTheme } from "@/src/context/ThemeContext";
 import { supabase } from "@/src/lib/supabase";
 import { mostrarAlerta, traduzirErroAuth } from "@/src/utils/mensagens";
@@ -193,11 +194,16 @@ export default function RedefinirSenha() {
   if (estadoLink === "verificando") {
     return (
       <View style={[styles.container, { backgroundColor: cores.fundo }]}>
+        <View style={styles.areaVoltar}>
+          <BotaoVoltar destinoFallback="/" />
+        </View>
         <ActivityIndicator size="large" color={cores.primariaTexto} />
         <Text style={[styles.subtitulo, { color: cores.textoSecundario }]}>
           Validando link...
         </Text>
       </View>
+
+      
     );
   }
 
@@ -344,6 +350,12 @@ const styles = StyleSheet.create({
 
   botaoDesabilitado: {
     opacity: 0.6,
+  },
+
+  areaVoltar: {
+  position: "absolute",
+  top: 20,
+  left: 30,
   },
 
   textoBotao: {

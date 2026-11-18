@@ -1,3 +1,5 @@
+import BotaoVoltar from "@/src/components/BotaoVoltar";
+import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
@@ -11,7 +13,7 @@ import {
   View,
 } from "react-native";
 
-import { useTheme, type CoresTema } from "@/src/context/ThemeContext";
+import { type CoresTema } from "@/src/context/ThemeContext";
 import { supabase } from "../../src/lib/supabase";
 import { mostrarAlerta, traduzirErroAuth } from "../../src/utils/mensagens";
 
@@ -401,7 +403,11 @@ export default function Cadastro() {
       ]}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
+      
     >
+      <View style={styles.areaVoltar}>
+        <BotaoVoltar destinoFallback="/" />
+      </View>
       <View style={styles.card}>
         <View style={styles.header}>
           <Text style={[styles.titulo, { color: cores.texto }]}>
@@ -564,6 +570,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     marginBottom: 7,
+  },
+  areaVoltar: {
+  width: "100%",
+  maxWidth: 450,
+  marginBottom: 10,
   },
   input: {
     width: "100%",

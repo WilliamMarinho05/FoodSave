@@ -21,19 +21,19 @@ export default function DetalhesAlimento() {
   const { cores } = useTheme();
   const alimento = useLocalSearchParams();
   const [quantidadeAtual, setQuantidadeAtual] = useState(
-  Number(alimento.quantidade ?? 0)
-);
+    Number(alimento.quantidade ?? 0)
+  );
   const [consumindo, setConsumindo] = useState(false);
   const [confirmacaoVisivel, setConfirmacaoVisivel] = useState(false);
   const consumindoRef = useRef(false);
 
   useEffect(() => {
-  async function registrarVerificacao() {
-    await atualizarProgressoMissao("verificar_validade");
-  }
+    async function registrarVerificacao() {
+      await atualizarProgressoMissao("verificar_validade");
+    }
 
-  registrarVerificacao();
-}, []);
+    registrarVerificacao();
+  }, []);
 
   // Confirmar antes de executar: consumir baixa a quantidade e dá XP
   // (ação destrutiva), então o usuário escolhe antes de confirmar.
@@ -108,196 +108,295 @@ export default function DetalhesAlimento() {
     }
   };
 
-
   return (
     <>
-    <ScrollView style={[styles.container, { backgroundColor: cores.fundo }]}>
-    <Stack.Screen options={{ title: String(alimento.nome || "Detalhes") }} />
-      <View style={styles.cabecalho}>
-        <Pressable
-          style={[styles.botaoVoltar, { backgroundColor: cores.card }]}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="chevron-back" size={22} color={cores.primariaTexto} />
-        </Pressable>
-        <Text style={[styles.titulo, { color: cores.texto }]}>
-          Detalhes do Alimento
-        </Text>
-      </View>
+      <Stack.Screen
+        options={{
+          title: String(alimento.nome || "Detalhes"),
+          headerShown: false,
+          presentation: "transparentModal",
+          animation: "fade",
+        }}
+      />
 
-      <View
-        style={[
-          styles.cardInfo,
-          { backgroundColor: cores.card, borderColor: cores.borda },
-        ]}
-      >
-        <Text style={[styles.nomeAlimento, { color: cores.primariaTexto }]}>
-          {alimento.nome}
-        </Text>
-        
-        <View style={[styles.linhaDetalhe, { borderBottomColor: cores.bordaSuave }]}>
-          <Text style={[styles.label, { color: cores.textoSecundario }]}>Categoria:</Text>
-          <Text style={[styles.valor, { color: cores.texto }]}>{alimento.categoria}</Text>
-        </View>
+      <View style={[styles.overlayFundo, { backgroundColor: cores.overlay || 'rgba(0, 0, 0, 0.45)' }]}>
+        {/* Área clicável ao redor para fechar a janela flutuante */}
+        <Pressable style={StyleSheet.absoluteFill} onPress={() => router.back()} />
 
-        <View style={[styles.linhaDetalhe, { borderBottomColor: cores.bordaSuave }]}>
-          <Text style={[styles.label, { color: cores.textoSecundario }]}>Quantidade:</Text>
-          <Text style={[styles.valor, { color: cores.texto }]}> {quantidadeAtual} {alimento.unidade}</Text>
-        </View>
-
-        <View style={[styles.linhaDetalhe, { borderBottomColor: cores.bordaSuave }]}>
-          <Text style={[styles.label, { color: cores.textoSecundario }]}>Peso:</Text>
-          <Text style={[styles.valor, { color: cores.texto }]}>{alimento.peso}</Text>
-        </View>
-
-        <View style={[styles.linhaDetalhe, { borderBottomColor: cores.bordaSuave }]}>
-          <Text style={[styles.label, { color: cores.textoSecundario }]}>Data de Compra:</Text>
-          <Text style={[styles.valor, { color: cores.texto }]}>{alimento.dataCompra}</Text>
-        </View>
-
-        <View style={[styles.linhaDetalhe, { borderBottomColor: cores.bordaSuave }]}>
-          <Text style={[styles.label, { color: cores.textoSecundario }]}>Validade:</Text>
-          <Text style={[styles.valor, { color: cores.texto }]}>{alimento.validade}</Text>
-        </View>
-      </View>
-      <Pressable
-      style={({ pressed }) => [
-        styles.botaoConsumir,
-        { backgroundColor: cores.primaria },
-        (pressed || consumindo) && styles.botaoConsumirPressionado,
-      ]}
-      onPress={handleConsumir}
-      disabled={consumindo}
-      accessibilityRole="button"
-      accessibilityState={{ disabled: consumindo, busy: consumindo }}
-    >
-      {consumindo ? (
-        <ActivityIndicator size="small" color="#FFFFFF" />
-      ) : (
-        <Ionicons
-          name="restaurant-outline"
-          size={20}
-          color="#FFFFFF"
-        />
-      )}
-
-      <Text style={styles.textoBotaoConsumir}>
-        {consumindo ? "Consumindo..." : "Consumir alimento"}
-      </Text>
-    </Pressable>
-    </ScrollView>
-
-    {/* CONFIRMAÇÃO (modal para o web, onde o Alert não é suportado) */}
-    <Modal
-      visible={confirmacaoVisivel}
-      transparent
-      animationType="fade"
-      onRequestClose={() => setConfirmacaoVisivel(false)}
-    >
-      <View style={[styles.confirmarOverlay, { backgroundColor: cores.overlay }]}>
+        {/* Janela Flutuante */}
         <View
           style={[
-            styles.confirmarCard,
+            styles.janelaFlutuante,
             { backgroundColor: cores.card, borderColor: cores.borda },
           ]}
         >
-          <Text style={[styles.confirmarTitulo, { color: cores.texto }]}>
-            Consumir alimento
-          </Text>
-
-          <Text
-            style={[styles.confirmarMensagem, { color: cores.textoSecundario }]}
-          >
-            Confirmar o consumo de 1 {alimento.unidade || "unidade"} de{" "}
-            {String(alimento.nome || "alimento")}? Esta ação não pode ser
-            desfeita.
-          </Text>
-
-          <View style={styles.confirmarBotoes}>
+          {/* Topo da Janela */}
+          <View style={styles.topoJanela}>
+            <View style={styles.indicadorTopo} />
             <Pressable
-              style={[
-                styles.confirmarBotao,
-                styles.confirmarBotaoSecundario,
-                { borderColor: cores.borda },
+              style={({ pressed }) => [
+                styles.botaoFechar,
+                { backgroundColor: cores.fundo, borderColor: cores.bordaSuave },
+                pressed && { opacity: 0.7 },
               ]}
-              onPress={() => setConfirmacaoVisivel(false)}
+              onPress={() => router.back()}
+              accessibilityLabel="Fechar detalhes"
             >
-              <Text
-                style={[
-                  styles.confirmarBotaoTextoSecundario,
-                  { color: cores.textoSecundario },
-                ]}
-              >
-                Cancelar
-              </Text>
-            </Pressable>
-
-            <Pressable
-              style={[
-                styles.confirmarBotao,
-                { backgroundColor: cores.primaria },
-              ]}
-              onPress={() => {
-                setConfirmacaoVisivel(false);
-                consumirAgora();
-              }}
-            >
-              <Text style={styles.confirmarBotaoTexto}>Consumir</Text>
+              <Ionicons name="close" size={18} color={cores.textoSecundario} />
             </Pressable>
           </View>
+
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.conteudoScroll}
+          >
+            {/* Cabeçalho do Alimento */}
+            <View style={styles.cabecalhoAlimento}>
+              
+              <Text style={[styles.nomeAlimento, { color: cores.primariaTexto }]}>
+                {alimento.nome}
+              </Text>
+
+              {!!alimento.categoria && (
+                <View style={[styles.badgeCategoria, { backgroundColor: cores.fundo, borderColor: cores.borda }]}>
+                  <Text style={[styles.textoBadgeCategoria, { color: cores.primariaTexto }]}>
+                    {alimento.categoria}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {/* Bloco de Informações */}
+            <View
+              style={[
+                styles.blocoDetalhes,
+                { backgroundColor: cores.fundo, borderColor: cores.bordaSuave },
+              ]}
+            >
+              <View style={[styles.linhaDetalhe, { borderBottomColor: cores.bordaSuave }]}>
+                <View style={styles.labelComIcone}>
+                  <Ionicons name="layers-outline" size={16} color={cores.textoSecundario} />
+                  <Text style={[styles.label, { color: cores.textoSecundario }]}>Quantidade</Text>
+                </View>
+                <Text style={[styles.valor, { color: cores.texto }]}>
+                  {quantidadeAtual} {alimento.unidade}
+                </Text>
+              </View>
+
+              <View style={[styles.linhaDetalhe, { borderBottomColor: cores.bordaSuave }]}>
+                <View style={styles.labelComIcone}>
+                  <Ionicons name="cart-outline" size={16} color={cores.textoSecundario} />
+                  <Text style={[styles.label, { color: cores.textoSecundario }]}>Data de Compra</Text>
+                </View>
+                <Text style={[styles.valor, { color: cores.texto }]}>{alimento.dataCompra}</Text>
+              </View>
+
+              <View style={[styles.linhaDetalhe, styles.ultimaLinha]}>
+                <View style={styles.labelComIcone}>
+                  <Ionicons name="calendar-outline" size={16} color={cores.textoSecundario} />
+                  <Text style={[styles.label, { color: cores.textoSecundario }]}>Validade</Text>
+                </View>
+                <Text style={[styles.valor, { color: cores.texto }]}>{alimento.validade}</Text>
+              </View>
+            </View>
+
+            {/* Botão Principal */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.botaoConsumir,
+                { backgroundColor: cores.primaria },
+                (pressed || consumindo) && styles.botaoConsumirPressionado,
+              ]}
+              onPress={handleConsumir}
+              disabled={consumindo}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: consumindo, busy: consumindo }}
+            >
+              {consumindo ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Ionicons
+                  name="restaurant-outline"
+                  size={20}
+                  color="#FFFFFF"
+                />
+              )}
+
+              <Text style={styles.textoBotaoConsumir}>
+                {consumindo ? "Consumindo..." : "Consumir alimento"}
+              </Text>
+            </Pressable>
+          </ScrollView>
         </View>
       </View>
-    </Modal>
+
+      {/* CONFIRMAÇÃO (modal para o web, onde o Alert não é suportado) */}
+      <Modal
+        visible={confirmacaoVisivel}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setConfirmacaoVisivel(false)}
+      >
+        <View style={[styles.confirmarOverlay, { backgroundColor: cores.overlay }]}>
+          <View
+            style={[
+              styles.confirmarCard,
+              { backgroundColor: cores.card, borderColor: cores.borda },
+            ]}
+          >
+            <Text style={[styles.confirmarTitulo, { color: cores.texto }]}>
+              Consumir alimento
+            </Text>
+
+            <Text
+              style={[styles.confirmarMensagem, { color: cores.textoSecundario }]}
+            >
+              Confirmar o consumo de 1 {alimento.unidade || "unidade"} de{" "}
+              {String(alimento.nome || "alimento")}? Esta ação não pode ser
+              desfeita.
+            </Text>
+
+            <View style={styles.confirmarBotoes}>
+              <Pressable
+                style={[
+                  styles.confirmarBotao,
+                  styles.confirmarBotaoSecundario,
+                  { borderColor: cores.borda },
+                ]}
+                onPress={() => setConfirmacaoVisivel(false)}
+              >
+                <Text
+                  style={[
+                    styles.confirmarBotaoTextoSecundario,
+                    { color: cores.textoSecundario },
+                  ]}
+                >
+                  Cancelar
+                </Text>
+              </Pressable>
+
+              <Pressable
+                style={[
+                  styles.confirmarBotao,
+                  { backgroundColor: cores.primaria },
+                ]}
+                onPress={() => {
+                  setConfirmacaoVisivel(false);
+                  consumirAgora();
+                }}
+              >
+                <Text style={styles.confirmarBotaoTexto}>Consumir</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  overlayFundo: {
     flex: 1,
-    backgroundColor: '#F8F7F1',
-    paddingHorizontal: 16,
-  },
-  cabecalho: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 30,
-  },
-  botaoVoltar: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
-  },
-  titulo: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#26332D',
-  },
-  cardInfo: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
     padding: 20,
+  },
+  janelaFlutuante: {
+    width: '100%',
+    maxWidth: 420,
+    maxHeight: '85%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: '#EAF2EC',
+    paddingTop: 14,
+    paddingHorizontal: 20,
+    paddingBottom: 22,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
+    elevation: 12,
+  },
+  topoJanela: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    marginBottom: 8,
+    minHeight: 32,
+  },
+  indicadorTopo: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#D6DFDA',
+  },
+  botaoFechar: {
+    position: 'absolute',
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  conteudoScroll: {
+    paddingBottom: 4,
+  },
+  cabecalhoAlimento: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  iconeDestaque: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   nomeAlimento: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#43855F',
-    marginBottom: 20,
     textAlign: 'center',
+    marginBottom: 8,
+  },
+  badgeCategoria: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  textoBadgeCategoria: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  blocoDetalhes: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+    marginBottom: 20,
   },
   linhaDetalhe: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    alignItems: 'center',
+    paddingVertical: 13,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
+  },
+  ultimaLinha: {
+    borderBottomWidth: 0,
+  },
+  labelComIcone: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   label: {
     fontSize: 14,
@@ -310,80 +409,73 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   botaoConsumir: {
-  height: 45,
-  backgroundColor: "#43855F",
-  borderRadius: 22,
-  justifyContent: "center",
-  alignItems: "center",
-  flexDirection: "row",
-  marginTop: 15,
-},
-
-botaoConsumirPressionado: {
-  opacity: 0.7,
-},
-
-textoBotaoConsumir: {
-  color: "#FFFFFF",
-  fontSize: 13,
-  fontWeight: "bold",
-  marginLeft: 8,
-},
-
+    height: 48,
+    backgroundColor: '#43855F',
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    shadowColor: '#43855F',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  botaoConsumirPressionado: {
+    opacity: 0.75,
+  },
+  textoBotaoConsumir: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
   confirmarOverlay: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 24,
   },
-
   confirmarCard: {
-    width: "100%",
+    width: '100%',
     maxWidth: 360,
     borderRadius: 18,
     borderWidth: 1,
     padding: 20,
   },
-
   confirmarTitulo: {
     fontSize: 17,
-    fontWeight: "bold",
-    textAlign: "center",
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
-
   confirmarMensagem: {
     fontSize: 13,
-    textAlign: "center",
+    textAlign: 'center',
     marginTop: 8,
     lineHeight: 18,
   },
-
   confirmarBotoes: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 10,
     marginTop: 18,
   },
-
   confirmarBotao: {
     flex: 1,
     height: 44,
     borderRadius: 22,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-
   confirmarBotaoSecundario: {
     borderWidth: 1,
   },
-
   confirmarBotaoTexto: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
-
   confirmarBotaoTextoSecundario: {
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: '600',
   },
 });

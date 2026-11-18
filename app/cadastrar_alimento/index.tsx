@@ -1,6 +1,7 @@
+import BotaoVoltar from "@/src/components/BotaoVoltar";
 import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -11,6 +12,7 @@ import {
   Text,
   TextInput,
   View,
+  Image,
 } from "react-native";
 
 import CalendarioModal from "../../src/components/CalendarioModal";
@@ -74,6 +76,19 @@ type Erros = Partial<
 
 export default function CadastrarAlimento() {
   const router = useRouter();
+
+  const { fotoNota } = useLocalSearchParams<{
+    fotoNota?: string;
+  }>();
+
+  const [fotoSelecionada, setFotoSelecionada] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (fotoNota) {
+      setFotoSelecionada(fotoNota);
+    }
+  }, [fotoNota]);
+
   const { cores } = useTheme();
   const scrollRef = useRef<ScrollView>(null);
 
@@ -248,21 +263,10 @@ export default function CadastrarAlimento() {
     }
   };
 
-  // Volta para a tela anterior; se não houver histórico, vai para a home
-  const handleVoltar = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace("/home");
-    }
-  };
 
   // TODO: integrar a leitura da nota fiscal (QR Code / foto) quando estiver pronta
   const handleCadastrarPorNotaFiscal = () => {
-    Alert.alert(
-      "Em breve",
-      "O cadastro por nota fiscal estará disponível em breve."
-    );
+    router.push("/cadastrar_alimento/camera");
   };
 
   return (
@@ -273,13 +277,9 @@ export default function CadastrarAlimento() {
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
-      {/* BOTÃO VOLTAR */}
-      <Pressable style={styles.voltar} onPress={handleVoltar}>
-        <Ionicons name="arrow-back" size={24} color={cores.primariaTexto} />
-        <Text style={[styles.voltarTexto, { color: cores.primariaTexto }]}>
-          Voltar
-        </Text>
-      </Pressable>
+      <View style={styles.areaVoltar}>
+         <BotaoVoltar />
+      </View>
 
       {/* CABEÇALHO */}
       <View style={styles.cabecalho}>
@@ -536,6 +536,33 @@ export default function CadastrarAlimento() {
         </Text>
       </Pressable>
 
+      {fotoSelecionada && (
+  <View style={{ marginTop: 15, alignItems: "center" }}>
+    <Text style={{ color: cores.texto, marginBottom: 10 }}>
+      Nota fiscal selecionada:
+    </Text>
+
+    <Image
+      source={{ uri: fotoSelecionada }}
+      style={{
+        width: "100%",
+        height: 220,
+        borderRadius: 12,
+      }}
+      resizeMode="contain"
+    />
+
+    <Pressable
+      onPress={() => setFotoSelecionada(null)}
+      style={{ marginTop: 10 }}
+    >
+      <Text style={{ color: cores.perigo }}>
+        Remover foto
+      </Text>
+    </Pressable>
+  </View>
+)}
+
       {/* CALENDÁRIOS */}
       <CalendarioModal
         visivel={calendarioAberto === "compra"}
@@ -571,19 +598,10 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  voltar: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 25,
-  },
-
-  voltarTexto: {
-    fontSize: 16,
-    color: "#43855F",
-    fontWeight: "600",
-    marginLeft: 6,
-  },
+  areaVoltar: {
+   marginTop: 20,
+   marginBottom: 25,
+  },  
 
   cabecalho: {
     marginBottom: 20,

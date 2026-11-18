@@ -1,7 +1,8 @@
+import BotaoVoltar from "@/src/components/BotaoVoltar";
 import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
-import { Stack, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import React from "react";
 import {
   Image,
@@ -70,14 +71,10 @@ export default function SobreOApp() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <Stack.Screen options={{ title: "Sobre o App" }} />
 
-      <Pressable style={styles.voltar} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={24} color={cores.primariaTexto} />
-        <Text style={[styles.voltarTexto, { color: cores.primariaTexto }]}>
-          Voltar
-        </Text>
-      </Pressable>
+      <View style={styles.areaVoltar}>
+        <BotaoVoltar />
+      </View>
 
       {/* APRESENTAÇÃO / PROMOÇÃO */}
       <View
@@ -238,16 +235,8 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  voltar: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  voltarTexto: {
-    fontSize: 16,
-    color: "#43855F",
-    fontWeight: "600",
-    marginLeft: 6,
+  areaVoltar: {
+  marginBottom: 20,
   },
 
   hero: {
