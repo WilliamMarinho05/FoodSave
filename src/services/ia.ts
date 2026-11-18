@@ -5,7 +5,7 @@ import { buscarAlimentosEmEstoque } from "@/src/services/alimentos";
 
 const CHAVE_CONVERSA = "foodsave:conversa-assistente";
 
-// Nome da Edge Function do Supabase que conversa com o Gemini.
+// Nome da Edge Function do Supabase que conversa com o Groq.
 // Código dela: supabase/functions/ia-receitas/
 const NOME_FUNCAO_IA = "ia-receitas";
 
@@ -69,7 +69,8 @@ async function montarEstoque(): Promise<string> {
 }
 
 // Agora a função de verdade: chama a Edge Function `ia-receitas` do Supabase,
-// que valida o login, monta o prompt de receitas e conversa com o Gemini.
+// que valida o login, monta o prompt de receitas e conversa com o Groq
+// (modelo openai/gpt-oss-120b, tier gratuito).
 // Enquanto a função/secret não estiverem no ar, cai no modo demonstração.
 export async function enviarMensagemParaIA(texto: string): Promise<string> {
   const estoque = await montarEstoque();

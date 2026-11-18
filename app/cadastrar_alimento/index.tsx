@@ -77,9 +77,25 @@ type Erros = Partial<
 export default function CadastrarAlimento() {
   const router = useRouter();
 
-  const { fotoNota } = useLocalSearchParams<{
+  const params = useLocalSearchParams<{
     fotoNota?: string;
+    nome?: string;
+    categoria?: string;
+    quantidade?: string;
+    unidade?: string;
+    dataCompra?: string;
+    preco?: string;
   }>();
+
+  const {
+    fotoNota,
+    nome: nomeNota,
+    categoria: categoriaNota,
+    quantidade: quantidadeNota,
+    unidade: unidadeNota,
+    dataCompra: dataCompraNota,
+    preco: precoNota,
+  } = params;
 
   const [fotoSelecionada, setFotoSelecionada] = useState<string | null>(null);
 
@@ -106,6 +122,39 @@ export default function CadastrarAlimento() {
   const [calendarioAberto, setCalendarioAberto] = useState<
     "compra" | "validade" | null
   >(null);
+
+  // Preenche o formulário quando o item vem da leitura da nota fiscal com IA
+  useEffect(() => {
+    if (!nomeNota) return;
+
+    setNome(somenteLetras(nomeNota));
+
+    if (categoriaNota) {
+      setCategoria(somenteLetras(categoriaNota));
+    }
+
+    const quantidadeLida = somenteInteiros(quantidadeNota ?? "").slice(0, 5);
+
+    if (quantidadeLida) {
+      setQuantidade(quantidadeLida);
+    }
+
+    if (unidadeNota && UNIDADES_OFICIAIS.some((u) => u.valor === unidadeNota)) {
+      setUnidade(unidadeNota);
+    } else {
+      setUnidade("");
+    }
+
+    if (
+      dataCompraNota &&
+      /^\d{4}-\d{2}-\d{2}$/.test(dataCompraNota) &&
+      dataCompraNota <= hojeISO()
+    ) {
+      setDataCompra(dataCompraNota);
+    }
+
+    setErros({});
+  }, [nomeNota, categoriaNota, quantidadeNota, unidadeNota, dataCompraNota]);
 
   // Opções já cadastradas pelo usuário
   const [nomesCadastrados, setNomesCadastrados] = useState<string[]>([]);
@@ -541,6 +590,12 @@ export default function CadastrarAlimento() {
     <Text style={{ color: cores.texto, marginBottom: 10 }}>
       Nota fiscal selecionada:
     </Text>
+
+    {!!precoNota && (
+      <Text style={{ color: cores.textoSecundario, marginBottom: 10 }}>
+        Preço lido na nota: R$ {precoNota.replace(".", ",")}
+      </Text>
+    )}
 
     <Image
       source={{ uri: fotoSelecionada }}

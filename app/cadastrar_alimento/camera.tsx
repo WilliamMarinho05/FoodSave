@@ -1,5 +1,4 @@
-
-import React, { useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -7,20 +6,47 @@ import {
   Pressable,
   Image,
   ActivityIndicator,
-  Alert,
+  ScrollView,
 } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTheme } from "@/src/context/ThemeContext";
+import { analisarNotaFiscal } from "@/src/services/notaFiscal";
+import { AnaliseNotaFiscal, ItemNotaFiscal } from "@/src/types/notaFiscal";
+import { hojeISO } from "@/src/utils/datas";
+
+const ROTULO_UNIDADE: Record<string, string> = {
+  Miligrama: "mg",
+  Grama: "g",
+  Quilograma: "kg",
+  Mililitro: "mL",
+  Litro: "L",
+};
+
+function formatarReais(valor: number | null | undefined) {
+  if (valor == null) return null;
+  return `R$ ${valor.toFixed(2).replace(".", ",")}`;
+}
+
+function formatarData(iso: string) {
+  const [ano, mes, dia] = iso.split("-");
+  return `${dia}/${mes}/${ano}`;
+}
 
 export default function CameraNotaFiscal() {
   const router = useRouter();
+  const { cores } = useTheme();
 
-  const cameraRef = useRef<CameraView>(null);
+  const cameraRef = React.useRef<CameraView>(null);
   const [permissao, solicitarPermissao] = useCameraPermissions();
 
   const [foto, setFoto] = useState<string | null>(null);
   const [capturando, setCapturando] = useState(false);
+
+  const [analisando, setAnalisando] = useState(false);
+  const [analise, setAnalise] = useState<AnaliseNotaFiscal | null>(null);
+  const [erroAnalise, setErroAnalise] = useState<string | null>(null);
 
   // Tirar foto
   const tirarFoto = async () => {
@@ -38,7 +64,7 @@ export default function CameraNotaFiscal() {
       }
     } catch (erro) {
       console.error("Erro ao tirar foto:", erro);
-      Alert.alert("Erro", "Não foi possível tirar a foto.");
+      setErroAnalise("Não foi possível tirar a foto.");
     } finally {
       setCapturando(false);
     }
@@ -47,26 +73,84 @@ export default function CameraNotaFiscal() {
   // Refazer foto
   const refazerFoto = () => {
     setFoto(null);
+    setAnalise(null);
+    setErroAnalise(null);
   };
 
-  // Confirmar foto e retornar ao cadastro
-  const utilizarFoto = () => {
+  // Envia a foto para a IA e mostra os itens encontrados
+  const analisarFoto = async () => {
+    if (!foto || analisando) return;
+
+    try {
+      setAnalisando(true);
+      setErroAnalise(null);
+
+      const resultado = await analisarNotaFiscal(foto);
+
+      setAnalise(resultado);
+    } catch (erro) {
+      console.error("Erro ao analisar nota fiscal:", erro);
+
+      setErroAnalise(
+        erro instanceof Error
+          ? erro.message
+          : "Não foi possível analisar a nota."
+      );
+    } finally {
+      setAnalisando(false);
+    }
+  };
+
+  // Abre o cadastro já preenchido com os dados do item escolhido
+  const cadastrarItem = (item: ItemNotaFiscal) => {
     if (!foto) return;
 
-    router.replace({
+    router.navigate({
       pathname: "/cadastrar_alimento",
       params: {
         fotoNota: foto,
+        nome: item.nome,
+        categoria: item.categoria,
+        quantidade: String(item.quantidade),
+        unidade: item.unidade ?? "",
+        dataCompra: analise?.dataCompra ?? hojeISO(),
+        preco: item.precoTotal != null ? item.precoTotal.toFixed(2) : "",
       },
     });
   };
 
+  // Cadastro manual, mantendo a foto anexada
+  const cadastrarManualmente = () => {
+    router.navigate({
+      pathname: "/cadastrar_alimento",
+      params: {
+        fotoNota: foto ?? "",
+        nome: "",
+        categoria: "",
+        quantidade: "",
+        unidade: "",
+        dataCompra: "",
+        preco: "",
+      },
+    });
+  };
+
+  const totalItens = useMemo(
+    () =>
+      analise?.total ??
+      analise?.itens.reduce((soma, item) => soma + (item.precoTotal ?? 0), 0) ??
+      0,
+    [analise]
+  );
+
   // Carregando informações da permissão
   if (!permissao) {
     return (
-      <View style={styles.centralizado}>
-        <ActivityIndicator size="large" />
-        <Text>Verificando permissão da câmera...</Text>
+      <View style={[styles.centralizado, { backgroundColor: cores.fundo }]}>
+        <ActivityIndicator size="large" color={cores.primaria} />
+        <Text style={{ color: cores.texto }}>
+          Verificando permissão da câmera...
+        </Text>
       </View>
     );
   }
@@ -74,57 +158,247 @@ export default function CameraNotaFiscal() {
   // Permissão negada
   if (!permissao.granted) {
     return (
-      <View style={styles.centralizado}>
-        <Ionicons name="camera-outline" size={60} color="#4CAF50" />
+      <View style={[styles.centralizado, { backgroundColor: cores.fundo }]}>
+        <Ionicons name="camera-outline" size={60} color={cores.primariaTexto} />
 
-        <Text style={styles.titulo}>
+        <Text style={[styles.titulo, { color: cores.texto }]}>
           Acesso à câmera
         </Text>
 
-        <Text style={styles.descricao}>
+        <Text style={[styles.descricao, { color: cores.textoSecundario }]}>
           Precisamos acessar sua câmera para fotografar a nota fiscal.
         </Text>
 
         <Pressable
-          style={styles.botaoPrincipal}
+          style={[styles.botaoPrincipal, { backgroundColor: cores.primaria }]}
           onPress={solicitarPermissao}
         >
-          <Text style={styles.textoBotao}>
-            Permitir acesso à câmera
-          </Text>
+          <Text style={styles.textoBotao}>Permitir acesso à câmera</Text>
         </Pressable>
 
         <Pressable onPress={() => router.back()}>
-          <Text style={styles.textoVoltar}>Voltar</Text>
+          <Text style={[styles.textoVoltar, { color: cores.primariaTexto }]}>
+            Voltar
+          </Text>
         </Pressable>
       </View>
     );
   }
 
+  // ---------- RESULTADO DA LEITURA DA NOTA ----------
+  if (foto && analise) {
+    const temItens = analise.itens.length > 0;
+
+    return (
+      <View style={[styles.resultado, { backgroundColor: cores.fundo }]}>
+        <View style={styles.cabecalhoResultado}>
+          <Pressable
+            style={[
+              styles.botaoVoltarResultado,
+              { backgroundColor: cores.card, borderColor: cores.borda },
+            ]}
+            onPress={() => setAnalise(null)}
+          >
+            <Ionicons name="arrow-back" size={22} color={cores.texto} />
+          </Pressable>
+
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.tituloResultado, { color: cores.texto }]}>
+              Nota lida com a IA
+            </Text>
+            <Text
+              style={[
+                styles.subtituloResultado,
+                { color: cores.textoSecundario },
+              ]}
+            >
+              Toque em um item para cadastrá-lo
+            </Text>
+          </View>
+        </View>
+
+        <ScrollView
+          contentContainerStyle={styles.conteudoResultado}
+          showsVerticalScrollIndicator={false}
+        >
+          <View
+            style={[
+              styles.cartaoResumo,
+              { backgroundColor: cores.card, borderColor: cores.borda },
+            ]}
+          >
+            <View style={{ flex: 1 }}>
+              <Text
+                style={[styles.rotuloResumo, { color: cores.textoSecundario }]}
+              >
+                {analise.estabelecimento ?? "Nota fiscal"}
+              </Text>
+
+              {!!analise.dataCompra && (
+                <Text
+                  style={[styles.dataResumo, { color: cores.textoSecundario }]}
+                >
+                  Compra em {formatarData(analise.dataCompra)}
+                </Text>
+              )}
+            </View>
+
+            <View style={{ alignItems: "flex-end" }}>
+              <Text
+                style={[styles.rotuloResumo, { color: cores.textoSecundario }]}
+              >
+                {analise.itens.length} item(ns)
+              </Text>
+
+              {totalItens > 0 && (
+                <Text style={[styles.totalResumo, { color: cores.primariaTexto }]}>
+                  {formatarReais(totalItens)}
+                </Text>
+              )}
+            </View>
+          </View>
+
+          {temItens ? (
+            analise.itens.map((item, indice) => {
+              const preco = formatarReais(item.precoTotal);
+              const unidade =
+                ROTULO_UNIDADE[item.unidade ?? ""] ??
+                item.unidadeNota ??
+                "un";
+
+              return (
+                <Pressable
+                  key={`${item.nome}-${indice}`}
+                  onPress={() => cadastrarItem(item)}
+                  style={({ pressed }) => [
+                    styles.cartaoItem,
+                    {
+                      backgroundColor: cores.card,
+                      borderColor: cores.borda,
+                      opacity: pressed ? 0.7 : 1,
+                    },
+                  ]}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={[styles.nomeItem, { color: cores.texto }]}
+                      numberOfLines={2}
+                    >
+                      {item.nome}
+                    </Text>
+
+                    <Text
+                      style={[
+                        styles.detalheItem,
+                        { color: cores.textoSecundario },
+                      ]}
+                    >
+                      {item.quantidade} {unidade} · {item.categoria}
+                    </Text>
+                  </View>
+
+                  <View style={{ alignItems: "flex-end" }}>
+                    {!!preco && (
+                      <Text
+                        style={[styles.precoItem, { color: cores.texto }]}
+                      >
+                        {preco}
+                      </Text>
+                    )}
+
+                    <View
+                      style={[
+                        styles.chipCadastrar,
+                        { backgroundColor: cores.primariaSuave },
+                      ]}
+                    >
+                      <Ionicons
+                        name="add-circle-outline"
+                        size={14}
+                        color={cores.primariaTexto}
+                      />
+                      <Text
+                        style={[
+                          styles.textoChipCadastrar,
+                          { color: cores.primariaTexto },
+                        ]}
+                      >
+                        Cadastrar
+                      </Text>
+                    </View>
+                  </View>
+                </Pressable>
+              );
+            })
+          ) : (
+            <View
+              style={[
+                styles.cartaoVazio,
+                { backgroundColor: cores.card, borderColor: cores.borda },
+              ]}
+            >
+              <Ionicons
+                name="receipt-outline"
+                size={38}
+                color={cores.primariaTexto}
+              />
+              <Text style={[styles.tituloVazio, { color: cores.texto }]}>
+                Nenhum alimento legível
+              </Text>
+              <Text
+                style={[styles.textoVazio, { color: cores.textoSecundario }]}
+              >
+                Não consegui identificar alimentos nesta foto. Tente outra foto
+                com a nota inteira, bem iluminada e sem dobras.
+              </Text>
+            </View>
+          )}
+
+          <Pressable
+            style={[styles.botaoPrincipal, { marginTop: 6 }]}
+            onPress={refazerFoto}
+          >
+            <Ionicons name="camera-outline" size={20} color="#FFFFFF" />
+            <Text style={styles.textoBotao}>Analisar outra foto</Text>
+          </Pressable>
+
+          <Pressable
+            style={[
+              styles.botaoSecundario,
+              { backgroundColor: cores.card, borderColor: cores.borda },
+            ]}
+            onPress={cadastrarManualmente}
+          >
+            <Ionicons
+              name="create-outline"
+              size={20}
+              color={cores.primariaTexto}
+            />
+            <Text
+              style={[styles.textoBotao, { color: cores.primariaTexto }]}
+            >
+              Cadastrar manualmente
+            </Text>
+          </Pressable>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // ---------- CÂMERA / PRÉVIA DA FOTO ----------
   return (
     <View style={styles.container}>
       {/* PRÉVIA DA FOTO */}
       {foto ? (
-        <Image
-          source={{ uri: foto }}
-          style={styles.camera}
-          resizeMode="contain"
-        />
+        <Image source={{ uri: foto }} style={styles.camera} resizeMode="contain" />
       ) : (
         /* CÂMERA AO VIVO */
-        <CameraView
-          ref={cameraRef}
-          style={styles.camera}
-          facing="back"
-        />
+        <CameraView ref={cameraRef} style={styles.camera} facing="back" />
       )}
 
       {/* CABEÇALHO */}
       <View style={styles.cabecalho}>
-        <Pressable
-          style={styles.botaoVoltar}
-          onPress={() => router.back()}
-        >
+        <Pressable style={styles.botaoVoltar} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={26} color="#FFFFFF" />
         </Pressable>
 
@@ -137,30 +411,63 @@ export default function CameraNotaFiscal() {
       <View style={styles.controles}>
         {foto ? (
           <>
-            <Pressable
-              style={styles.botaoSecundario}
-              onPress={refazerFoto}
-            >
-              <Ionicons name="refresh-outline" size={22} color="#FFFFFF" />
-              <Text style={styles.textoBotao}>
-                Refazer
-              </Text>
-            </Pressable>
+            {!!erroAnalise && (
+              <View style={styles.caixaErro}>
+                <Ionicons
+                  name="alert-circle-outline"
+                  size={20}
+                  color="#FFFFFF"
+                />
+                <Text style={styles.textoErro}>{erroAnalise}</Text>
+              </View>
+            )}
 
             <Pressable
-              style={styles.botaoPrincipal}
-              onPress={utilizarFoto}
+              style={[
+                styles.botaoPrincipal,
+                styles.botaoLargo,
+                analisando && styles.botaoDesabilitado,
+              ]}
+              onPress={analisarFoto}
+              disabled={analisando}
             >
-              <Ionicons name="checkmark-circle-outline" size={22} color="#FFFFFF" />
-              <Text style={styles.textoBotao}>
-                Utilizar foto
-              </Text>
+              {analisando ? (
+                <>
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                  <Text style={styles.textoBotao}>Lendo a nota...</Text>
+                </>
+              ) : (
+                <>
+                  <Ionicons name="sparkles-outline" size={22} color="#FFFFFF" />
+                  <Text style={styles.textoBotao}>Analisar com IA</Text>
+                </>
+              )}
             </Pressable>
+
+            <View style={styles.linhaBotoes}>
+              <Pressable
+                style={[styles.botaoSecundario, styles.botaoMetade]}
+                onPress={refazerFoto}
+                disabled={analisando}
+              >
+                <Ionicons name="refresh-outline" size={20} color="#FFFFFF" />
+                <Text style={styles.textoBotao}>Refazer</Text>
+              </Pressable>
+
+              <Pressable
+                style={[styles.botaoSecundario, styles.botaoMetade]}
+                onPress={cadastrarManualmente}
+                disabled={analisando}
+              >
+                <Ionicons name="create-outline" size={20} color="#FFFFFF" />
+                <Text style={styles.textoBotao}>Sem IA</Text>
+              </Pressable>
+            </View>
           </>
         ) : (
           <>
             <Text style={styles.instrucao}>
-              Posicione a nota fiscal dentro da câmera.
+              Posicione a nota fiscal dentro da câmera, com boa iluminação.
             </Text>
 
             <Pressable
@@ -221,7 +528,7 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     alignItems: "center",
-    gap: 18,
+    gap: 14,
   },
 
   instrucao: {
@@ -231,6 +538,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#00000080",
     padding: 10,
     borderRadius: 10,
+  },
+
+  caixaErro: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#B3261E",
+    padding: 12,
+    borderRadius: 12,
+    width: "100%",
+  },
+
+  textoErro: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    flex: 1,
   },
 
   botaoCapturar: {
@@ -254,6 +577,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
 
+  botaoLargo: {
+    width: "100%",
+  },
+
   botaoSecundario: {
     backgroundColor: "#555555",
     padding: 15,
@@ -262,6 +589,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
+    borderWidth: 1,
+    borderColor: "transparent",
+  },
+
+  linhaBotoes: {
+    flexDirection: "row",
+    gap: 10,
+    width: "100%",
+  },
+
+  botaoMetade: {
+    flex: 1,
+  },
+
+  botaoDesabilitado: {
+    opacity: 0.6,
   },
 
   textoBotao: {
@@ -294,5 +637,128 @@ const styles = StyleSheet.create({
     color: "#4CAF50",
     fontSize: 16,
     marginTop: 10,
+  },
+
+  // ---------- RESULTADO ----------
+  resultado: {
+    flex: 1,
+    paddingTop: 50,
+  },
+
+  cabecalhoResultado: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+
+  botaoVoltarResultado: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  tituloResultado: {
+    fontSize: 19,
+    fontWeight: "bold",
+  },
+
+  subtituloResultado: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+
+  conteudoResultado: {
+    paddingHorizontal: 16,
+    paddingBottom: 40,
+    gap: 10,
+  },
+
+  cartaoResumo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 4,
+  },
+
+  rotuloResumo: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+
+  dataResumo: {
+    fontSize: 12,
+    marginTop: 3,
+  },
+
+  totalResumo: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 2,
+  },
+
+  cartaoItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 14,
+  },
+
+  nomeItem: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+
+  detalheItem: {
+    fontSize: 12,
+    marginTop: 3,
+  },
+
+  precoItem: {
+    fontSize: 15,
+    fontWeight: "bold",
+  },
+
+  chipCadastrar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 20,
+    marginTop: 6,
+  },
+
+  textoChipCadastrar: {
+    fontSize: 11,
+    fontWeight: "700",
+  },
+
+  cartaoVazio: {
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 22,
+  },
+
+  tituloVazio: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+
+  textoVazio: {
+    fontSize: 13,
+    textAlign: "center",
+    lineHeight: 19,
   },
 });

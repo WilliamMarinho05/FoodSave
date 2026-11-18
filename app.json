@@ -1,26 +1,4 @@
 {
-  "plugins": [
-    "expo-router",
-    [
-      "expo-camera",
-      {
-        "cameraPermission": "Permitir que o FoodSave acesse sua câmera para fotografar notas fiscais."
-      }
-    ],
-    [
-      "expo-splash-screen",
-      {
-        "image": "./assets/images/splash-icon.png",
-        "imageWidth": 200,
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff",
-        "dark": {
-          "backgroundColor": "#000000"
-        }
-      }
-    ]
-  ],
-
   "expo": {
     "name": "foodsave",
     "slug": "foodsave",
@@ -49,6 +27,12 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permitir que o FoodSave acesse sua câmera para fotografar notas fiscais."
+        }
+      ],
       [
         "expo-splash-screen",
         {

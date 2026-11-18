@@ -9,3 +9,11 @@ entrypoint = "./functions/ia-receitas/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/ia-receitas/*.html" ]
+
+[functions.ia-nota-fiscal]
+enabled = true
+# A função valida o usuário manualmente (supabase.auth.getUser), então o
+# gateway não precisa barrar antes. O app sempre envia o token de login.
+verify_jwt = false
+entrypoint = "./functions/ia-nota-fiscal/index.ts"
+
