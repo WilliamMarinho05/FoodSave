@@ -13,7 +13,7 @@ export type AlimentoBanco = {
   status: string;
 };
 
-type NovoAlimento = {
+export type NovoAlimento = {
   nome: string;
   categoria: string;
   quantidade: number;
@@ -53,13 +53,27 @@ function formatarData(data: string | null) {
   return `${dia}/${mes}/${ano}`;
 }
 
-export async function cadastrarAlimento(alimento: NovoAlimento) {
+type LinhaAlimento = {
+  usuario_id: string;
+  nome: string;
+  categoria: string;
+  quantidade_inicial: number;
+  quantidade_atual: number;
+  unidade_medida: string;
+  data_compra: string;
+  data_validade: string;
+  peso?: number;
+  status: string;
+};
+
+async function obterUsuarioLogado() {
   const {
     data: { user },
     error: erroUsuario,
   } = await supabase.auth.getUser();
 
   if (erroUsuario) {
+    console.error("Erro ao identificar usuário:", erroUsuario.message);
     throw new Error("Erro ao identificar usuário.");
   }
 
@@ -67,38 +81,59 @@ export async function cadastrarAlimento(alimento: NovoAlimento) {
     throw new Error("Usuário não está logado.");
   }
 
+  return user;
+}
+
+// Valida e monta a linha que vai para a tabela alimentos. Usada tanto no
+// cadastro individual quanto no cadastro em lote da nota fiscal.
+function prepararLinha(usuarioId: string, alimento: NovoAlimento): LinhaAlimento {
   const dataCompra = converterDataParaBanco(alimento.dataCompra);
   const validade = converterDataParaBanco(alimento.validade);
 
-  if (!dataCompra) {
-    throw new Error("Data de compra inválida.");
+  if (!dataCompra) throw new Error("Data de compra inválida.");
+  if (!validade) throw new Error("Data de validade inválida.");
+  if (validade < dataCompra) {
+    throw new Error("A validade não pode ser antes da data de compra.");
   }
 
-  if (!validade) {
-    throw new Error("Data de validade inválida.");
+  const nome = alimento.nome.trim();
+  const categoria = alimento.categoria.trim();
+  const unidade = alimento.unidade.trim();
+
+  if (!nome) throw new Error("Informe o nome do alimento.");
+  if (!categoria) throw new Error("Informe a categoria do alimento.");
+  if (!unidade) throw new Error("Informe a unidade do alimento.");
+
+  if (
+    !Number.isFinite(alimento.quantidade) ||
+    !Number.isInteger(alimento.quantidade) ||
+    alimento.quantidade <= 0
+  ) {
+    throw new Error("A quantidade deve ser um número inteiro maior que zero.");
   }
+
+  return {
+    usuario_id: usuarioId,
+    nome,
+    categoria,
+    quantidade_inicial: alimento.quantidade,
+    quantidade_atual: alimento.quantidade,
+    unidade_medida: unidade,
+    data_compra: dataCompra,
+    data_validade: validade,
+    // Só envia o peso quando informado (coluna "peso" na tabela alimentos)
+    ...(alimento.peso != null ? { peso: alimento.peso } : {}),
+    status: "EM_ESTOQUE",
+  };
+}
+
+export async function cadastrarAlimento(alimento: NovoAlimento) {
+  const user = await obterUsuarioLogado();
+  const linha = prepararLinha(user.id, alimento);
 
   const { data, error } = await supabase
     .from("alimentos")
-    .insert({
-      usuario_id: user.id,
-
-      nome: alimento.nome.trim(),
-      categoria: alimento.categoria.trim(),
-
-      quantidade_inicial: alimento.quantidade,
-      quantidade_atual: alimento.quantidade,
-
-      unidade_medida: alimento.unidade.trim(),
-
-      data_compra: dataCompra,
-      data_validade: validade,
-
-      // Só envia o peso quando informado (coluna "peso" na tabela alimentos)
-      ...(alimento.peso != null ? { peso: alimento.peso } : {}),
-
-      status: "EM_ESTOQUE",
-    })
+    .insert(linha)
     .select()
     .single();
 
@@ -108,6 +143,36 @@ export async function cadastrarAlimento(alimento: NovoAlimento) {
   }
 
   return data;
+}
+
+/**
+ * Cadastra vários alimentos de uma só vez (usado pela leitura da nota fiscal).
+ * O insert com várias linhas é uma única transação no banco: ou todos os itens
+ * entram na lista do usuário, ou nenhum entra.
+ *
+ * @returns quantidade de alimentos efetivamente cadastrados
+ */
+export async function cadastrarAlimentosEmLote(
+  alimentos: NovoAlimento[]
+): Promise<number> {
+  if (alimentos.length === 0) {
+    throw new Error("Nenhum alimento para cadastrar.");
+  }
+
+  const user = await obterUsuarioLogado();
+  const linhas = alimentos.map((alimento) => prepararLinha(user.id, alimento));
+
+  const { data, error } = await supabase
+    .from("alimentos")
+    .insert(linhas)
+    .select("id");
+
+  if (error) {
+    console.error("Erro ao cadastrar alimentos em lote:", error.message);
+    throw error;
+  }
+
+  return data?.length ?? linhas.length;
 }
 
 // Nomes, categorias e unidades que o usuário já cadastrou (mais recentes primeiro),

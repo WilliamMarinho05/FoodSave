@@ -11,10 +11,17 @@ import {
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import CalendarioModal from "@/src/components/CalendarioModal";
 import { useTheme } from "@/src/context/ThemeContext";
-import { analisarNotaFiscal } from "@/src/services/notaFiscal";
+import { cadastrarAlimentosEmLote } from "@/src/services/alimentos";
+import { atualizarProgressoMissao } from "@/src/services/missoes";
+import {
+  analisarNotaFiscal,
+  itensParaCadastro,
+} from "@/src/services/notaFiscal";
 import { AnaliseNotaFiscal, ItemNotaFiscal } from "@/src/types/notaFiscal";
-import { hojeISO } from "@/src/utils/datas";
+import { formatarBR, hojeISO } from "@/src/utils/datas";
+import { mostrarAlerta } from "@/src/utils/mensagens";
 
 const ROTULO_UNIDADE: Record<string, string> = {
   Miligrama: "mg",
@@ -29,10 +36,8 @@ function formatarReais(valor: number | null | undefined) {
   return `R$ ${valor.toFixed(2).replace(".", ",")}`;
 }
 
-function formatarData(iso: string) {
-  const [ano, mes, dia] = iso.split("-");
-  return `${dia}/${mes}/${ano}`;
-}
+const MSG_VALIDADE_ANTES_COMPRA =
+  "A validade não pode ser antes da data de compra.";
 
 export default function CameraNotaFiscal() {
   const router = useRouter();
@@ -47,6 +52,9 @@ export default function CameraNotaFiscal() {
   const [analisando, setAnalisando] = useState(false);
   const [analise, setAnalise] = useState<AnaliseNotaFiscal | null>(null);
   const [erroAnalise, setErroAnalise] = useState<string | null>(null);
+
+  const [modalValidadeAberta, setModalValidadeAberta] = useState(false);
+  const [cadastrandoTodos, setCadastrandoTodos] = useState(false);
 
   // Tirar foto
   const tirarFoto = async () => {
@@ -133,6 +141,59 @@ export default function CameraNotaFiscal() {
         preco: "",
       },
     });
+  };
+
+  // Data da nota (quando válida) usada como compra e como limite mínimo da validade
+  const dataCompraNota = useMemo(() => {
+    const data = analise?.dataCompra;
+    return data && /^\d{4}-\d{2}-\d{2}$/.test(data) && data <= hojeISO()
+      ? data
+      : hojeISO();
+  }, [analise?.dataCompra]);
+
+  const abrirCadastroEmLote = () => {
+    if (!analise?.itens.length || cadastrandoTodos) return;
+    setModalValidadeAberta(true);
+  };
+
+  // Cadastra todos os itens da nota de uma vez. A validade é escolhida uma
+  // única vez no calendário e compartilhada por todos os alimentos.
+  const cadastrarTodosOsItens = async (validade: string) => {
+    setModalValidadeAberta(false);
+
+    if (!analise?.itens.length || cadastrandoTodos) return;
+
+    setCadastrandoTodos(true);
+
+    try {
+      const itens = itensParaCadastro(analise, validade);
+      const cadastrados = await cadastrarAlimentosEmLote(itens);
+
+      // Cada alimento cadastrado conta para as missões diária/semanal
+      await atualizarProgressoMissao("cadastrar_alimentos", cadastrados);
+
+      mostrarAlerta(
+        "Cadastro concluído!",
+        `${cadastrados} ${
+          cadastrados === 1
+            ? "alimento cadastrado"
+            : "alimentos cadastrados"
+        } e sincronizado${cadastrados === 1 ? "" : "s"} com sua lista.`
+      );
+
+      // A lista recarrega ao ganhar foco (useFocusEffect) e já traz os novos itens
+      router.replace("/alimentos");
+    } catch (erro) {
+      console.error("Erro ao cadastrar itens da nota:", erro);
+      mostrarAlerta(
+        "Erro ao cadastrar",
+        erro instanceof Error
+          ? erro.message
+          : "Não foi possível cadastrar os itens. Tente novamente."
+      );
+    } finally {
+      setCadastrandoTodos(false);
+    }
   };
 
   const totalItens = useMemo(
@@ -238,7 +299,7 @@ export default function CameraNotaFiscal() {
                 <Text
                   style={[styles.dataResumo, { color: cores.textoSecundario }]}
                 >
-                  Compra em {formatarData(analise.dataCompra)}
+                  Compra em {formatarBR(analise.dataCompra)}
                 </Text>
               )}
             </View>
@@ -258,6 +319,45 @@ export default function CameraNotaFiscal() {
             </View>
           </View>
 
+          {/* CADASTRO AUTOMÁTICO DE TODOS OS ITENS */}
+          {temItens && (
+            <>
+              <Pressable
+                style={[
+                  styles.botaoPrincipal,
+                  styles.botaoLargo,
+                  cadastrandoTodos && styles.botaoDesabilitado,
+                ]}
+                onPress={abrirCadastroEmLote}
+                disabled={cadastrandoTodos}
+              >
+                {cadastrandoTodos ? (
+                  <>
+                    <ActivityIndicator color="#FFFFFF" size="small" />
+                    <Text style={styles.textoBotao}>Cadastrando alimentos...</Text>
+                  </>
+                ) : (
+                  <>
+                    <Ionicons
+                      name="checkmark-done-outline"
+                      size={20}
+                      color="#FFFFFF"
+                    />
+                    <Text style={styles.textoBotao}>
+                      Cadastrar todos ({analise.itens.length})
+                    </Text>
+                  </>
+                )}
+              </Pressable>
+
+              <Text
+                style={[styles.textoAjudaLote, { color: cores.textoSecundario }]}
+              >
+                Escolha a validade uma única vez para todos os itens.
+              </Text>
+            </>
+          )}
+
           {temItens ? (
             analise.itens.map((item, indice) => {
               const preco = formatarReais(item.precoTotal);
@@ -270,6 +370,7 @@ export default function CameraNotaFiscal() {
                 <Pressable
                   key={`${item.nome}-${indice}`}
                   onPress={() => cadastrarItem(item)}
+                  disabled={cadastrandoTodos}
                   style={({ pressed }) => [
                     styles.cartaoItem,
                     {
@@ -277,6 +378,7 @@ export default function CameraNotaFiscal() {
                       borderColor: cores.borda,
                       opacity: pressed ? 0.7 : 1,
                     },
+                    cadastrandoTodos && styles.botaoDesabilitado,
                   ]}
                 >
                   <View style={{ flex: 1 }}>
@@ -357,6 +459,7 @@ export default function CameraNotaFiscal() {
           <Pressable
             style={[styles.botaoPrincipal, { marginTop: 6 }]}
             onPress={refazerFoto}
+            disabled={cadastrandoTodos}
           >
             <Ionicons name="camera-outline" size={20} color="#FFFFFF" />
             <Text style={styles.textoBotao}>Analisar outra foto</Text>
@@ -368,6 +471,7 @@ export default function CameraNotaFiscal() {
               { backgroundColor: cores.card, borderColor: cores.borda },
             ]}
             onPress={cadastrarManualmente}
+            disabled={cadastrandoTodos}
           >
             <Ionicons
               name="create-outline"
@@ -381,6 +485,16 @@ export default function CameraNotaFiscal() {
             </Text>
           </Pressable>
         </ScrollView>
+
+        <CalendarioModal
+          visivel={modalValidadeAberta}
+          titulo="Validade dos alimentos"
+          valor={dataCompraNota}
+          minData={dataCompraNota}
+          mensagemMinima={MSG_VALIDADE_ANTES_COMPRA}
+          aoSelecionar={cadastrarTodosOsItens}
+          aoFechar={() => setModalValidadeAberta(false)}
+        />
       </View>
     );
   }
@@ -676,6 +790,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 40,
     gap: 10,
+  },
+
+  textoAjudaLote: {
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: -4,
   },
 
   cartaoResumo: {
