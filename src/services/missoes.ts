@@ -24,7 +24,7 @@ function getInicioSemana() {
   return `${ano}-${mes}-${dia}`;
 }
 
-async function incrementarMissao(codigoMissao: string) {
+async function incrementarMissao(codigoMissao: string, quantidade = 1) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -67,8 +67,9 @@ async function incrementarMissao(codigoMissao: string) {
     return null;
   }
 
+  const passos = Math.max(1, Math.floor(quantidade));
   const novoProgresso = Math.min(
-    (atual?.progresso ?? 0) + 1,
+    (atual?.progresso ?? 0) + passos,
     missao.meta
   );
 
@@ -149,17 +150,21 @@ async function incrementarMissao(codigoMissao: string) {
 }
 
 export async function atualizarProgressoMissao(
-  codigoMissao: string
+  codigoMissao: string,
+  quantidade = 1
 ) {
   try {
-    const resultado =
-      await incrementarMissao(codigoMissao);
+    const resultado = await incrementarMissao(
+      codigoMissao,
+      quantidade
+    );
 
     let resultadoSemanal = null;
 
     if (codigoMissao === "cadastrar_alimentos") {
       resultadoSemanal = await incrementarMissao(
-        "cadastrar_alimentos_semanal"
+        "cadastrar_alimentos_semanal",
+        quantidade
       );
     }
 

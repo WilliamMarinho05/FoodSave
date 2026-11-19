@@ -5,7 +5,6 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -24,6 +23,7 @@ import {
 } from "../../src/services/alimentos";
 import { atualizarProgressoMissao } from "../../src/services/missoes";
 import { formatarBR, hojeISO } from "../../src/utils/datas";
+import { mostrarAlerta } from "../../src/utils/mensagens";
 import {
   capitalizar,
   limparEspacos,
@@ -299,11 +299,14 @@ export default function CadastrarAlimento() {
       carregarOpcoes(); // o novo alimento já entra nas sugestões
       scrollRef.current?.scrollTo({ y: 0, animated: true });
 
-      Alert.alert("Sucesso", "Alimento cadastrado com sucesso!");
+      mostrarAlerta(
+        "Sucesso",
+        "Alimento cadastrado com sucesso e sincronizado com sua lista!"
+      );
     } catch (erro: any) {
       console.error("Erro ao cadastrar alimento:", erro);
 
-      Alert.alert(
+      mostrarAlerta(
         "Erro",
         erro?.message || "Não foi possível cadastrar o alimento."
       );
@@ -313,7 +316,6 @@ export default function CadastrarAlimento() {
   };
 
 
-  // TODO: integrar a leitura da nota fiscal (QR Code / foto) quando estiver pronta
   const handleCadastrarPorNotaFiscal = () => {
     router.push("/cadastrar_alimento/camera");
   };

@@ -4,6 +4,8 @@ import {
   AnaliseNotaFiscal,
   ItemNotaFiscal,
 } from "@/src/types/notaFiscal";
+import { hojeISO } from "@/src/utils/datas";
+import { NovoAlimento } from "./alimentos";
 
 // Edge Function que lê a nota fiscal com o modelo de visão da Groq.
 // Código: supabase/functions/ia-nota-fiscal/
@@ -330,4 +332,38 @@ export async function analisarNotaFiscal(
   }
 
   return normalizarAnalise(corpo.analise);
+}
+
+/**
+ * Transforma os itens lidos pela IA em registros prontos para o cadastro em
+ * lote. A nota não informa validade, então ela é escolhida uma única vez na
+ * tela e aplicada a todos os itens.
+ */
+export function itensParaCadastro(
+  analise: AnaliseNotaFiscal,
+  validade: string
+): NovoAlimento[] {
+  const hoje = hojeISO();
+  const dataCompra =
+    analise.dataCompra &&
+    /^\d{4}-\d{2}-\d{2}$/.test(analise.dataCompra) &&
+    analise.dataCompra <= hoje
+      ? analise.dataCompra
+      : hoje;
+
+  const validadeFinal =
+    /^\d{4}-\d{2}-\d{2}$/.test(validade) && validade >= dataCompra
+      ? validade
+      : dataCompra;
+
+  return analise.itens.map((item) => ({
+    nome: item.nome.trim(),
+    categoria: item.categoria?.trim() || "Outros",
+    quantidade: Math.max(1, Math.round(item.quantidade)),
+    // Itens contados ("UN" na nota) não têm unidade do SI; "Unidade" mantém
+    // o cadastro utilizável sem inventar gramas ou litros.
+    unidade: item.unidade || "Unidade",
+    dataCompra,
+    validade: validadeFinal,
+  }));
 }
