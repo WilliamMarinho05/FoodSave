@@ -1,16 +1,3 @@
-import React, { useMemo, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  Image,
-  ActivityIndicator,
-  ScrollView,
-} from "react-native";
-import { CameraView, useCameraPermissions } from "expo-camera";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import CalendarioModal from "@/src/components/CalendarioModal";
 import { useTheme } from "@/src/context/ThemeContext";
 import { cadastrarAlimentosEmLote } from "@/src/services/alimentos";
@@ -22,6 +9,19 @@ import {
 import { AnaliseNotaFiscal, ItemNotaFiscal } from "@/src/types/notaFiscal";
 import { formatarBR, hojeISO } from "@/src/utils/datas";
 import { mostrarAlerta } from "@/src/utils/mensagens";
+import { Ionicons } from "@expo/vector-icons";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import { useRouter } from "expo-router";
+import React, { useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 const ROTULO_UNIDADE: Record<string, string> = {
   Miligrama: "mg",
@@ -38,6 +38,54 @@ function formatarReais(valor: number | null | undefined) {
 
 const MSG_VALIDADE_ANTES_COMPRA =
   "A validade não pode ser antes da data de compra.";
+
+/**
+ * Verifica se o item identificado pela IA possui informações
+ * suficientes para ser cadastrado automaticamente.
+ *
+ * A validação final continua sendo feita pelo serviço alimentos.ts.
+ * Esta função serve apenas para impedir que um item incompleto seja
+ * cadastrado automaticamente sem revisão do usuário.
+ */
+function obterPendenciasItem(item: ItemNotaFiscal): string[] {
+  const pendencias: string[] = [];
+
+  if (!item.nome?.trim()) {
+    pendencias.push("nome");
+  }
+
+  if (
+    !Number.isFinite(item.quantidade) ||
+    !Number.isInteger(item.quantidade) ||
+    item.quantidade <= 0
+  ) {
+    pendencias.push("quantidade");
+  }
+
+  if (!item.unidade?.trim()) {
+    pendencias.push("unidade");
+  }
+
+  if (!item.categoria?.trim() || item.categoria === "Outros") {
+    pendencias.push("categoria");
+  }
+
+  return pendencias;
+}
+
+function itemPrecisaRevisao(item: ItemNotaFiscal) {
+  return obterPendenciasItem(item).length > 0;
+}
+
+function textoPendencias(item: ItemNotaFiscal) {
+  const pendencias = obterPendenciasItem(item);
+
+  if (pendencias.length === 0) {
+    return "";
+  }
+
+  return pendencias.join(", ");
+}
 
 export default function CameraNotaFiscal() {
   const router = useRouter();
@@ -109,7 +157,9 @@ export default function CameraNotaFiscal() {
     }
   };
 
-  // Abre o cadastro já preenchido com os dados do item escolhido
+  // Abre o cadastro já preenchido com os dados do item escolhido.
+  // Essa tela permite que o usuário revise e edite manualmente
+  // as informações identificadas pela IA.
   const cadastrarItem = (item: ItemNotaFiscal) => {
     if (!foto) return;
 
@@ -146,13 +196,46 @@ export default function CameraNotaFiscal() {
   // Data da nota (quando válida) usada como compra e como limite mínimo da validade
   const dataCompraNota = useMemo(() => {
     const data = analise?.dataCompra;
+
     return data && /^\d{4}-\d{2}-\d{2}$/.test(data) && data <= hojeISO()
       ? data
       : hojeISO();
   }, [analise?.dataCompra]);
 
+  /**
+   * Quantidade de itens que precisam ser conferidos manualmente.
+   */
+  const quantidadeItensParaRevisar = useMemo(() => {
+    if (!analise) return 0;
+
+    return analise.itens.filter(itemPrecisaRevisao).length;
+  }, [analise]);
+
+  /**
+   * Só permite o cadastro automático quando todos os alimentos
+   * possuem as informações necessárias.
+   */
+  const podeCadastrarTodos =
+    !!analise?.itens.length && quantidadeItensParaRevisar === 0;
+
   const abrirCadastroEmLote = () => {
     if (!analise?.itens.length || cadastrandoTodos) return;
+
+    if (!podeCadastrarTodos) {
+      mostrarAlerta(
+        "Revisão necessária",
+        `${quantidadeItensParaRevisar} ${
+          quantidadeItensParaRevisar === 1
+            ? "alimento precisa"
+            : "alimentos precisam"
+        } ser revisado${
+          quantidadeItensParaRevisar === 1 ? "" : "s"
+        } antes do cadastro automático. Toque no item marcado para conferir e editar as informações.`
+      );
+
+      return;
+    }
+
     setModalValidadeAberta(true);
   };
 
@@ -162,6 +245,18 @@ export default function CameraNotaFiscal() {
     setModalValidadeAberta(false);
 
     if (!analise?.itens.length || cadastrandoTodos) return;
+
+    // Segunda proteção para evitar cadastro de informações incompletas.
+    const itensPendentes = analise.itens.filter(itemPrecisaRevisao);
+
+    if (itensPendentes.length > 0) {
+      mostrarAlerta(
+        "Revisão necessária",
+        "Existem alimentos com informações incompletas. Revise os itens antes de realizar o cadastro em lote."
+      );
+
+      return;
+    }
 
     setCadastrandoTodos(true);
 
@@ -185,6 +280,7 @@ export default function CameraNotaFiscal() {
       router.replace("/alimentos");
     } catch (erro) {
       console.error("Erro ao cadastrar itens da nota:", erro);
+
       mostrarAlerta(
         "Erro ao cadastrar",
         erro instanceof Error
@@ -199,7 +295,10 @@ export default function CameraNotaFiscal() {
   const totalItens = useMemo(
     () =>
       analise?.total ??
-      analise?.itens.reduce((soma, item) => soma + (item.precoTotal ?? 0), 0) ??
+      analise?.itens.reduce(
+        (soma, item) => soma + (item.precoTotal ?? 0),
+        0
+      ) ??
       0,
     [analise]
   );
@@ -209,6 +308,7 @@ export default function CameraNotaFiscal() {
     return (
       <View style={[styles.centralizado, { backgroundColor: cores.fundo }]}>
         <ActivityIndicator size="large" color={cores.primaria} />
+
         <Text style={{ color: cores.texto }}>
           Verificando permissão da câmera...
         </Text>
@@ -220,7 +320,11 @@ export default function CameraNotaFiscal() {
   if (!permissao.granted) {
     return (
       <View style={[styles.centralizado, { backgroundColor: cores.fundo }]}>
-        <Ionicons name="camera-outline" size={60} color={cores.primariaTexto} />
+        <Ionicons
+          name="camera-outline"
+          size={60}
+          color={cores.primariaTexto}
+        />
 
         <Text style={[styles.titulo, { color: cores.texto }]}>
           Acesso à câmera
@@ -234,7 +338,9 @@ export default function CameraNotaFiscal() {
           style={[styles.botaoPrincipal, { backgroundColor: cores.primaria }]}
           onPress={solicitarPermissao}
         >
-          <Text style={styles.textoBotao}>Permitir acesso à câmera</Text>
+          <Text style={styles.textoBotao}>
+            Permitir acesso à câmera
+          </Text>
         </Pressable>
 
         <Pressable onPress={() => router.back()}>
@@ -256,24 +362,32 @@ export default function CameraNotaFiscal() {
           <Pressable
             style={[
               styles.botaoVoltarResultado,
-              { backgroundColor: cores.card, borderColor: cores.borda },
+              {
+                backgroundColor: cores.card,
+                borderColor: cores.borda,
+              },
             ]}
             onPress={() => setAnalise(null)}
           >
-            <Ionicons name="arrow-back" size={22} color={cores.texto} />
+            <Ionicons
+              name="arrow-back"
+              size={22}
+              color={cores.texto}
+            />
           </Pressable>
 
           <View style={{ flex: 1 }}>
             <Text style={[styles.tituloResultado, { color: cores.texto }]}>
               Nota lida com a IA
             </Text>
+
             <Text
               style={[
                 styles.subtituloResultado,
                 { color: cores.textoSecundario },
               ]}
             >
-              Toque em um item para cadastrá-lo
+              Confira os alimentos antes de cadastrar
             </Text>
           </View>
         </View>
@@ -285,19 +399,28 @@ export default function CameraNotaFiscal() {
           <View
             style={[
               styles.cartaoResumo,
-              { backgroundColor: cores.card, borderColor: cores.borda },
+              {
+                backgroundColor: cores.card,
+                borderColor: cores.borda,
+              },
             ]}
           >
             <View style={{ flex: 1 }}>
               <Text
-                style={[styles.rotuloResumo, { color: cores.textoSecundario }]}
+                style={[
+                  styles.rotuloResumo,
+                  { color: cores.textoSecundario },
+                ]}
               >
                 {analise.estabelecimento ?? "Nota fiscal"}
               </Text>
 
               {!!analise.dataCompra && (
                 <Text
-                  style={[styles.dataResumo, { color: cores.textoSecundario }]}
+                  style={[
+                    styles.dataResumo,
+                    { color: cores.textoSecundario },
+                  ]}
                 >
                   Compra em {formatarBR(analise.dataCompra)}
                 </Text>
@@ -306,18 +429,52 @@ export default function CameraNotaFiscal() {
 
             <View style={{ alignItems: "flex-end" }}>
               <Text
-                style={[styles.rotuloResumo, { color: cores.textoSecundario }]}
+                style={[
+                  styles.rotuloResumo,
+                  { color: cores.textoSecundario },
+                ]}
               >
                 {analise.itens.length} item(ns)
               </Text>
 
               {totalItens > 0 && (
-                <Text style={[styles.totalResumo, { color: cores.primariaTexto }]}>
+                <Text
+                  style={[
+                    styles.totalResumo,
+                    { color: cores.primariaTexto },
+                  ]}
+                >
                   {formatarReais(totalItens)}
                 </Text>
               )}
             </View>
           </View>
+
+          {/* AVISO DE REVISÃO */}
+          {quantidadeItensParaRevisar > 0 && (
+            <View style={styles.avisoRevisao}>
+              <Ionicons
+                name="warning-outline"
+                size={22}
+                color="#9A6700"
+              />
+
+              <View style={{ flex: 1 }}>
+                <Text style={styles.tituloAvisoRevisao}>
+                  Revisão necessária
+                </Text>
+
+                <Text style={styles.textoAvisoRevisao}>
+                  {quantidadeItensParaRevisar}{" "}
+                  {quantidadeItensParaRevisar === 1
+                    ? "alimento possui"
+                    : "alimentos possuem"}{" "}
+                  informações que precisam ser conferidas. Toque nos itens
+                  marcados para revisar e editar.
+                </Text>
+              </View>
+            </View>
+          )}
 
           {/* CADASTRO AUTOMÁTICO DE TODOS OS ITENS */}
           {temItens && (
@@ -326,15 +483,34 @@ export default function CameraNotaFiscal() {
                 style={[
                   styles.botaoPrincipal,
                   styles.botaoLargo,
-                  cadastrandoTodos && styles.botaoDesabilitado,
+                  (!podeCadastrarTodos || cadastrandoTodos) &&
+                    styles.botaoDesabilitado,
                 ]}
                 onPress={abrirCadastroEmLote}
                 disabled={cadastrandoTodos}
               >
                 {cadastrandoTodos ? (
                   <>
-                    <ActivityIndicator color="#FFFFFF" size="small" />
-                    <Text style={styles.textoBotao}>Cadastrando alimentos...</Text>
+                    <ActivityIndicator
+                      color="#FFFFFF"
+                      size="small"
+                    />
+
+                    <Text style={styles.textoBotao}>
+                      Cadastrando alimentos...
+                    </Text>
+                  </>
+                ) : quantidadeItensParaRevisar > 0 ? (
+                  <>
+                    <Ionicons
+                      name="warning-outline"
+                      size={20}
+                      color="#FFFFFF"
+                    />
+
+                    <Text style={styles.textoBotao}>
+                      Revisar antes de cadastrar
+                    </Text>
                   </>
                 ) : (
                   <>
@@ -343,6 +519,7 @@ export default function CameraNotaFiscal() {
                       size={20}
                       color="#FFFFFF"
                     />
+
                     <Text style={styles.textoBotao}>
                       Cadastrar todos ({analise.itens.length})
                     </Text>
@@ -351,9 +528,14 @@ export default function CameraNotaFiscal() {
               </Pressable>
 
               <Text
-                style={[styles.textoAjudaLote, { color: cores.textoSecundario }]}
+                style={[
+                  styles.textoAjudaLote,
+                  { color: cores.textoSecundario },
+                ]}
               >
-                Escolha a validade uma única vez para todos os itens.
+                {quantidadeItensParaRevisar > 0
+                  ? "Os itens marcados precisam ser conferidos antes do cadastro em lote."
+                  : "Todos os itens estão prontos. Escolha uma validade para concluir o cadastro."}
               </Text>
             </>
           )}
@@ -361,10 +543,14 @@ export default function CameraNotaFiscal() {
           {temItens ? (
             analise.itens.map((item, indice) => {
               const preco = formatarReais(item.precoTotal);
+
               const unidade =
                 ROTULO_UNIDADE[item.unidade ?? ""] ??
                 item.unidadeNota ??
-                "un";
+                "não identificada";
+
+              const precisaRevisao = itemPrecisaRevisao(item);
+              const pendencias = textoPendencias(item);
 
               return (
                 <Pressable
@@ -375,19 +561,41 @@ export default function CameraNotaFiscal() {
                     styles.cartaoItem,
                     {
                       backgroundColor: cores.card,
-                      borderColor: cores.borda,
+                      borderColor: precisaRevisao
+                        ? "#E6A700"
+                        : cores.borda,
                       opacity: pressed ? 0.7 : 1,
                     },
+                    precisaRevisao && styles.cartaoItemRevisao,
                     cadastrandoTodos && styles.botaoDesabilitado,
                   ]}
                 >
                   <View style={{ flex: 1 }}>
-                    <Text
-                      style={[styles.nomeItem, { color: cores.texto }]}
-                      numberOfLines={2}
-                    >
-                      {item.nome}
-                    </Text>
+                    <View style={styles.linhaNomeItem}>
+                      <Text
+                        style={[
+                          styles.nomeItem,
+                          { color: cores.texto },
+                        ]}
+                        numberOfLines={2}
+                      >
+                        {item.nome || "Alimento não identificado"}
+                      </Text>
+
+                      {precisaRevisao && (
+                        <View style={styles.chipRevisao}>
+                          <Ionicons
+                            name="warning-outline"
+                            size={12}
+                            color="#7A5200"
+                          />
+
+                          <Text style={styles.textoChipRevisao}>
+                            Revisar
+                          </Text>
+                        </View>
+                      )}
+                    </View>
 
                     <Text
                       style={[
@@ -397,12 +605,21 @@ export default function CameraNotaFiscal() {
                     >
                       {item.quantidade} {unidade} · {item.categoria}
                     </Text>
+
+                    {precisaRevisao && (
+                      <Text style={styles.textoPendencia}>
+                        Conferir: {pendencias}
+                      </Text>
+                    )}
                   </View>
 
                   <View style={{ alignItems: "flex-end" }}>
                     {!!preco && (
                       <Text
-                        style={[styles.precoItem, { color: cores.texto }]}
+                        style={[
+                          styles.precoItem,
+                          { color: cores.texto },
+                        ]}
                       >
                         {preco}
                       </Text>
@@ -411,21 +628,38 @@ export default function CameraNotaFiscal() {
                     <View
                       style={[
                         styles.chipCadastrar,
-                        { backgroundColor: cores.primariaSuave },
+                        {
+                          backgroundColor: precisaRevisao
+                            ? "#FFF3CD"
+                            : cores.primariaSuave,
+                        },
                       ]}
                     >
                       <Ionicons
-                        name="add-circle-outline"
+                        name={
+                          precisaRevisao
+                            ? "create-outline"
+                            : "add-circle-outline"
+                        }
                         size={14}
-                        color={cores.primariaTexto}
+                        color={
+                          precisaRevisao
+                            ? "#7A5200"
+                            : cores.primariaTexto
+                        }
                       />
+
                       <Text
                         style={[
                           styles.textoChipCadastrar,
-                          { color: cores.primariaTexto },
+                          {
+                            color: precisaRevisao
+                              ? "#7A5200"
+                              : cores.primariaTexto,
+                          },
                         ]}
                       >
-                        Cadastrar
+                        {precisaRevisao ? "Revisar" : "Cadastrar"}
                       </Text>
                     </View>
                   </View>
@@ -436,7 +670,10 @@ export default function CameraNotaFiscal() {
             <View
               style={[
                 styles.cartaoVazio,
-                { backgroundColor: cores.card, borderColor: cores.borda },
+                {
+                  backgroundColor: cores.card,
+                  borderColor: cores.borda,
+                },
               ]}
             >
               <Ionicons
@@ -444,11 +681,16 @@ export default function CameraNotaFiscal() {
                 size={38}
                 color={cores.primariaTexto}
               />
+
               <Text style={[styles.tituloVazio, { color: cores.texto }]}>
                 Nenhum alimento legível
               </Text>
+
               <Text
-                style={[styles.textoVazio, { color: cores.textoSecundario }]}
+                style={[
+                  styles.textoVazio,
+                  { color: cores.textoSecundario },
+                ]}
               >
                 Não consegui identificar alimentos nesta foto. Tente outra foto
                 com a nota inteira, bem iluminada e sem dobras.
@@ -461,14 +703,24 @@ export default function CameraNotaFiscal() {
             onPress={refazerFoto}
             disabled={cadastrandoTodos}
           >
-            <Ionicons name="camera-outline" size={20} color="#FFFFFF" />
-            <Text style={styles.textoBotao}>Analisar outra foto</Text>
+            <Ionicons
+              name="camera-outline"
+              size={20}
+              color="#FFFFFF"
+            />
+
+            <Text style={styles.textoBotao}>
+              Analisar outra foto
+            </Text>
           </Pressable>
 
           <Pressable
             style={[
               styles.botaoSecundario,
-              { backgroundColor: cores.card, borderColor: cores.borda },
+              {
+                backgroundColor: cores.card,
+                borderColor: cores.borda,
+              },
             ]}
             onPress={cadastrarManualmente}
             disabled={cadastrandoTodos}
@@ -478,8 +730,12 @@ export default function CameraNotaFiscal() {
               size={20}
               color={cores.primariaTexto}
             />
+
             <Text
-              style={[styles.textoBotao, { color: cores.primariaTexto }]}
+              style={[
+                styles.textoBotao,
+                { color: cores.primariaTexto },
+              ]}
             >
               Cadastrar manualmente
             </Text>
@@ -504,16 +760,31 @@ export default function CameraNotaFiscal() {
     <View style={styles.container}>
       {/* PRÉVIA DA FOTO */}
       {foto ? (
-        <Image source={{ uri: foto }} style={styles.camera} resizeMode="contain" />
+        <Image
+          source={{ uri: foto }}
+          style={styles.camera}
+          resizeMode="contain"
+        />
       ) : (
         /* CÂMERA AO VIVO */
-        <CameraView ref={cameraRef} style={styles.camera} facing="back" />
+        <CameraView
+          ref={cameraRef}
+          style={styles.camera}
+          facing="back"
+        />
       )}
 
       {/* CABEÇALHO */}
       <View style={styles.cabecalho}>
-        <Pressable style={styles.botaoVoltar} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={26} color="#FFFFFF" />
+        <Pressable
+          style={styles.botaoVoltar}
+          onPress={() => router.back()}
+        >
+          <Ionicons
+            name="arrow-back"
+            size={26}
+            color="#FFFFFF"
+          />
         </Pressable>
 
         <Text style={styles.tituloCabecalho}>
@@ -532,7 +803,10 @@ export default function CameraNotaFiscal() {
                   size={20}
                   color="#FFFFFF"
                 />
-                <Text style={styles.textoErro}>{erroAnalise}</Text>
+
+                <Text style={styles.textoErro}>
+                  {erroAnalise}
+                </Text>
               </View>
             )}
 
@@ -547,34 +821,67 @@ export default function CameraNotaFiscal() {
             >
               {analisando ? (
                 <>
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                  <Text style={styles.textoBotao}>Lendo a nota...</Text>
+                  <ActivityIndicator
+                    color="#FFFFFF"
+                    size="small"
+                  />
+
+                  <Text style={styles.textoBotao}>
+                    Lendo a nota...
+                  </Text>
                 </>
               ) : (
                 <>
-                  <Ionicons name="sparkles-outline" size={22} color="#FFFFFF" />
-                  <Text style={styles.textoBotao}>Analisar com IA</Text>
+                  <Ionicons
+                    name="sparkles-outline"
+                    size={22}
+                    color="#FFFFFF"
+                  />
+
+                  <Text style={styles.textoBotao}>
+                    Analisar com IA
+                  </Text>
                 </>
               )}
             </Pressable>
 
             <View style={styles.linhaBotoes}>
               <Pressable
-                style={[styles.botaoSecundario, styles.botaoMetade]}
+                style={[
+                  styles.botaoSecundario,
+                  styles.botaoMetade,
+                ]}
                 onPress={refazerFoto}
                 disabled={analisando}
               >
-                <Ionicons name="refresh-outline" size={20} color="#FFFFFF" />
-                <Text style={styles.textoBotao}>Refazer</Text>
+                <Ionicons
+                  name="refresh-outline"
+                  size={20}
+                  color="#FFFFFF"
+                />
+
+                <Text style={styles.textoBotao}>
+                  Refazer
+                </Text>
               </Pressable>
 
               <Pressable
-                style={[styles.botaoSecundario, styles.botaoMetade]}
+                style={[
+                  styles.botaoSecundario,
+                  styles.botaoMetade,
+                ]}
                 onPress={cadastrarManualmente}
                 disabled={analisando}
               >
-                <Ionicons name="create-outline" size={20} color="#FFFFFF" />
-                <Text style={styles.textoBotao}>Sem IA</Text>
+                <Ionicons
+                  name="create-outline"
+                  size={20}
+                  color="#FFFFFF"
+                />
+
+                <Text style={styles.textoBotao}>
+                  Sem IA
+                </Text>
               </Pressable>
             </View>
           </>
@@ -592,7 +899,11 @@ export default function CameraNotaFiscal() {
               {capturando ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Ionicons name="camera" size={32} color="#FFFFFF" />
+                <Ionicons
+                  name="camera"
+                  size={32}
+                  color="#FFFFFF"
+                />
               )}
             </Pressable>
           </>
@@ -824,6 +1135,30 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
+  avisoRevisao: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    backgroundColor: "#FFF8E1",
+    borderColor: "#E6A700",
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 13,
+  },
+
+  tituloAvisoRevisao: {
+    color: "#7A5200",
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 3,
+  },
+
+  textoAvisoRevisao: {
+    color: "#7A5200",
+    fontSize: 12,
+    lineHeight: 17,
+  },
+
   cartaoItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -833,9 +1168,21 @@ const styles = StyleSheet.create({
     padding: 14,
   },
 
+  cartaoItemRevisao: {
+    borderWidth: 1.5,
+  },
+
+  linhaNomeItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+
   nomeItem: {
     fontSize: 15,
     fontWeight: "600",
+    flexShrink: 1,
   },
 
   detalheItem: {
@@ -843,9 +1190,32 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
 
+  textoPendencia: {
+    color: "#9A6700",
+    fontSize: 11,
+    fontWeight: "600",
+    marginTop: 5,
+  },
+
   precoItem: {
     fontSize: 15,
     fontWeight: "bold",
+  },
+
+  chipRevisao: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    backgroundColor: "#FFF3CD",
+    borderRadius: 20,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+  },
+
+  textoChipRevisao: {
+    color: "#7A5200",
+    fontSize: 10,
+    fontWeight: "700",
   },
 
   chipCadastrar: {
